@@ -323,6 +323,110 @@ kernel void RadiationalBlur(
     }
 }
 
+kernel void LensBlur_Media(global unsigned char* dst, global unsigned char* src, int obj_w, int obj_h, int obj_line,
+    int range, int rangep05_sqr, int range_t3m1, int rangem1_sqr) {
+
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+
+    int top = -min(y, range);
+    int bottom = min(obj_h - y - 1, range);
+    int left = -min(x, range);
+    int right = min(obj_w - x - 1, range);
+
+    int cor_a, cor_sum;
+    int sum_cb, sum_cr, sum_a;
+    float sum_y;
+
+    cor_a = cor_sum = 0;
+    sum_y = 0.0;
+    sum_cb = sum_cr = sum_a = 0;
+
+    int offset = (x + left + (y + top) * obj_line) * 8;
+
+    for (int yy = top; yy <= bottom; yy++) {
+        int sqr = yy * yy + left * left;
+        int offset2 = offset;
+        for (int xx = left; xx <= right; xx++) {
+            if (sqr < rangep05_sqr) {
+                if (rangem1_sqr < sqr) {
+                    cor_a = (rangep05_sqr - sqr << 12) / range_t3m1;
+                    cor_sum += cor_a;
+                    cor_a = *(short*)&src[offset2 + 6] * cor_a >> 12;
+                } else {
+                    cor_a = *(short*)&src[offset2 + 6];
+                    cor_sum += 4096;
+                }
+                sum_y += *(float*)&src[offset2] * (float)cor_a;
+                sum_cb += src[offset2 + 4] * cor_a;
+                sum_cr += src[offset2 + 5] * cor_a;
+                sum_a += cor_a;
+            }
+            sqr += 1 + xx * 2;
+            offset2 += 6;
+        }
+        offset += obj_line * 8;
+    }
+
+    offset = (x + y * obj_line) * 8;
+    if (0 < sum_a) {
+        *(float*)&dst[offset] = sum_y / (float)sum_a;
+        dst[offset + 4] = (byte)(((sum_a >> 1) + sum_cb) / sum_a);
+        dst[offset + 5] = (byte)(((sum_a >> 1) + sum_cr) / sum_a);
+        *(short*)&dst[offset + 6] = (short)round((float)sum_a * (4096.0f / (float)cor_sum));
+    } else {
+        *(int*)&dst[offset] = 0;
+        *(int*)&dst[offset + 4] = 0;
+    }
+}
+
+kernel void LensBlur_Filter(global unsigned char* dst, global unsigned char* src, int scene_w, int scene_h, int scene_line,
+    int range, int rangep05_sqr, int range_t3m1, int rangem1_sqr) {
+
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+
+    int top = -min(y, range);
+    int bottom = min(scene_h - y - 1, range);
+    int left = -min(x, range);
+    int right = min(scene_w - x - 1, range);
+
+    float sum_y = 0.0;
+    int sum_cb = 0;
+    int sum_cr = 0;
+    int sum_a = 0;
+
+    int offset = (x + left + (y + top) * scene_line) * 6;
+
+    for (int yy = top; yy <= bottom; yy++) {
+
+        int sqr = yy * yy + left * left;
+        int offset2 = offset;
+
+        for (int xx = left; xx <= right; xx++) {
+            if (sqr < rangep05_sqr) {
+                int cor_a;
+                if (rangem1_sqr < sqr) {
+                    cor_a = (rangep05_sqr - sqr << 12) / range_t3m1;
+                } else {
+                    cor_a = 4096;
+                }
+                sum_y += *(float*)&src[offset2] * cor_a;
+                sum_cb += src[offset2 + 4] * cor_a;
+                sum_cr += src[offset2 + 5] * cor_a;
+                sum_a += cor_a;
+            }
+            sqr += 1 + xx * 2;
+            offset2 += 6;
+        }
+        offset += scene_line * 6;
+    }
+
+    offset = (x + y * scene_line) * 6;
+    *(float*)&dst[offset] = sum_y / (float)sum_a;
+    dst[offset + 4] = (byte)(((sum_a >> 1) + sum_cb) / sum_a);
+    dst[offset + 5] = (byte)(((sum_a >> 1) + sum_cr) / sum_a);
+}
 
 kernel void Flash(global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
     int g_cx,

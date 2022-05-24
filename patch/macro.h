@@ -93,7 +93,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r24"
+#define PATCH_VERSION_STR "r25"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -146,6 +146,7 @@
 	#ifdef PATCH_SWITCH_CL
 		#define PATCH_SWITCH_FAST_POLORTRANSFORM fast_polortransform
 		#define PATCH_SWITCH_FAST_RADIATIONALBLUR fast_radiationalblur
+        #define PATCH_SWITCH_FAST_LENSBLUR fast_lensblur
 		#define PATCH_SWITCH_FAST_FLASH fast_flash
 
 	#endif // define PATCH_SWITCH_CL
