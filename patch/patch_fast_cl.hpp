@@ -371,8 +371,8 @@ kernel void LensBlur_Media(global unsigned char* dst, global unsigned char* src,
     offset = (x + y * obj_line) * 8;
     if (0 < sum_a) {
         *(float*)&dst[offset] = sum_y / (float)sum_a;
-        dst[offset + 4] = (byte)(((sum_a >> 1) + sum_cb) / sum_a);
-        dst[offset + 5] = (byte)(((sum_a >> 1) + sum_cr) / sum_a);
+        dst[offset + 4] = (unsigned char)(((sum_a >> 1) + sum_cb) / sum_a);
+        dst[offset + 5] = (unsigned char)(((sum_a >> 1) + sum_cr) / sum_a);
         *(short*)&dst[offset + 6] = (short)round((float)sum_a * (4096.0f / (float)cor_sum));
     } else {
         *(int*)&dst[offset] = 0;
@@ -424,8 +424,8 @@ kernel void LensBlur_Filter(global unsigned char* dst, global unsigned char* src
 
     offset = (x + y * scene_line) * 6;
     *(float*)&dst[offset] = sum_y / (float)sum_a;
-    dst[offset + 4] = (byte)(((sum_a >> 1) + sum_cb) / sum_a);
-    dst[offset + 5] = (byte)(((sum_a >> 1) + sum_cr) / sum_a);
+    dst[offset + 4] = (unsigned char)(((sum_a >> 1) + sum_cb) / sum_a);
+    dst[offset + 5] = (unsigned char)(((sum_a >> 1) + sum_cr) / sum_a);
 }
 
 kernel void Flash(global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
