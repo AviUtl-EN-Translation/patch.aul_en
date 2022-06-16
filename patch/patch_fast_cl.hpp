@@ -48,176 +48,113 @@ namespace patch::fast {
 inline class cl_t {
 #pragma region clprogram
 	inline static auto program_str = make_cryptostring(R"(
-kernel void PolorTransform(global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line, int center, int radius, float angle, float uzu, float uzu_a) {
+kernel void PolorTransform(global short* dst, global short* src, int obj_w, int obj_h, int obj_line,
+	int center_length, int radius, float angle, float uzu, float uzu_a){
 	int x = get_global_id(0);
 	int y = get_global_id(1);
-
-	float x_centered = x - radius;
-	float y_centered = y - radius;
 	
-	float r = sqrt(x_centered * x_centered + y_centered * y_centered);
-	float theta = atan2(y_centered, x_centered);
+	int x_dist = x - radius;
+	int y_dist = y - radius;
+	float dist = sqrt((float)(x_dist * x_dist + y_dist * y_dist));
 
-	int uzu_const = (int)round(src_w * 256 * 1.414f / (max(1.f, r) * 3.1415927f * 2) + uzu_a);
+	int range = (int)round((float)obj_w / max(dist, 1.0f) * 57.6115417480468f + uzu_a);
+				
+	int yy_t256 = (int)round((float)(((obj_h + center_length) << 8) / radius) * dist);
+	int yy_range_fr = 0x100 - (yy_t256 & 0xff);
+	int yy_begin = (yy_t256 >> 8) - center_length;
+				
+	int xx_t256 = (int)round((((float)radius - dist) * uzu + angle - atan2((float)y_dist, (float)x_dist)) * (float)obj_w * 40.7436637878417f) - range / 2;
+	int xx_range_fr = 0x100 - (xx_t256 & 0xff);
+	int xx_begin = (xx_t256 >> 8) % obj_w;
+				
+	range = max(0x100,range);
+	int yy = yy_begin;
 
-	int src_y_tmp = (int)round((center + src_h) * 256.0f / radius * r);
-	int src_ys = 256 - src_y_tmp % 256;
-	int src_y = (src_y_tmp / 256) - center;
+	int sum_y = 0;
+	int sum_cb = 0;
+	int sum_cr = 0;
+	int sum_a = 0;
 
-	int src_x_tmp = (int)round(((radius - r) * uzu + angle - theta) * src_w * 128 / 3.1415927f);
-	src_x_tmp -= uzu_const / 2;
-
-	int src_x = (src_x_tmp / 256) % src_w;
-	int src_xt = src_x_tmp % 256;
-
-	if (uzu_const < 258) {
-		int sum_y = 0;
-		int sum_cr = 0;
-		int sum_cb = 0;
-		int sum_a = 0;
-
-		global short* src_xl = src + (src_x + src_y * exedit_buffer_line) * 4;
-		global short* src_xr = src + ((src_x + 1) % src_w + src_y * exedit_buffer_line) * 4;
-
-		if (0 <= src_y && src_y < src_h) {
-			int s = (src_xl[3] * (256 - src_xt) * src_ys) / 65536;
-			int t = (src_xr[3] * src_xt         * src_ys) / 65536;
-
-			sum_y  = src_xl[0] * s + src_xr[0] * t;
-			sum_cb = src_xl[1] * s + src_xr[1] * t;
-			sum_cr = src_xl[2] * s + src_xr[2] * t;
-			sum_a  = t + s;
+	if (0 <= yy && yy < obj_h) {
+		int range_remain = range;
+		int xx = xx_begin;
+		if (xx_range_fr) {
+			global short* pix = src + (xx + yy * obj_line) * 4;
+			sum_a = pix[3] * xx_range_fr * yy_range_fr >> 16;
+			sum_y = pix[0] * sum_a >> 12;
+			sum_cb = pix[1] * sum_a >> 12;
+			sum_cr = pix[2] * sum_a >> 12;
+			range_remain -= xx_range_fr;
+			xx++;
+			xx %= obj_w;
 		}
-
-		src_xl += exedit_buffer_line * 4;
-		src_xr += exedit_buffer_line * 4;
-
-		if (0 <= src_y + 1 && src_y + 1 < src_h) {
-			int s = (src_xl[3] * (256 - src_xt) * (256 - src_ys)) / 65536;
-			int t = (src_xr[3] * src_xt         * (256 - src_ys)) / 65536;
-
-			sum_y  += src_xl[0] * s + src_xr[0] * t;
-			sum_cb += src_xl[1] * s + src_xr[1] * t;
-			sum_cr += src_xl[2] * s + src_xr[2] * t;
-			sum_a  += t + s;
+		int pix_range = range_remain >> 8;
+		for(int i=0;i<pix_range;i++){
+			global short* pix = src + (xx + yy * obj_line) * 4;
+			int src_a = pix[3] * yy_range_fr >> 8;
+			sum_y += pix[0] * src_a >> 12;
+			sum_cb += pix[1] * src_a >> 12;
+			sum_cr += pix[2] * src_a >> 12;
+			sum_a += src_a;
+			xx++;
+			xx %= obj_w;
 		}
-		global short* dst_p = dst + (x + y * exedit_buffer_line) * 4;
-		if (sum_a == 0) {
-			dst_p[0] = 0;
-			dst_p[1] = 0;
-			dst_p[2] = 0;
-			dst_p[3] = 0;
-		}
-		else {
-			dst_p[0] = (short)(sum_y  / sum_a);
-			dst_p[1] = (short)(sum_cb / sum_a);
-			dst_p[2] = (short)(sum_cr / sum_a);
-			dst_p[3] = (short)(sum_a);
+		range_remain &= 0xff;
+		if (range_remain) {
+			global short* pix = src + (xx + yy * obj_line) * 4;
+			int src_a = pix[3] * range_remain * yy_range_fr >> 16;
+			sum_y += pix[0] * src_a >> 12;
+			sum_cb += pix[1] * src_a >> 12;
+			sum_cr += pix[2] * src_a >> 12;
+			sum_a += src_a;
 		}
 	}
-	else {
-		int sum_y  = 0;
-		int sum_cb = 0;
-		int sum_cr = 0;
-		int sum_a  = 0;
-
-		if (0 <= src_y && src_y < src_h) {
-			int uzu_repeat = uzu_const;
-
-			global short* itr;
-			int x_itr = src_x;
-			if (src_xt != 0) {
-				itr = src + (x_itr + src_y * exedit_buffer_line) * 4;
-
-				x_itr = (x_itr + 1) % src_w;
-				
-				int s = (itr[3] * (256 - src_xt) * src_ys) / 65536;
-
-				sum_y  = (itr[0] * s) / 4096;
-				sum_cb = (itr[1] * s) / 4096;
-				sum_cr = (itr[2] * s) / 4096;
-				sum_a  = s;
-
-				uzu_repeat -= 256 - src_xt;
-			}
-			for(int i = 0; i < uzu_repeat / 256; i++, x_itr = (x_itr + 1) % src_w) {
-				itr = src + (x_itr + src_y * exedit_buffer_line) * 4;
-
-				int c = (itr[3] * src_ys) / 256;
-
-				sum_y  += (itr[0] * c) / 4096;
-				sum_cb += (itr[1] * c) / 4096;
-				sum_cr += (itr[2] * c) / 4096;
-				sum_a  += c;
-			}
-			if (uzu_repeat % 256 != 0) {
-				itr = src + (x_itr + src_y * exedit_buffer_line) * 4;
-				int t = (itr[3] * (uzu_repeat % 256) * src_ys) / 65536;
-
-				sum_y  += itr[0] * t / 4096;
-				sum_cb += itr[1] * t / 4096;
-				sum_cr += itr[2] * t / 4096;
-				sum_a  += t;
-			}
+	yy++;
+	yy_range_fr = 0x100 - yy_range_fr;
+	if (0 <= yy && yy < obj_h) {
+		int range_remain = range;
+		int xx = xx_begin;
+		if (xx_range_fr != 0x100) {
+			global short* pix = src + (xx + yy * obj_line) * 4;
+			int src_a = pix[3] * xx_range_fr * yy_range_fr >> 16;
+			sum_y += pix[0] * src_a >> 12;
+			sum_cb += pix[1] * src_a >> 12;
+			sum_cr += pix[2] * src_a >> 12;
+			sum_a += src_a;
+			range_remain -= xx_range_fr;
+			xx++;
+			xx %= obj_w;
 		}
-
-		int src_yt = 256 - src_ys;
-		src_y += 1;
-		if (0 <= src_y && src_y < src_h) {
-			int uzu_repeat = uzu_const;
-
-			global short* itr;
-			int x_itr = src_x;
-			if (src_xt != 0) {
-				itr = src + (x_itr + src_y * exedit_buffer_line) * 4;
-
-				x_itr = (x_itr + 1) % src_w;
-
-				int s = (itr[3] * (256 - src_xt) * src_yt) / 65536;
-
-				sum_y  += (itr[0] * s) / 4096;
-				sum_cb += (itr[1] * s) / 4096;
-				sum_cr += (itr[2] * s) / 4096;
-				sum_a  += s;
-
-				uzu_repeat -= 256 - src_xt;
-			}
-			
-			for(int i = 0; i < uzu_repeat / 256; i++, x_itr = (x_itr + 1) % src_w) {
-				itr = src + (x_itr + src_y * exedit_buffer_line) * 4;
-
-				int c = (itr[3] * src_yt) / 256;
-
-				sum_y  += (itr[0] * c) / 4096;
-				sum_cb += (itr[1] * c) / 4096;
-				sum_cr += (itr[2] * c) / 4096;
-				sum_a  += c;
-			}
-			if (uzu_repeat % 256 != 0) {
-				itr = src + (x_itr + src_y * exedit_buffer_line) * 4;
-				int t = (itr[3] * (uzu_repeat % 256) * src_yt) / 65536;
-
-				sum_y  += (itr[0] * t) / 4096;
-				sum_cb += (itr[1] * t) / 4096;
-				sum_cr += (itr[2] * t) / 4096;
-				sum_a  += t;
-			}
+		int pix_range = range_remain >> 8;
+		for(int i=0;i<pix_range;i++){
+			global short* pix = src + (xx + yy * obj_line) * 4;
+			int src_a = pix[3] * yy_range_fr >> 8;
+			sum_y += pix[0] * src_a>> 12;
+			sum_cb += pix[1] * src_a >> 12;
+			sum_cr += pix[2] * src_a >> 12;
+			sum_a += src_a;
+			xx++;
+			xx %= obj_w;
 		}
-		
-		global short* dst_p = dst + (x + y * exedit_buffer_line) * 4;
-		if (sum_a == 0) {
-			dst_p[0] = 0;
-			dst_p[1] = 0;
-			dst_p[2] = 0;
-			dst_p[3] = 0;
+		range_remain &= 0xff;
+		if (range_remain) {
+			global short* pix = src + (xx + yy * obj_line) * 4;
+			int src_a = pix[3] * range_remain * yy_range_fr >> 16;
+			sum_y += pix[0] * src_a >> 12;
+			sum_cb += pix[1] * src_a >> 12;
+			sum_cr += pix[2] * src_a >> 12;
+			sum_a += src_a;
 		}
-		else {
-			float dVar2 = 4096.0f / sum_a;
-			dst_p[0] = (short)(round(sum_y  * dVar2));
-			dst_p[1] = (short)(round(sum_cb * dVar2));
-			dst_p[2] = (short)(round(sum_cr * dVar2));
-			dst_p[3] = (short)(sum_a * 256 / uzu_const);
-		}
+	}
+	dst += (x + y * obj_line) * 4;
+	if (sum_a) {
+		float a_float = 4096.0f / (float)sum_a;
+		dst[0] = (short)round((float)sum_y * a_float);
+		dst[1] = (short)round((float)sum_cb * a_float);
+		dst[2] = (short)round((float)sum_cr * a_float);
+		dst[3] = (short)((sum_a << 8) / range);
+	} else {
+		dst[0] = dst[1] = dst[2] = dst[3] = 0;
 	}
 }
 )" R"(
