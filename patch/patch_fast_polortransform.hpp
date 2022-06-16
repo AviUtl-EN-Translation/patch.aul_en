@@ -30,17 +30,34 @@ namespace patch::fast {
 	// init at exedit load
 	// 極座標変換の高速化
 	inline class PolorTransform_t {
-		static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		static BOOL mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
 		bool enabled = true;
 		bool enabled_i;
 		inline static const char key[] = "fast.polortransform";
 
 	public:
+
+		struct efPolorTransform_var { // 1e48c0
+			int src_h;
+			int radius;
+			int src_w;
+			int _padding;
+			double uzu;
+			double uzu_a;
+			double angle;
+			int center_length;
+			int output_size;
+		};
+
 		void init() {
 			enabled_i = enabled;
 			if (!enabled_i)return;
-			store_i32(GLOBAL::exedit_base + OFS::ExEdit::efPolorTransform_func_proc_ptr, &func_proc);
+
+			OverWriteOnProtectHelper h(GLOBAL::exedit_base + OFS::ExEdit::efPolorTransform_mt_func_call, 6);
+			h.store_i16(0, '\x90\xe8'); // nop; call (rel32)
+			h.replaceNearJmp(2, &mt_func);
+
 		}
 
 		void switching(bool flag) { enabled = flag; }
