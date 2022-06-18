@@ -225,56 +225,52 @@ kernel void DisplacementMap_move(global short* dst, global short* src, global sh
 	xx_level &= 0x1f;
 	yy_level &= 0x1f;
 
+	xx_begin = max(xx_begin, 0);
+	xx_end = min(xx_end, obj_w << xx_level);
+	yy_begin = max(yy_begin, 0);
+	yy_end = min(yy_end, obj_h << yy_level);
+
 	float dsum_y = 0.0f;
 	float dsum_cb = 0.0f;
 	float dsum_cr = 0.0f;
 	float dsum_a = 0.0f;
-
 	int yy = yy_begin;
 	while (yy < yy_end) {
 		int yy_itr = yy >> yy_level;
-		if (yy_itr < 0 || obj_h <= yy_itr) {
-			yy = yy_itr + 1 << yy_level;
-		} else {
-			int sum_y = 0;
-			int sum_cb = 0;
-			int sum_cr = 0;
-			int sum_a = 0;
-			int xx = xx_begin;
-			while (xx < xx_end) {
-				int xx_itr = xx >> xx_level;
-				if (xx_itr < 0 || obj_w <= xx_itr) {
-					xx = xx_itr + 1 << xx_level;
-				} else {
-					int fraction;
-					if (xx & 0xfff) {
-						fraction = -xx & 0xfff;
-					} else {
-						fraction = min(xx_end - xx, 0x1000);
-					}
-
-					global short* srct = src + (xx_itr + yy_itr * obj_line) * 4;
-					int src_a = srct[3] * fraction >> 8;
-					sum_y += srct[0] * src_a >> 16;
-					sum_cb += srct[1] * src_a >> 16;
-					sum_cr += srct[2] * src_a >> 16;
-					sum_a += src_a;
-					xx += fraction;
-				}
-			}
+		int sum_y = 0;
+		int sum_cb = 0;
+		int sum_cr = 0;
+		int sum_a = 0;
+		int xx = xx_begin;
+		while (xx < xx_end) {
+			int xx_itr = xx >> xx_level;
 			int fraction;
-			if (yy & 0xfff) {
-				fraction = -yy & 0xfff;
+			if (xx & 0xfff) {
+				fraction = -xx & 0xfff;
 			} else {
-				fraction = min(yy_end - yy, 0x1000);
+				fraction = min(xx_end - xx, 0x1000);
 			}
-			float fraction_rate = (float)fraction * 0.000244140625f;
-			dsum_y += (float)sum_y * fraction_rate;
-			dsum_cb += (float)sum_cb * fraction_rate;
-			dsum_cr += (float)sum_cr * fraction_rate;
-			dsum_a += (float)sum_a * fraction_rate;
-			yy += fraction;
+
+			global short* srct = src + (xx_itr + yy_itr * obj_line) * 4;
+			int src_a = srct[3] * fraction >> 8;
+			sum_y += srct[0] * src_a >> 16;
+			sum_cb += srct[1] * src_a >> 16;
+			sum_cr += srct[2] * src_a >> 16;
+			sum_a += src_a;
+			xx += fraction;
 		}
+		int fraction;
+		if (yy & 0xfff) {
+			fraction = -yy & 0xfff;
+		} else {
+			fraction = min(yy_end - yy, 0x1000);
+		}
+		float fraction_rate = (float)fraction * 0.000244140625f;
+		dsum_y += (float)sum_y * fraction_rate;
+		dsum_cb += (float)sum_cb * fraction_rate;
+		dsum_cr += (float)sum_cr * fraction_rate;
+		dsum_a += (float)sum_a * fraction_rate;
+		yy += fraction;
 	}
 
 	if (256.0f <= dsum_a) {
@@ -377,56 +373,52 @@ kernel void DisplacementMap_zoom(global short* dst, global short* src, global sh
 	xx_level &= 0x1f;
 	yy_level &= 0x1f;
 
+	xx_begin = max(xx_begin, 0);
+	xx_end = min(xx_end, obj_w << xx_level);
+	yy_begin = max(yy_begin, 0);
+	yy_end = min(yy_end, obj_h << yy_level);
+
 	float dsum_y = 0.0f;
 	float dsum_cb = 0.0f;
 	float dsum_cr = 0.0f;
 	float dsum_a = 0.0f;
-
 	int yy = yy_begin;
 	while (yy < yy_end) {
 		int yy_itr = yy >> yy_level;
-		if (yy_itr < 0 || obj_h <= yy_itr) {
-			yy = yy_itr + 1 << yy_level;
-		} else {
-			int sum_y = 0;
-			int sum_cb = 0;
-			int sum_cr = 0;
-			int sum_a = 0;
-			int xx = xx_begin;
-			while (xx < xx_end) {
-				int xx_itr = xx >> xx_level;
-				if (xx_itr < 0 || obj_w <= xx_itr) {
-					xx = xx_itr + 1 << xx_level;
-				} else {
-					int fraction;
-					if (xx & 0xfff) {
-						fraction = -xx & 0xfff;
-					} else {
-						fraction = min(xx_end - xx, 0x1000);
-					}
-
-					global short* srct = src + (xx_itr + yy_itr * obj_line) * 4;
-					int src_a = srct[3] * fraction >> 8;
-					sum_y += srct[0] * src_a >> 16;
-					sum_cb += srct[1] * src_a >> 16;
-					sum_cr += srct[2] * src_a >> 16;
-					sum_a += src_a;
-					xx += fraction;
-				}
-			}
+		int sum_y = 0;
+		int sum_cb = 0;
+		int sum_cr = 0;
+		int sum_a = 0;
+		int xx = xx_begin;
+		while (xx < xx_end) {
+			int xx_itr = xx >> xx_level;
 			int fraction;
-			if (yy & 0xfff) {
-				fraction = -yy & 0xfff;
+			if (xx & 0xfff) {
+				fraction = -xx & 0xfff;
 			} else {
-				fraction = min(yy_end - yy, 0x1000);
+				fraction = min(xx_end - xx, 0x1000);
 			}
-			float fraction_rate = (float)fraction * 0.000244140625f;
-			dsum_y += (float)sum_y * fraction_rate;
-			dsum_cb += (float)sum_cb * fraction_rate;
-			dsum_cr += (float)sum_cr * fraction_rate;
-			dsum_a += (float)sum_a * fraction_rate;
-			yy += fraction;
+
+			global short* srct = src + (xx_itr + yy_itr * obj_line) * 4;
+			int src_a = srct[3] * fraction >> 8;
+			sum_y += srct[0] * src_a >> 16;
+			sum_cb += srct[1] * src_a >> 16;
+			sum_cr += srct[2] * src_a >> 16;
+			sum_a += src_a;
+			xx += fraction;
 		}
+		int fraction;
+		if (yy & 0xfff) {
+			fraction = -yy & 0xfff;
+		} else {
+			fraction = min(yy_end - yy, 0x1000);
+		}
+		float fraction_rate = (float)fraction * 0.000244140625f;
+		dsum_y += (float)sum_y * fraction_rate;
+		dsum_cb += (float)sum_cb * fraction_rate;
+		dsum_cr += (float)sum_cr * fraction_rate;
+		dsum_a += (float)sum_a * fraction_rate;
+		yy += fraction;
 	}
 
 	if (256.0f <= dsum_a) {
@@ -525,56 +517,52 @@ kernel void DisplacementMap_rot(global short* dst, global short* src, global sho
 	xx_level &= 0x1f;
 	yy_level &= 0x1f;
 
+	xx_begin = max(xx_begin, 0);
+	xx_end = min(xx_end, obj_w << xx_level);
+	yy_begin = max(yy_begin, 0);
+	yy_end = min(yy_end, obj_h << yy_level);
+
 	float dsum_y = 0.0f;
 	float dsum_cb = 0.0f;
 	float dsum_cr = 0.0f;
 	float dsum_a = 0.0f;
-
 	int yy = yy_begin;
 	while (yy < yy_end) {
 		int yy_itr = yy >> yy_level;
-		if (yy_itr < 0 || obj_h <= yy_itr) {
-			yy = yy_itr + 1 << yy_level;
-		} else {
-			int sum_y = 0;
-			int sum_cb = 0;
-			int sum_cr = 0;
-			int sum_a = 0;
-			int xx = xx_begin;
-			while (xx < xx_end) {
-				int xx_itr = xx >> xx_level;
-				if (xx_itr < 0 || obj_w <= xx_itr) {
-					xx = xx_itr + 1 << xx_level;
-				} else {
-					int fraction;
-					if (xx & 0xfff) {
-						fraction = -xx & 0xfff;
-					} else {
-						fraction = min(xx_end - xx, 0x1000);
-					}
-
-					global short* srct = src + (xx_itr + yy_itr * obj_line) * 4;
-					int src_a = srct[3] * fraction >> 8;
-					sum_y += srct[0] * src_a >> 16;
-					sum_cb += srct[1] * src_a >> 16;
-					sum_cr += srct[2] * src_a >> 16;
-					sum_a += src_a;
-					xx += fraction;
-				}
-			}
+		int sum_y = 0;
+		int sum_cb = 0;
+		int sum_cr = 0;
+		int sum_a = 0;
+		int xx = xx_begin;
+		while (xx < xx_end) {
+			int xx_itr = xx >> xx_level;
 			int fraction;
-			if (yy & 0xfff) {
-				fraction = -yy & 0xfff;
+			if (xx & 0xfff) {
+				fraction = -xx & 0xfff;
 			} else {
-				fraction = min(yy_end - yy, 0x1000);
+				fraction = min(xx_end - xx, 0x1000);
 			}
-			float fraction_rate = (float)fraction * 0.000244140625f;
-			dsum_y += (float)sum_y * fraction_rate;
-			dsum_cb += (float)sum_cb * fraction_rate;
-			dsum_cr += (float)sum_cr * fraction_rate;
-			dsum_a += (float)sum_a * fraction_rate;
-			yy += fraction;
+
+			global short* srct = src + (xx_itr + yy_itr * obj_line) * 4;
+			int src_a = srct[3] * fraction >> 8;
+			sum_y += srct[0] * src_a >> 16;
+			sum_cb += srct[1] * src_a >> 16;
+			sum_cr += srct[2] * src_a >> 16;
+			sum_a += src_a;
+			xx += fraction;
 		}
+		int fraction;
+		if (yy & 0xfff) {
+			fraction = -yy & 0xfff;
+		} else {
+			fraction = min(yy_end - yy, 0x1000);
+		}
+		float fraction_rate = (float)fraction * 0.000244140625f;
+		dsum_y += (float)sum_y * fraction_rate;
+		dsum_cb += (float)sum_cb * fraction_rate;
+		dsum_cr += (float)sum_cr * fraction_rate;
+		dsum_a += (float)sum_a * fraction_rate;
+		yy += fraction;
 	}
 
 	if (256.0f <= dsum_a) {
