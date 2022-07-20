@@ -1,5 +1,7 @@
 # patch.aul
 ## これはなに
+https://github.com/ePi5131/patch.aul のテスト版です
+
 AviUtlや拡張編集のバグを直したり機能を追加するプラグイン
 黒魔術を一手に引き受けるのが目的
 
