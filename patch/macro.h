@@ -94,13 +94,15 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r41"
+#define PATCH_VERSION_STR "r41.1test"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
 
 #define PATCH_SWITCH_ACCESS_KEY access_key
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
+#define PATCH_SWITCH_TRA_CHANGE_DRAWFILTER tra_change_drawfilter
+#define PATCH_SWITCH_TRA_SPECIFIED_SPEED tra_specified_speed
 #define PATCH_SWITCH_EXO_AVIUTL_FILTER exo_aviutl_filter
 #define PATCH_SWITCH_EXO_TRACK_MINUSVAL exo_track_minusval
 #define PATCH_SWITCH_EXO_SCENEIDX exo_sceneidx
@@ -115,6 +117,10 @@
 #define PATCH_SWITCH_CANCEL_BOOST_CONFLICT
 #define PATCH_SWITCH_WARNING_OLD_LSW
 #define PATCH_SWITCH_OBJ_LENSBLUR obj_lensblur
+#define PATCH_SWITCH_OBJ_NOISE obj_noise
+#define PATCH_SWITCH_RCLICKMENU_SPLIT rclickmenu_split
+#define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete
+#define PATCH_SWITCH_BLEND blend
 
 #define PATCH_SWITCH_UNDO undo
 #ifdef PATCH_SWITCH_UNDO
@@ -152,6 +158,7 @@
 	#define PATCH_SWITCH_CL cl
 	#ifdef PATCH_SWITCH_CL
 		#define PATCH_SWITCH_FAST_POLORTRANSFORM fast_polortransform
+		#define PATCH_SWITCH_FAST_DISPLACEMENTMAP fast_displacementmap
 		#define PATCH_SWITCH_FAST_RADIATIONALBLUR fast_radiationalblur
 		#define PATCH_SWITCH_FAST_FLASH fast_flash
 		#define PATCH_SWITCH_FAST_DIRECTIONALBLUR fast_directionalblur

@@ -24,12 +24,14 @@
 
 #include "config.hpp"
 
+#include<locale.h>
 
 void init_t::InitAtDllMain() {
 	ExchangeFunction(GLOBAL::aviutl_hmod, cstr_kernel32_dll.get(), cstr_EnumResourceLanguagesA.get(), EnumResourceLanguagesA_Wrap);
 }
 
 void init_t::InitAtPatchLoaded() {
+
 	{
 		static const char aviutl_version_str[] = {
 			'1','.','1','0','\0','\0','\0','\0'
@@ -100,6 +102,13 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
 	patch::tra_aviutlfilter.init();
 #endif
+#ifdef PATCH_SWITCH_TRA_CHANGE_DRAWFILTER
+	patch::tra_change_drawfilter.init();
+#endif
+#ifdef PATCH_SWITCH_TRA_SPECIFIED_SPEED
+	patch::tra_specified_speed.init();
+#endif
+
 
 #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
 	patch::exo_aviutlfilter.init();
@@ -148,10 +157,25 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_LENSBLUR
 	patch::LensBlur.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_NOISE
+	patch::Noise.init();
+#endif
+
 
 #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
 	patch::excolorconfig.init();
 #endif
+
+#ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
+	patch::rclickmenu_split.init();
+#endif
+#ifdef PATCH_SWITCH_RCLICKMENU_DELETE
+	patch::rclickmenu_delete.init();
+#endif
+#ifdef PATCH_SWITCH_BLEND
+	patch::blend.init();
+#endif
+	
 	
 	patch::setting_dialog();
 
@@ -182,6 +206,9 @@ void init_t::InitAtExeditLoad() {
 				if (patch::fast::cl.is_enabled_i()) {
 					#ifdef PATCH_SWITCH_FAST_POLORTRANSFORM
 						patch::fast::PolorTransform.init();
+					#endif
+					#ifdef PATCH_SWITCH_FAST_DISPLACEMENTMAP
+						patch::fast::DisplacementMap.init();
 					#endif
 					#ifdef PATCH_SWITCH_FAST_RADIATIONALBLUR
 						patch::fast::RadiationalBlur.init();
@@ -294,6 +321,7 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 			"bakusoku.auf",
 			"eclipse_fast.auf",
 			"redo.auf",
+			"patch.aul",
 		};
 
 		std::string check = filename;
