@@ -110,6 +110,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 
 
+#ifdef PATCH_SWITCH_EXA_EFFECT
+	patch::exa_effect.init();
+#endif
 #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
 	patch::exo_aviutlfilter.init();
 #endif
@@ -196,6 +199,12 @@ void init_t::InitAtExeditLoad() {
 
 		#ifdef PATCH_SWITCH_FAST_TEXT
 			patch::fast::text.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
+			patch::fast::create_figure.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
+			patch::fast::create_figure.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_BORDER
 			patch::fast::Border.init();

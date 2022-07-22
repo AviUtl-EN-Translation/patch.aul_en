@@ -58,6 +58,7 @@
 #include "patch_obj_lensblur.hpp"
 #include "patch_obj_noise.hpp"
 #include "patch_setting_dialog_excolorconfig.hpp"
+#include "patch_fast_create_figure.hpp"
 #include "patch_fast_border.hpp"
 #include "patch_fast_directionalblur.hpp"
 #include "patch_rclickmenu_split.hpp"
@@ -65,3 +66,4 @@
 #include "patch_tra_change_drawfilter.hpp"
 #include "patch_tra_specified_speed.hpp"
 #include "patch_blend.hpp"
+#include "patch_exa_effect.hpp"

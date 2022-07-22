@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r41.1test"
+#define PATCH_VERSION_STR "r41.21test"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -103,6 +103,7 @@
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
 #define PATCH_SWITCH_TRA_CHANGE_DRAWFILTER tra_change_drawfilter
 #define PATCH_SWITCH_TRA_SPECIFIED_SPEED tra_specified_speed
+#define PATCH_SWITCH_EXA_EFFECT exa_effect
 #define PATCH_SWITCH_EXO_AVIUTL_FILTER exo_aviutl_filter
 #define PATCH_SWITCH_EXO_TRACK_MINUSVAL exo_track_minusval
 #define PATCH_SWITCH_EXO_SCENEIDX exo_sceneidx
@@ -153,6 +154,7 @@
 	#define PATCH_SWITCH_FAST_SETTINGDIALOG fast_settingdialog
 	#define PATCH_SWITCH_FAST_EXEDITWINDOW fast_exeditwindow
 	#define PATCH_SWITCH_FAST_TEXT fast_text
+	#define PATCH_SWITCH_FAST_CREATE_FIGURE fast_create_figure
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 
 	#define PATCH_SWITCH_CL cl
