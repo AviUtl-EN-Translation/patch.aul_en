@@ -162,6 +162,7 @@ https://scrapbox.io/ePi5131/patch.aul
     },
 	"switch" : { ; どのパッチを有効にするかを選択するものです trueなら有効、falseなら無効
 		"access_key" : boolean, ; アクセスキーを付加するか (既定値: false)
+		"exa_effect" : boolean, ; エフェクトのエイリアスを格納フォルダに保存すると、設定ダイアログの[+]の所に出てこないのを修正 (既定値: true)
 		"exo_aviutl_filter" : boolean, ; 拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある (既定値: true)
 		"exo_sceneidx" : boolean, ; オブジェクトファイルの入出力で、シーン番号を正しく扱えない (既定値: true)
 		"exo_trackparam" : boolean, ; オブジェクトファイルの入力で、トラックバー変化方法スクリプトの名前にASCII以外の文字が含まれているとパラメータを読み込めない (既定値: true)
@@ -198,6 +199,7 @@ https://scrapbox.io/ePi5131/patch.aul
 		"fast.exeditwindow" : boolean, ; 拡張編集ウィンドウの描画の最適化 (既定値: true)
 		"fast.settingdialog" : boolean, ; 設定ダイアログの描画の最適化 (既定値: true)
 		"fast.text" : boolean, ; テキストの軽量化 (既定値: true)
+		"fast.create_figure" : boolean, ; 円、三角、五角、六角、星の計算を効率化し少しだけ速度アップ (既定値: true)
 		"fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
 		"fast.cl" : boolean, ; fast.*でOpenCLが必要なオプションに必要なオプション (既定値: true)
 			"fast.radiationalblur" : boolean, ; fast.clが前提 放射ブラーの高速化 (既定値: true)
