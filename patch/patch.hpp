@@ -67,3 +67,4 @@
 #include "patch_tra_specified_speed.hpp"
 #include "patch_blend.hpp"
 #include "patch_obj_colorcorrection.hpp"
+#include "patch_colorpalette_cache.hpp"
