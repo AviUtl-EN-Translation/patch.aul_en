@@ -33,23 +33,22 @@ namespace patch {
 			short video_decode_bit = *(short*)((int)avi_file_handle + 30);
 
 			int size = video_decode_bit * video_decode_w + 7 >> 3;
-			size = (size + 3 >> 2) * video_decode_h;
+			size = (size + 3 & 0xfffffffc) * video_decode_h;
 
-			int addsize;
-			switch (*(short*)((int)avi_file_handle + 30)) {
+			switch (video_decode_bit) {
 			case 32:case 24:case 16:
-				addsize = 10;
+				size += 16;
 				break;
 			case 8:
-				addsize = 1034;
+				size += 1040;
 				break;
 			case 4:
-				addsize = 74;
+				size += 80;
 				break;
 			default:
-				addsize = 18;
+				size += 24;
 			}
-			return size * 4 + addsize;
+			return size;
 		}
 		bool enabled = true;
 		bool enabled_i;
