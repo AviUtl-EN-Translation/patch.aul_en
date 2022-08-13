@@ -26,7 +26,7 @@ namespace patch {
 
     // init at exedit load
     // exa,exo生成時、設定ダイアログの▼（折り畳み）とマウスマーク（GUI表示）の情報を追加する
-    inline class exa_effect_t {
+    inline class exo_fold_gui_t {
         bool enabled = true;
         bool enabled_i;
         inline static const char key[] = "exa_fold_gui";
