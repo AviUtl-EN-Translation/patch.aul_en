@@ -88,6 +88,9 @@ void init_t::InitAtPatchLoaded() {
 	patch::access_key.init();
 #endif
 
+#ifdef PATCH_SWITCH_COLORPALETTE_CACHE
+	patch::colorpalette_cache.init();
+#endif
 }
 
 void init_t::InitAtExeditLoad() {
@@ -108,6 +111,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 
 
+#ifdef PATCH_SWITCH_AUP_SCENE_SETTING
+	patch::aup_scene_setting.init();
+#endif
 #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
 	patch::exo_aviutlfilter.init();
 #endif
@@ -126,6 +132,10 @@ void init_t::InitAtExeditLoad() {
 
 #ifdef PATCH_SWITCH_EXO_SPECIALCOLORCONV
 	patch::exo_specialcolorconv.init();
+#endif
+
+#ifdef PATCH_SWITCH_EXO_FOLD_GUI
+	patch::exo_fold_gui.init();
 #endif
 
 #ifdef PATCH_SWITCH_CONSOLE
@@ -178,6 +188,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_BLEND
 	patch::blend.init();
+#endif
+#ifdef PATCH_SWITCH_ADD_EXTENSION
+	patch::add_extension.init();
 #endif
 	
 	patch::setting_dialog();
