@@ -1215,12 +1215,16 @@ public:
 		Failed
 	} state;
 
+	bool first = true;
 	cl_t() :state(State::NotYet), CLLib(NULL) {}
 	~cl_t() {
-		FreeLibrary(CLLib);
-		if (program_opt) {
-			auto program = reinterpret_cast<cl::Program*>(program_mem);
-			program->~Program();
+		if (first) {
+			FreeLibrary(CLLib);
+			if (program_opt) {
+				auto program = reinterpret_cast<cl::Program*>(program_mem);
+				program->~Program();
+			}
+			first = false;
 		}
 	}
 
