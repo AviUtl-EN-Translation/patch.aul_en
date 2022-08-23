@@ -18,7 +18,7 @@
 #ifdef PATCH_SWITCH_ADD_EXTENSION
 namespace patch {
 
-	int __cdecl add_extension_t::wsprintfA_wrap2701a(void* ebp, LPSTR dst, LPCSTR src) {
+	int __cdecl add_extension_t::wsprintfA_wrap2701a(void* ebp, LPSTR dst, LPSTR src) {
 
 		int* flag = (int*)((int)ebp - 1308); // 1:VideoFile 2:AudioFile
 		int* new_ext_num = (int*)((int)ebp - 1288); // new_ext_bufに追加された拡張子の数（最初の時点では0）
