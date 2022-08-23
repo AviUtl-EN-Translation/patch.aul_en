@@ -18,7 +18,7 @@
 #ifdef PATCH_SWITCH_ADD_EXTENSION
 namespace patch {
 
-	int __cdecl add_extension_t::wsprintfA_wrap2701a(void* ebp, LPSTR dst, LPSTR src) {
+	int __cdecl add_extension_t::wsprintfA_wrap2701a(void* ebp, char* dst, char* src) {
 
 		int* flag = (int*)((int)ebp - 1308); // 1:VideoFile 2:AudioFile
 		int* new_ext_num = (int*)((int)ebp - 1288); // new_ext_bufに追加された拡張子の数（最初の時点では0）
@@ -33,7 +33,7 @@ namespace patch {
 			str_movie_audio_file = (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_ONSEIFILE); // "音声ファイル"
 		}
 		char* ptr = (char*)(GLOBAL::exedit_base + OFS::ExEdit::ini_extension_buf);
-		unsigned int endptr = (unsigned int)ptr + 2047; // 読み込み時に字数カウントしていればその条件にする
+		unsigned int endptr = (unsigned int)ptr + 2047;
 		while ((unsigned int)ptr < endptr) {
 			if (*ptr == '.') {
 				int cnt = 1;
