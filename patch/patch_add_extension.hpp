@@ -33,7 +33,7 @@ namespace patch {
     // 動画、音声ファイル参照の時の拡張子にexedit.iniにあるものを追加する機能
     inline class add_extension_t {
 
-        static int __cdecl wsprintfA_wrap2701a(void* ebp, char* dst, char* src);
+        static int __cdecl wsprintfA_wrap2701a(int ebp, char* dst, char* src);
 
         bool enabled = true;
         bool enabled_i;
