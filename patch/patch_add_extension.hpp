@@ -41,7 +41,7 @@ namespace patch {
 
 
     public:
-static int __cdecl wsprintfA_wrap2701a(int ebp, char* dst, char* src);
+static int wsprintfA_wrap2701a(int ebp, char* dst, char* src);
 
 
 
