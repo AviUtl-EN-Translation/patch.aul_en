@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r42.1test"
+#define PATCH_VERSION_STR "r42.2test"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -123,6 +123,7 @@
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
 #define PATCH_SWITCH_OBJ_LENSBLUR obj_lensblur
 #define PATCH_SWITCH_OBJ_NOISE obj_noise
+#define PATCH_SWITCH_OBJ_SPECIALCOLORCONV obj_specialcolorconv
 #define PATCH_SWITCH_RCLICKMENU_SPLIT rclickmenu_split
 #define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete
 #define PATCH_SWITCH_BLEND blend
