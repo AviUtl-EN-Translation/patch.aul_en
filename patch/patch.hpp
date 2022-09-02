@@ -72,3 +72,5 @@
 #include "patch_exo_fold_gui.hpp"
 #include "patch_add_extension.hpp"
 #include "patch_aup_scene_setting.hpp"
+//#include "patch_second_cache.hpp"
+#include "patch_obj_specialcolorconv.hpp"

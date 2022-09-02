@@ -175,6 +175,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_NOISE
 	patch::Noise.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
+	patch::obj_specialcolorconv.init();
+#endif
 
 #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
 	patch::excolorconfig.init();
@@ -191,6 +194,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_ADD_EXTENSION
 	patch::add_extension.init();
+#endif
+#ifdef PATCH_SWITCH_SECOND_CACHE
+	patch::second_cache.init();
 #endif
 	
 	patch::setting_dialog();
