@@ -128,6 +128,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+                patch::AudioFile.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_load(cr);
             #endif
@@ -429,6 +432,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+                patch::AudioFile.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_store(switch_);
