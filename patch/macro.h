@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r42.2test"
+#define PATCH_VERSION_STR "r42.21test"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -120,6 +120,7 @@
 #define PATCH_SWITCH_CANCEL_BOOST_CONFLICT
 #define PATCH_SWITCH_WARNING_OLD_LSW
 #define PATCH_SWITCH_FAILED_SJIS_MSGBOX failed_sjis
+#define PATCH_SWITCH_OBJ_AUDIOFILE obj_audiofile
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
 #define PATCH_SWITCH_OBJ_LENSBLUR obj_lensblur
 #define PATCH_SWITCH_OBJ_NOISE obj_noise
@@ -128,6 +129,7 @@
 #define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete
 #define PATCH_SWITCH_BLEND blend
 #define PATCH_SWITCH_ADD_EXTENSION add_extension
+#define PATCH_SWITCH_DIALOG_NEW_FILE dlg_newfile
 //#define PATCH_SWITCH_SECOND_CACHE second_cache
 
 #define PATCH_SWITCH_UNDO undo

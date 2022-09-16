@@ -74,3 +74,5 @@
 #include "patch_aup_scene_setting.hpp"
 //#include "patch_second_cache.hpp"
 #include "patch_obj_specialcolorconv.hpp"
+#include "patch_obj_audiofile.hpp"
+#include "patch_dialog_new_file.hpp"

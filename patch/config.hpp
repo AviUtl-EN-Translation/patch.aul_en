@@ -128,6 +128,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+                patch::AudioFile.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_load(cr);
             #endif
@@ -154,6 +157,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_ADD_EXTENSION
                 patch::add_extension.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_DIALOG_NEW_FILE
+                patch::dialog_new_file.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_SECOND_CACHE
                 patch::second_cache.switch_load(cr);
@@ -430,6 +436,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+                patch::AudioFile.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_store(switch_);
             #endif
@@ -456,6 +465,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_ADD_EXTENSION
                 patch::add_extension.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_DIALOG_NEW_FILE
+                patch::dialog_new_file .switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_SECOND_CACHE
                 patch::second_cache.switch_store(switch_);

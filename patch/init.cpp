@@ -166,6 +166,9 @@ void init_t::InitAtExeditLoad() {
 	patch::failed_sjis_msgbox.init();
 #endif
 
+#ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+	patch::AudioFile.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
 	patch::ColorCorrection.init();
 #endif
@@ -194,6 +197,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_ADD_EXTENSION
 	patch::add_extension.init();
+#endif
+#ifdef PATCH_SWITCH_DIALOG_NEW_FILE
+	patch::dialog_new_file.init();
 #endif
 #ifdef PATCH_SWITCH_SECOND_CACHE
 	patch::second_cache.init();
