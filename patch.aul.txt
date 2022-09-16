@@ -1,4 +1,4 @@
-patch.aul r42.1test
+patch.aul r42.3test
 Copyright (c) 2021-2022 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
@@ -78,6 +78,10 @@ https://scrapbox.io/ePi5131/patch.aul
     ・オブジェクトファイルの入出力に設定ダイアログの▼（折り畳み）とマウスマーク（GUI表示）の情報を追加する
     ・動画・音声ファイルを開く時、拡張子一覧にexedit.iniに書かれている拡張子を追加する
     ・プロジェクトの保存/読み込み時にシーン設定の一部情報（グリッド設定など）が欠けるのを修正
+    ・特定色域変換で変換前色に黒色を指定すると0除算が起こることがあるのを修正
+    ・レンズブラーの"範囲"を広げた時に他データを破壊しそうな処理が行われるのを修正(シーンでフィルタオブジェクトのレンズブラーを使うと出るエラー0x71f95の修正)
+    ・音声ファイルの再生速度トラックの最大値2000.0のはずが800.0となってしまう処理があるのを修正
+    ・新規プロジェクト作成ダイアログの画像サイズ入力欄の幅を上げる
 
     追加
     ・コンソールの表示
@@ -182,14 +186,17 @@ https://scrapbox.io/ePi5131/patch.aul
 		"theme_cc" : boolean, ; テーマ機能 (既定値: true)
 		"exeditwindow_sizing" : boolean, ; 拡張編集ウィンドウの上部をドラッグして正常にリサイズできるようにする (既定値: true)
 		"settingdialog_move" : boolean, ; 設定ダイアログを高ポーリングレートマウス環境で移動すると重たい の解消 (既定値: true)
+		"obj_audiofile" : boolean, ; 音声ファイルの再生速度トラックの最大値2000.0のはずが800.0となってしまう処理があるのを修正 (既定値: true)
 		"obj_colorcorrection" : boolean, ; 色調補正の色相計算を修正 (既定値: true)
 		"obj_lensblur" : boolean, ; 小さい画像に対してサイズ固定で範囲の大きいレンズブラーを掛けると例外になるのを修正 (既定値: true)
 		"obj_noise" : boolean, ; ノイズの速度X、変化速度のトラック変化方法が移動無し以外の時に速度Yの値をもとに計算が行われてしまうのを修正 (既定値: true)
+		"obj_specialcolorconv" : boolean, ; 特定色域変換で変換前色に黒色を指定すると0除算が起こることがあるのを修正 (既定値: true)
 		"settingdialog_excolorconfig" : boolean, ; 拡張色変換のウィンドウが下のフィルタに被るのを修正 (既定値: true)
 		"r_click_menu_split" : boolean, ; 右クリック分割で設定ダイアログが更新されないのを修正 (既定値: true)
 		"r_click_menu_delete" : boolean, ; 右クリック削除でテキストの字間行間が変わることがあるのを修正 (既定値: true)
 		"blend" : boolean, ; アルファチャンネル有りシーンで合成モード「通常」以外を使用すると、他シーンで表示した時の結果が正しくないのを修正 (既定値: true)
 		"add_extension" : boolean, ; 動画・音声ファイルを開く時、拡張子一覧にexedit.iniに書かれている拡張子を追加する (既定値: true)
+		"new_project_editbox" : boolean, ; 新規プロジェクト作成ダイアログの画像サイズ入力欄の幅を上げる (既定値: true)
         "undo" : boolean, ; 元に戻す 関連のバグ修正 (既定値: true)
 		"undo.redo" : boolean, ; やり直す を追加 (既定値: true)
 	"console" : boolean, ; コンソール (既定値: true)
