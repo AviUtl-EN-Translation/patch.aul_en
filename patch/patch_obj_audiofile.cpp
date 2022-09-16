@@ -71,63 +71,7 @@ namespace patch {
         return 1;
     }
     
-    int fillzero_audio_data(ExEdit::FilterProcInfo* efpip, int n) {
-        if (efpip->audio_ch == 2) {
-            int* audio_data = (int*)efpip->audio_data;
-            for (int i = 0; i < n; i++) {
-                *audio_data = 0;
-                audio_data++;
-            }
-            return n * 4;
-        } else {
-            short* audio_data = (short*)efpip->audio_data;
-            for (int i = 0; i < n; i++) {
-                *audio_data = 0;
-                audio_data++;
-            }
-            return n * 2;
-        }
-    }
 
-    int __cdecl AudioFile_t::avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        if (mflag == 0) {
-            return efp->aviutl_exfunc->avi_file_read_audio_sample(afh, start, efpip->audio_n, efpip->audio_data);
-        } else {
-            int audio_n = efpip->audio_n;
-            int offset = 0;
-            int fill_n = 0;
-            if (((ExEdit::Exdata::efAudioFile*)efp->exdata_ptr)->reading_pos < 0) {
-                fill_n = min(-((ExEdit::Exdata::efAudioFile*)efp->exdata_ptr)->reading_pos, audio_n);
-                offset = fillzero_audio_data(efpip, fill_n);
-                audio_n -= fill_n;
-                start = 0;
-            }
-            return fill_n + efp->aviutl_exfunc->avi_file_read_audio_sample(afh, start, audio_n, (short*)((int)efpip->audio_data + offset));
-        }
-    }
-
-
-
-    void __cdecl AudioFile_t::rev_audio_data(ExEdit::FilterProcInfo* efpip) {
-        int swap_n = efpip->audio_n / 2;
-        if (efpip->audio_ch == 2) {
-            int* audio_data = (int*)efpip->audio_data;
-            int* audio_data_r = audio_data + efpip->audio_n - 1;
-            for (int i = 0; i < swap_n; i++) {
-                std::swap(*audio_data, *audio_data_r);
-                audio_data++;
-                audio_data_r--;
-            }
-        } else {
-            short* audio_data = (short*)efpip->audio_data;
-            short* audio_data_r = audio_data + efpip->audio_n - 1;
-            for (int i = 0; i < swap_n; i++) {
-                std::swap(*audio_data, *audio_data_r);
-                audio_data++;
-                audio_data_r--;
-            }
-        }
-    }
 
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_OBJ_AUDIOFILE
