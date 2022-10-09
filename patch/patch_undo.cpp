@@ -21,7 +21,9 @@ namespace patch {
     void __cdecl undo_t::set_undo_wrap_3e037(unsigned int object_idx, unsigned int flag) {
         auto exists_movable_playback_pos = [](unsigned int object_idx) {
             auto& exdata_buffer = *exdata_buffer_ptr;
+
             auto eop = &(*ObjectArrayPointer_ptr)[object_idx];
+
             for (int i = 0; i < 12; i++) {
                 auto fparam = &eop->filter_param[i];
                 switch (fparam->id) {
@@ -93,8 +95,17 @@ namespace patch {
         };
 
         if (*timeline_obj_click_mode_ptr == 2 || (*timeline_obj_click_mode_ptr == 3 && (*timeline_edit_both_adjacent_ptr & 1))) { // 左端 || (右端 && 環境設定の隣接するオブジェクトも選択がON )
-            if (exists_movable_playback_pos(object_idx)) {
-                set_undo(object_idx, 0);
+            auto eop = &(*ObjectArrayPointer_ptr)[object_idx];
+            int obj_idx = eop->index_midpt_leader;
+            if (obj_idx == -1 || obj_idx == object_idx) {
+                if (exists_movable_playback_pos(object_idx)) {
+                    obj_idx = object_idx;
+                    while (0 <= obj_idx) {
+                        set_undo(obj_idx, 0);
+                        obj_idx = NextObjectIdxArray[obj_idx];
+                    }
+                    return;
+                }
             }
         }
         set_undo(object_idx, flag);
