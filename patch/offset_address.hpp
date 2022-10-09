@@ -25,6 +25,10 @@ namespace OFS {
 		constexpr i32 current_resource_hmod = 0x2d910c;
 		constexpr i32 edit_handle_ptr = 0x08717c;
 		constexpr i32 saveProjectFile = 0x024160;
+		constexpr i32 exfunc = 0x0a8c78;
+
+		constexpr i32 str_dot_avi = 0x0745fc; // ".avi"
+		
 	}
 
 	namespace ExEdit {
@@ -49,6 +53,9 @@ namespace OFS {
 
 		constexpr i32 getpixeldata = 0x09a65c;
 		constexpr i32 rgb2yc = 0x06fed0;
+
+		constexpr i32 exedit_YC_vram_w = 0x149840;
+		constexpr i32 exedit_YC_vram_h = 0x14ca4c;
 
 		constexpr i32 exedit_max_h_add8 = 0x135c64;
 		constexpr i32 exedit_buffer_line = 0x135c68;
@@ -88,6 +95,22 @@ namespace OFS {
 
 		constexpr i32 ScriptProcessingFilter = 0x1b2b10;
 
+		constexpr i32 ini_extension_buf = 0x14cb58;
+		constexpr i32 str_DOUGAFILE= 0x09df6c; // "動画ファイル"
+		constexpr i32 str_ONSEIFILE = 0x0ba698; // "音声ファイル"
+
+		constexpr i32 VideoFuncCount = 0x1a5384;
+		constexpr i32 SceneSetting = 0x177a50;
+		constexpr i32 CreateCache = 0x00cd00;
+		constexpr i32 GetOrCreateCache = 0x04d7d0;
+		constexpr i32 CacheInfo = 0x0d7710;
+		constexpr i32 CachePriorityCount = 0x11eb1c;
+
+		constexpr i32 video_func_main = 0x048830;
+		constexpr i32 GetOrCreateSceneBufYC = 0x02a770;
+		constexpr i32 GetOrCreateSceneBufYCA = 0x02a830;
+
+		constexpr i32 exfunc = 0x0a41e0;
 		constexpr i32 exfunc_10 = 0x04abe0;
 		constexpr i32 exfunc_08 = 0x04ab40;
 		constexpr i32 func_0x047ad0 = 0x047ad0;
@@ -152,6 +175,14 @@ namespace OFS {
 		constexpr i32 specialcolorconv_status2 = 0x0a14f4;
 
 		constexpr i32 ObjectArrayPointer = 0x1e0fa4;
+		constexpr i32 NextObjectIdxArray = 0x1592d8;
+
+		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
+
+
+		constexpr i32 TrackModeArray = 0x14d3b0;
+		constexpr i32 TrackInfoArrayLeft = 0x14d4c8;
+		constexpr i32 TrackInfoArrayRight = 0x14def0;
 
 		constexpr i32 ScaleColorBackGround = 0x0a4048;
 		constexpr i32 ScaleColorForeGround = 0x0a404c;
