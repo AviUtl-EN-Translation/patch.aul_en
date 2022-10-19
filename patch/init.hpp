@@ -36,10 +36,12 @@ public:
 	inline static BOOL(__cdecl* original_func_WndProc)(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, AviUtl::FilterPlugin* fp);
 	inline static BOOL(__cdecl* original_func_init)(AviUtl::FilterPlugin* fp);
 	inline static BOOL(__cdecl* original_func_proc)(AviUtl::FilterPlugin* fp, AviUtl::FilterProcInfo* fpip);
+	inline static BOOL(__cdecl* original_func_project_save)(AviUtl::FilterPlugin* fp, AviUtl::EditHandle* editp, void* data, int* size);
 
 	static BOOL __cdecl func_WndProcWrap(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, AviUtl::FilterPlugin* fp);
 	static BOOL __cdecl func_initWrap(AviUtl::FilterPlugin* fp);
 	static BOOL __cdecl func_procWrap(AviUtl::FilterPlugin* fp, AviUtl::FilterProcInfo* fpip);
+	static BOOL __cdecl func_project_save(AviUtl::FilterPlugin* fp, AviUtl::EditHandle* editp, void* data, int* size);
 	static BOOL WINAPI EnumResourceLanguagesA_Wrap(HMODULE hModule, LPCSTR lpType, LPCSTR lpName, ENUMRESLANGPROCA lpEnumFunc, LONG_PTR lParam);
 	static HMODULE WINAPI LoadLibraryAWrap(LPCSTR lpLibFileName);
 
