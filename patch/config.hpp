@@ -56,39 +56,45 @@ public:
         cr.regist("switch", [](json_value_s* value) {
             ConfigReader cr(value);
             
-		    #ifdef PATCH_SWITCH_ACCESS_KEY
+            #ifdef PATCH_SWITCH_ACCESS_KEY
                 patch::access_key.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
+            #endif
+            #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
                 patch::colorpalette_cache.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_SUSIE_LOAD
+            #endif
+            #ifdef PATCH_SWITCH_FILEINFO
+                patch::fileinfo.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_SUSIE_LOAD
                 patch::susie_load.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_SPLASH
+            #endif
+            #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXA_EFFECT
-                patch::exa_effect.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
+            #endif
+            #ifdef PATCH_SWITCH_AUP_SCENE_SETTING
+                patch::aup_scene_setting.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
                 patch::exo_aviutlfilter.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_SCENEIDX
+            #endif
+            #ifdef PATCH_SWITCH_EXO_SCENEIDX
                 patch::exo_sceneidx.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_TRACKPARAM
+            #endif
+            #ifdef PATCH_SWITCH_EXO_TRACKPARAM
                 patch::exo_trackparam.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_TRACK_MINUSVAL
+            #endif
+            #ifdef PATCH_SWITCH_EXO_TRACK_MINUSVAL
                 patch::exo_trackminusval.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_SPECIALCOLORCONV
+            #endif
+            #ifdef PATCH_SWITCH_EXO_MIDPT_AND_TRA
+                patch::exo_midpt_and_tra.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_EXO_SPECIALCOLORCONV
                 patch::exo_specialcolorconv.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_FOLD_GUI
+            #endif
+            #ifdef PATCH_SWITCH_EXO_FOLD_GUI
                 patch::exo_fold_gui.switch_load(cr);
-		    #endif
+            #endif
             #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
                 patch::tra_aviutlfilter.switch_load(cr);
             #endif
@@ -98,33 +104,39 @@ public:
             #ifdef PATCH_SWITCH_TRA_SPECIFIED_SPEED
                 patch::tra_specified_speed.switch_load(cr);
             #endif
-		    #ifdef PATCH_SWITCH_TEXT_OP_SIZE
+            #ifdef PATCH_SWITCH_TEXT_OP_SIZE
                 patch::text_op_size.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_IGNORE_MEDIA_PARAM_RESET
+            #endif
+            #ifdef PATCH_SWITCH_IGNORE_MEDIA_PARAM_RESET
                 patch::ignore_media_param_reset.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_FONT_DIALOG
+            #endif
+            #ifdef PATCH_SWITCH_FONT_DIALOG
                 patch::font_dialog.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_SCROLL_OBJDLG
+            #endif
+            #ifdef PATCH_SWITCH_SCROLL_OBJDLG
                 patch::scroll_objdlg.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_ALPHA_BG
+            #endif
+            #ifdef PATCH_SWITCH_ALPHA_BG
                 patch::alpha_bg.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_HELPFUL_MSGBOX
+            #endif
+            #ifdef PATCH_SWITCH_HELPFUL_MSGBOX
                 patch::helpful_msgbox.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_THEME_CC
+            #endif
+            #ifdef PATCH_SWITCH_FAILED_SJIS_MSGBOX
+                patch::failed_sjis_msgbox.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_THEME_CC
                 patch::theme_cc.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXEDITWINDOW_SIZING
+            #endif
+            #ifdef PATCH_SWITCH_EXEDITWINDOW_SIZING
                 patch::exeditwindow_sizing.switch_load(cr);
-		    #endif
-		    #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
+            #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_load(cr);
-		    #endif
+            #endif
+            #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+                patch::AudioFile.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_load(cr);
             #endif
@@ -134,9 +146,12 @@ public:
             #ifdef PATCH_SWITCH_OBJ_NOISE
                 patch::Noise.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
+                patch::obj_specialcolorconv.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
                 patch::excolorconfig.switch_load(cr);
-		    #endif
+            #endif
             #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
                 patch::rclickmenu_split.switch_load(cr);
             #endif
@@ -146,19 +161,28 @@ public:
             #ifdef PATCH_SWITCH_BLEND
                 patch::blend.switch_load(cr);
             #endif
-		
-		    #ifdef PATCH_SWITCH_UNDO
+            #ifdef PATCH_SWITCH_ADD_EXTENSION
+                patch::add_extension.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_DIALOG_NEW_FILE
+                patch::dialog_new_file.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_SECOND_CACHE
+                patch::second_cache.switch_load(cr);
+            #endif
+        
+            #ifdef PATCH_SWITCH_UNDO
                 patch::undo.switch_load(cr);
                 #ifdef PATCH_SWITCH_UNDO_REDO
                     patch::redo.switch_load(cr);
                 #endif
-		    #endif
+            #endif
 
-		    #ifdef PATCH_SWITCH_CONSOLE
+            #ifdef PATCH_SWITCH_CONSOLE
                 patch::console.switch_load(cr);
-		    #endif
-				
-		    #ifdef PATCH_SWITCH_LUA
+            #endif
+                
+            #ifdef PATCH_SWITCH_LUA
                 patch::lua.switch_load(cr);
                 #ifdef PATCH_SWITCH_LUA_GETVALUE
                     patch::lua_getvalueex.switch_load(cr);
@@ -171,17 +195,17 @@ public:
                 #ifdef PATCH_SWITCH_LUA_RANDEX
                     patch::lua_randex.switch_load(cr);
                 #endif
-		    #endif
+            #endif
 
-		    #ifdef PATCH_SWITCH_FAST
+            #ifdef PATCH_SWITCH_FAST
                 patch::fast::fast.switch_load(cr);
-			    
-			    #ifdef PATCH_SWITCH_FAST_EXEDITWINDOW
+                
+                #ifdef PATCH_SWITCH_FAST_EXEDITWINDOW
                     patch::fast_exeditwindow.switch_load(cr);
-			    #endif
-			    #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
+                #endif
+                #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
                     patch::fast_setting_dialog.switch_load(cr);
-			    #endif
+                #endif
                 #ifdef PATCH_SWITCH_FAST_TEXT
                     patch::fast::text.switch_load(cr);
                 #endif
@@ -191,30 +215,33 @@ public:
                 #ifdef PATCH_SWITCH_FAST_BORDER
                     patch::fast::Border.switch_load(cr);
                 #endif
-		
+        
                 #ifdef PATCH_SWITCH_CL
                     patch::fast::cl.switch_load(cr);
                     
-				    #ifdef PATCH_SWITCH_FAST_RADIATIONALBLUR
-					    patch::fast::RadiationalBlur.switch_load(cr);
-				    #endif
-				    #ifdef PATCH_SWITCH_FAST_POLORTRANSFORM
+                    #ifdef PATCH_SWITCH_FAST_BLEND
+                        patch::fast::Blend_cl.switch_load(cr);
+                    #endif
+                    #ifdef PATCH_SWITCH_FAST_RADIATIONALBLUR
+                        patch::fast::RadiationalBlur.switch_load(cr);
+                    #endif
+                    #ifdef PATCH_SWITCH_FAST_POLORTRANSFORM
                         patch::fast::PolorTransform.switch_load(cr);
-				    #endif
+                    #endif
                     #ifdef PATCH_SWITCH_FAST_DISPLACEMENTMAP
                         patch::fast::DisplacementMap.switch_load(cr);
-				    #endif
+                    #endif
                     #ifdef PATCH_SWITCH_FAST_FLASH
                         patch::fast::Flash.switch_load(cr);
                     #endif
                     #ifdef PATCH_SWITCH_FAST_DIRECTIONALBLUR
                         patch::fast::DirectionalBlur.switch_load(cr);
                     #endif
-				    #ifdef PATCH_SWITCH_FAST_LENSBLUR
-					    patch::fast::LensBlur.switch_load(cr);
-				    #endif
+                    #ifdef PATCH_SWITCH_FAST_LENSBLUR
+                        patch::fast::LensBlur.switch_load(cr);
+                    #endif
                 #endif
-		    #endif
+            #endif
 
             cr.load();
         });
@@ -346,39 +373,45 @@ public:
         {
             ConfigWriter switch_(++level);
             
-		    #ifdef PATCH_SWITCH_ACCESS_KEY
+            #ifdef PATCH_SWITCH_ACCESS_KEY
                 patch::access_key.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
+            #endif
+            #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
                 patch::colorpalette_cache.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_SUSIE_LOAD
+            #endif
+            #ifdef PATCH_SWITCH_FILEINFO
+                patch::fileinfo.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SUSIE_LOAD
                 patch::susie_load.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_SPLASH
+            #endif
+            #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXA_EFFECT
-                patch::exa_effect.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
+            #endif
+            #ifdef PATCH_SWITCH_AUP_SCENE_SETTING
+                patch::aup_scene_setting.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
                 patch::exo_aviutlfilter.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_SCENEIDX
+            #endif
+            #ifdef PATCH_SWITCH_EXO_SCENEIDX
                 patch::exo_sceneidx.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_TRACKPARAM
+            #endif
+            #ifdef PATCH_SWITCH_EXO_TRACKPARAM
                 patch::exo_trackparam.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_TRACK_MINUSVAL
+            #endif
+            #ifdef PATCH_SWITCH_EXO_TRACK_MINUSVAL
                 patch::exo_trackminusval.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_SPECIALCOLORCONV
+            #endif
+            #ifdef PATCH_SWITCH_EXO_MIDPT_AND_TRA
+                patch::exo_midpt_and_tra.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_EXO_SPECIALCOLORCONV
                 patch::exo_specialcolorconv.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXO_FOLD_GUI
+            #endif
+            #ifdef PATCH_SWITCH_EXO_FOLD_GUI
                 patch::exo_fold_gui.switch_store(switch_);
-		    #endif
+            #endif
             #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
                 patch::tra_aviutlfilter.switch_store(switch_);
             #endif
@@ -388,33 +421,39 @@ public:
             #ifdef PATCH_SWITCH_TRA_SPECIFIED_SPEED
                 patch::tra_specified_speed.switch_store(switch_);
             #endif
-		    #ifdef PATCH_SWITCH_TEXT_OP_SIZE
+            #ifdef PATCH_SWITCH_TEXT_OP_SIZE
                 patch::text_op_size.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_IGNORE_MEDIA_PARAM_RESET
+            #endif
+            #ifdef PATCH_SWITCH_IGNORE_MEDIA_PARAM_RESET
                 patch::ignore_media_param_reset.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_FONT_DIALOG
+            #endif
+            #ifdef PATCH_SWITCH_FONT_DIALOG
                 patch::font_dialog.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_SCROLL_OBJDLG
+            #endif
+            #ifdef PATCH_SWITCH_SCROLL_OBJDLG
                 patch::scroll_objdlg.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_ALPHA_BG
+            #endif
+            #ifdef PATCH_SWITCH_ALPHA_BG
                 patch::alpha_bg.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_HELPFUL_MSGBOX
+            #endif
+            #ifdef PATCH_SWITCH_HELPFUL_MSGBOX
                 patch::helpful_msgbox.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_THEME_CC
+            #endif
+            #ifdef PATCH_SWITCH_FAILED_SJIS_MSGBOX
+                patch::failed_sjis_msgbox.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_THEME_CC
                 patch::theme_cc.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_EXEDITWINDOW_SIZING
+            #endif
+            #ifdef PATCH_SWITCH_EXEDITWINDOW_SIZING
                 patch::exeditwindow_sizing.switch_store(switch_);
-		    #endif
-		    #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
+            #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_store(switch_);
-		    #endif
+            #endif
+            #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+                patch::AudioFile.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_store(switch_);
             #endif
@@ -424,9 +463,12 @@ public:
             #ifdef PATCH_SWITCH_OBJ_NOISE
                 patch::Noise.switch_store(switch_);
             #endif
-		    #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
+            #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
+                patch::obj_specialcolorconv.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
                 patch::excolorconfig.switch_store(switch_);
-		    #endif
+            #endif
             #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
                 patch::rclickmenu_split.switch_store(switch_);
             #endif
@@ -436,19 +478,28 @@ public:
             #ifdef PATCH_SWITCH_BLEND
                 patch::blend.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_ADD_EXTENSION
+                patch::add_extension.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_DIALOG_NEW_FILE
+                patch::dialog_new_file .switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SECOND_CACHE
+                patch::second_cache.switch_store(switch_);
+            #endif
 
-		    #ifdef PATCH_SWITCH_UNDO
+            #ifdef PATCH_SWITCH_UNDO
                 patch::undo.switch_store(switch_);
                 #ifdef PATCH_SWITCH_UNDO_REDO
                     patch::redo.switch_store(switch_);
                 #endif
-		    #endif
+            #endif
 
-		    #ifdef PATCH_SWITCH_CONSOLE
+            #ifdef PATCH_SWITCH_CONSOLE
                 patch::console.switch_store(switch_);
-		    #endif
-				
-		    #ifdef PATCH_SWITCH_LUA
+            #endif
+                
+            #ifdef PATCH_SWITCH_LUA
                 patch::lua.switch_store(switch_);
                 #ifdef PATCH_SWITCH_LUA_GETVALUE
                     patch::lua_getvalueex.switch_store(switch_);
@@ -461,17 +512,17 @@ public:
                 #ifdef PATCH_SWITCH_LUA_RANDEX
                     patch::lua_randex.switch_store(switch_);
                 #endif
-		    #endif
+            #endif
 
-		    #ifdef PATCH_SWITCH_FAST
+            #ifdef PATCH_SWITCH_FAST
                 patch::fast::fast.switch_store(switch_);
-			    
-			    #ifdef PATCH_SWITCH_FAST_EXEDITWINDOW
+                
+                #ifdef PATCH_SWITCH_FAST_EXEDITWINDOW
                     patch::fast_exeditwindow.switch_store(switch_);
-			    #endif
-			    #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
+                #endif
+                #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
                     patch::fast_setting_dialog.switch_store(switch_);
-			    #endif
+                #endif
                 #ifdef PATCH_SWITCH_FAST_TEXT
                     patch::fast::text.switch_store(switch_);
                 #endif
@@ -481,30 +532,33 @@ public:
                 #ifdef PATCH_SWITCH_FAST_BORDER
                     patch::fast::Border.switch_store(switch_);
                 #endif
-		
+        
                 #ifdef PATCH_SWITCH_CL
                     patch::fast::cl.switch_store(switch_);
                     
-				    #ifdef PATCH_SWITCH_FAST_RADIATIONALBLUR
-					    patch::fast::RadiationalBlur.switch_store(switch_);
-				    #endif
-				    #ifdef PATCH_SWITCH_FAST_POLORTRANSFORM
+                    #ifdef PATCH_SWITCH_FAST_BLEND
+                        patch::fast::Blend_cl.switch_store(switch_);
+                    #endif
+                    #ifdef PATCH_SWITCH_FAST_RADIATIONALBLUR
+                        patch::fast::RadiationalBlur.switch_store(switch_);
+                    #endif
+                    #ifdef PATCH_SWITCH_FAST_POLORTRANSFORM
                         patch::fast::PolorTransform.switch_store(switch_);
-				    #endif
+                    #endif
                     #ifdef PATCH_SWITCH_FAST_DISPLACEMENTMAP
                         patch::fast::DisplacementMap.switch_store(switch_);
-				    #endif
+                    #endif
                     #ifdef PATCH_SWITCH_FAST_FLASH
                         patch::fast::Flash.switch_store(switch_);
                     #endif
                     #ifdef PATCH_SWITCH_FAST_DIRECTIONALBLUR
                         patch::fast::DirectionalBlur.switch_store(switch_);
                     #endif
-				    #ifdef PATCH_SWITCH_FAST_LENSBLUR
-					    patch::fast::LensBlur.switch_store(switch_);
-				    #endif
+                    #ifdef PATCH_SWITCH_FAST_LENSBLUR
+                        patch::fast::LensBlur.switch_store(switch_);
+                    #endif
                 #endif
-		    #endif
+            #endif
 
             std::stringstream ss;
             switch_.write(ss);

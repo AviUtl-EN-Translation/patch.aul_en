@@ -24,14 +24,12 @@
 
 #include "config.hpp"
 
-#include<locale.h>
 
 void init_t::InitAtDllMain() {
 	ExchangeFunction(GLOBAL::aviutl_hmod, cstr_kernel32_dll.get(), cstr_EnumResourceLanguagesA.get(), EnumResourceLanguagesA_Wrap);
 }
 
 void init_t::InitAtPatchLoaded() {
-
 	{
 		static const char aviutl_version_str[] = {
 			'1','.','1','0','\0','\0','\0','\0'
@@ -94,6 +92,10 @@ void init_t::InitAtPatchLoaded() {
 	patch::colorpalette_cache.init();
 #endif
 
+#ifdef PATCH_SWITCH_FILEINFO
+	patch::fileinfo.init();
+#endif
+
 }
 
 void init_t::InitAtExeditLoad() {
@@ -114,8 +116,8 @@ void init_t::InitAtExeditLoad() {
 #endif
 
 
-#ifdef PATCH_SWITCH_EXA_EFFECT
-	patch::exa_effect.init();
+#ifdef PATCH_SWITCH_AUP_SCENE_SETTING
+	patch::aup_scene_setting.init();
 #endif
 #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
 	patch::exo_aviutlfilter.init();
@@ -133,6 +135,10 @@ void init_t::InitAtExeditLoad() {
 	patch::exo_trackminusval.init();
 #endif
 
+#ifdef PATCH_SWITCH_EXO_MIDPT_AND_TRA
+	patch::exo_midpt_and_tra.init();
+#endif
+
 #ifdef PATCH_SWITCH_EXO_SPECIALCOLORCONV
 	patch::exo_specialcolorconv.init();
 #endif
@@ -140,7 +146,7 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_EXO_FOLD_GUI
 	patch::exo_fold_gui.init();
 #endif
-	
+
 #ifdef PATCH_SWITCH_CONSOLE
 	patch::console.init_at_exedit_init();
 #endif
@@ -165,6 +171,13 @@ void init_t::InitAtExeditLoad() {
 	patch::helpful_msgbox.init();
 #endif
 
+#ifdef PATCH_SWITCH_FAILED_SJIS_MSGBOX
+	patch::failed_sjis_msgbox.init();
+#endif
+
+#ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+	patch::AudioFile.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
 	patch::ColorCorrection.init();
 #endif
@@ -174,7 +187,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_NOISE
 	patch::Noise.init();
 #endif
-
+#ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
+	patch::obj_specialcolorconv.init();
+#endif
 
 #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
 	patch::excolorconfig.init();
@@ -189,7 +204,12 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_BLEND
 	patch::blend.init();
 #endif
-	
+#ifdef PATCH_SWITCH_ADD_EXTENSION
+	patch::add_extension.init();
+#endif
+#ifdef PATCH_SWITCH_SECOND_CACHE
+	patch::second_cache.init();
+#endif
 	
 	patch::setting_dialog();
 
@@ -214,9 +234,6 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
 			patch::fast::create_figure.init();
 		#endif
-		#ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
-			patch::fast::create_figure.init();
-		#endif
 		#ifdef PATCH_SWITCH_FAST_BORDER
 			patch::fast::Border.init();
 		#endif
@@ -224,6 +241,9 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_CL
 			if (patch::fast::cl.init()) {
 				if (patch::fast::cl.is_enabled_i()) {
+					#ifdef PATCH_SWITCH_FAST_BLEND
+						patch::fast::Blend_cl.init();
+					#endif
 					#ifdef PATCH_SWITCH_FAST_POLORTRANSFORM
 						patch::fast::PolorTransform.init();
 					#endif
@@ -256,6 +276,9 @@ void init_t::InitAtExeditLoad() {
 	if (patch::undo.is_enabled_i()) {
 		#ifdef PATCH_SWITCH_UNDO_REDO
 			patch::redo.init();
+		#endif
+		#ifdef PATCH_SWITCH_DIALOG_NEW_FILE
+			patch::dialog_new_file.init();
 		#endif
 	}
 #endif
@@ -341,7 +364,6 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 			"bakusoku.auf",
 			"eclipse_fast.auf",
 			"redo.auf",
-			"patch.aul",
 		};
 
 		std::string check = filename;
@@ -419,6 +441,14 @@ BOOL __cdecl init_t::func_procWrap(AviUtl::FilterPlugin* fp, AviUtl::FilterProcI
 		patch::alpha_bg.func_proc(fp, fpip);
 	#endif
 	return original_func_proc(fp, fpip);
+}
+
+BOOL __cdecl init_t::func_project_save(AviUtl::FilterPlugin* fp, AviUtl::EditHandle* editp, void* data, int* size) {
+
+	#ifdef PATCH_SWITCH_CLOSE_CONFIRM
+		
+	#endif
+	return original_func_project_save(fp, editp, data, size);
 }
 
 #ifdef PATCH_SWITCH_CANCEL_BOOST_CONFLICT
