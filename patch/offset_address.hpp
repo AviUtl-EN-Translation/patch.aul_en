@@ -100,6 +100,7 @@ namespace OFS {
 		constexpr i32 str_ONSEIFILE = 0x0ba698; // "音声ファイル"
 
 		constexpr i32 VideoFuncCount = 0x1a5384;
+		constexpr i32 SceneDisplaying = 0x1a5310;
 		constexpr i32 SceneSetting = 0x177a50;
 		constexpr i32 CreateCache = 0x00cd00;
 		constexpr i32 GetOrCreateCache = 0x04d7d0;
@@ -110,9 +111,18 @@ namespace OFS {
 		constexpr i32 GetOrCreateSceneBufYC = 0x02a770;
 		constexpr i32 GetOrCreateSceneBufYCA = 0x02a830;
 
+
+		constexpr i32 get_scene_image = 0x04ce20;
+		constexpr i32 get_scene_size = 0x02b980;
+		constexpr i32 scene_has_alpha = 0x02ba00;
+
+
+		constexpr i32 do_multi_thread_func = 0x06c650;
+
 		constexpr i32 exfunc = 0x0a41e0;
 		constexpr i32 exfunc_10 = 0x04abe0;
 		constexpr i32 exfunc_08 = 0x04ab40;
+		constexpr i32 exfunc_44 = 0x081b40;
 		constexpr i32 func_0x047ad0 = 0x047ad0;
 		constexpr i32 exfunc_64 = 0x04d040;
 		constexpr i32 scenechange_progress_times4096 = 0x230c60;

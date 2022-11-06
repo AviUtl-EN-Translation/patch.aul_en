@@ -80,3 +80,6 @@
 #include "patch_exo_midpt_and_tra.hpp"
 #include "patch_fast_blend.hpp"
 #include "patch_fileinfo.hpp"
+#include "patch_playback_speed.hpp"
+#include "patch_scene_cache.hpp"
+#include "patch_aup_layer_setting.hpp"

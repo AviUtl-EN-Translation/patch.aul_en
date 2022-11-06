@@ -105,6 +105,7 @@
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
 #define PATCH_SWITCH_TRA_CHANGE_DRAWFILTER tra_change_drawfilter
 #define PATCH_SWITCH_TRA_SPECIFIED_SPEED tra_specified_speed
+#define PATCH_SWITCH_AUP_LAYER_SETTING aup_layer_setting
 #define PATCH_SWITCH_AUP_SCENE_SETTING aup_scene_setting
 #define PATCH_SWITCH_EXO_AVIUTL_FILTER exo_aviutl_filter
 #define PATCH_SWITCH_EXO_TRACK_MINUSVAL exo_track_minusval
@@ -134,6 +135,8 @@
 #define PATCH_SWITCH_DIALOG_NEW_FILE dlg_newfile
 //#define PATCH_SWITCH_CLOSE_CONFIRM close_confirm
 //#define PATCH_SWITCH_SECOND_CACHE second_cache
+#define PATCH_SWITCH_SCENE_CACHE scenecache
+#define PATCH_SWITCH_PLAYBACK_SPEED pb_speed
 
 
 #define PATCH_SWITCH_UNDO undo

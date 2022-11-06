@@ -71,6 +71,9 @@ public:
             #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_AUP_LAYER_SETTING
+                patch::aup_layer_setting.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_AUP_SCENE_SETTING
                 patch::aup_scene_setting.switch_load(cr);
             #endif
@@ -169,6 +172,12 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SECOND_CACHE
                 patch::second_cache.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_SCENE_CACHE
+                patch::scene_cache.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_PLAYBACK_SPEED
+                patch::playback_speed.switch_load(cr);
             #endif
         
             #ifdef PATCH_SWITCH_UNDO
@@ -388,6 +397,9 @@ public:
             #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_AUP_LAYER_SETTING
+                patch::aup_layer_setting.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_AUP_SCENE_SETTING
                 patch::aup_scene_setting.switch_store(switch_);
             #endif
@@ -486,6 +498,12 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SECOND_CACHE
                 patch::second_cache.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SCENE_CACHE
+                patch::scene_cache.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_PLAYBACK_SPEED
+                patch::playback_speed.switch_store(switch_);
             #endif
 
             #ifdef PATCH_SWITCH_UNDO

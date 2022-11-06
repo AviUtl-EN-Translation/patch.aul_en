@@ -116,6 +116,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 
 
+#ifdef PATCH_SWITCH_AUP_LAYER_SETTING
+	patch::aup_layer_setting.init();
+#endif
 #ifdef PATCH_SWITCH_AUP_SCENE_SETTING
 	patch::aup_scene_setting.init();
 #endif
@@ -209,6 +212,12 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_SECOND_CACHE
 	patch::second_cache.init();
+#endif
+#ifdef PATCH_SWITCH_SCENE_CACHE
+	patch::scene_cache.init();
+#endif
+#ifdef PATCH_SWITCH_PLAYBACK_SPEED
+	patch::playback_speed.init();
 #endif
 	
 	patch::setting_dialog();
