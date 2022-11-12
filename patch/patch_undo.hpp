@@ -43,6 +43,8 @@ namespace patch {
 
         inline static void(__cdecl*set_undo)(unsigned int, unsigned int);
         inline static void(__cdecl*AddUndoCount)();
+        inline static double(__cdecl*CalcMovieFrame)(ExEdit::ObjectFilterIndex index, int frame, int subframe, int video_rate, int video_scale, AviUtl::FileInfo* fip, ExEdit::Filter* efp);
+
         inline static int(__cdecl*efDraw_func_WndProc)(HWND, UINT, WPARAM, LPARAM, AviUtl::EditHandle*, ExEdit::Filter*);
         inline static int(__cdecl*NormalizeExeditTimelineY)(int);
         inline static void(__cdecl *add_track_value)(ExEdit::Filter*, int, int);
@@ -71,6 +73,8 @@ namespace patch {
         static void __cdecl set_undo_wrap_3e037(unsigned int object_idx, unsigned int flag);
 
         static int __cdecl efDraw_func_WndProc_wrap_06e2b4(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, ExEdit::Filter* efp);
+        
+        static double __cdecl CalcMovieFrame_wrap(ExEdit::ObjectFilterIndex index, int frame, int subframe, int video_rate, int video_scale, AviUtl::FileInfo* fip, ExEdit::Filter* efp);
 
         static int __stdcall f8b97f(HWND hwnd, ExEdit::Filter* efp, WPARAM wparam, LPARAM lparam);
 
@@ -132,6 +136,7 @@ namespace patch {
 			
             set_undo = reinterpret_cast<decltype(set_undo)>(GLOBAL::exedit_base + 0x08d290);
             AddUndoCount = reinterpret_cast<decltype(AddUndoCount)>(GLOBAL::exedit_base + 0x08d150);
+            //CalcMovieFrame = reinterpret_cast<decltype(CalcMovieFrame)>(GLOBAL::exedit_base + 0x005f50);
             efDraw_func_WndProc = reinterpret_cast<decltype(efDraw_func_WndProc)>(GLOBAL::exedit_base + 0x01b550);
             NormalizeExeditTimelineY = reinterpret_cast<decltype(NormalizeExeditTimelineY)>(GLOBAL::exedit_base + 0x032c10);
             add_track_value = reinterpret_cast<decltype(add_track_value)>(GLOBAL::exedit_base + 0x01c0f0);
@@ -150,6 +155,24 @@ namespace patch {
 
 			// オブジェクトの左端をつまんで動かすと再生位置パラメータが変わるが、それが元に戻らない
 			ReplaceNearJmp(GLOBAL::exedit_base + 0x03e038, &set_undo_wrap_3e037);
+
+            /*
+            {
+                { // movie_file movie_mix
+                    {
+                        OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x006208, 4);
+                        h.replaceNearJmp(0, &CalcMovieFrame_wrap);
+                    }
+                    {
+                        OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x00633c, 18);
+                        h.replaceNearJmp(0, &CalcMovieFrame_wrap);
+                        h.replaceNearJmp(14, &CalcMovieFrame_wrap);
+                    }
+                }
+
+            }*/
+
+
 			
 			// 一部フィルタのファイル参照を変更→元に戻すで設定ダイアログが更新されない(音声波形など)
 			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x08d50e, 4).store_i32(0, '\x0f\x1f\x40\x00'); // nop

@@ -83,3 +83,5 @@
 #include "patch_playback_speed.hpp"
 #include "patch_scene_cache.hpp"
 #include "patch_aup_layer_setting.hpp"
+#include "patch_fast_glow.hpp"
+#include "patch_obj_glow.hpp"
