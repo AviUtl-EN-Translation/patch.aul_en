@@ -85,3 +85,6 @@
 #include "patch_aup_layer_setting.hpp"
 #include "patch_fast_glow.hpp"
 #include "patch_obj_glow.hpp"
+#include "patch_setting_new_project.hpp"
+#include "patch_failed_longer_path.hpp"
+#include "patch_failed_file_drop.hpp"

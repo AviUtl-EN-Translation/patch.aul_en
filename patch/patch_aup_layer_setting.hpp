@@ -31,8 +31,7 @@ namespace patch {
     // 変更：レイヤー情報が初期値以外のみ保存する
 
     // 保存時のみのパッチで互換性あり
-    // パッチ有りで保存→パッチなしで読み込みの場合：全てのレイヤー情報が読み込める
-    // パッチ無しで保存：オブジェクトの無いレイヤー情報が保存されていないため読み込みは不可能
+    // パッチ有りで保存→パッチなしで読み込み：全てのレイヤー情報が読み込める
 
     inline class aup_layer_setting_t {
 
@@ -119,8 +118,6 @@ namespace patch {
             */
 
             {
-            }
-            {
                 /*
                     for (int i = 0; i < 5000; i++) {
                         if (layersetting[i].flag != 0 || layersetting[i].name != 0) {
@@ -146,13 +143,14 @@ namespace patch {
                     "\x90"                        // nop
                 };
 
-                *(int*)(&code_put[1]) += GLOBAL::exedit_base;
-                *(int*)(&code_put[18]) += GLOBAL::exedit_base;
+                *(int*)(&code_put[1]) = GLOBAL::exedit_base + 0x146250;
+                *(int*)(&code_put[18]) = GLOBAL::exedit_base + 0x188498;
 
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0326c3, 61);
                 h.store_i8(0, 0x1c);
 
                 memcpy(reinterpret_cast<void*>(h.address()+20), code_put, sizeof(code_put) - 1);
+
             }
 
 

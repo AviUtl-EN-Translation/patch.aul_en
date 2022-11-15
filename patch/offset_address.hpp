@@ -27,11 +27,21 @@ namespace OFS {
 		constexpr i32 saveProjectFile = 0x024160;
 		constexpr i32 exfunc = 0x0a8c78;
 
+		constexpr i32 filter_clipping_and_resize_ptr = 0x07ad58;
+
 		constexpr i32 str_dot_avi = 0x0745fc; // ".avi"
 		
 	}
 
 	namespace ExEdit {
+		constexpr i32 exedit_fp = 0x14d4b4;
+		
+		constexpr i32 aviutl_hwnd = 0x135c6c;
+		constexpr i32 exedit_hwnd = 0x177a44;
+		constexpr i32 settingdialog_hwnd = 0x1539c8;
+		
+
+
 		constexpr i32 blend_yca_normal_func = 0x007df0;
 		constexpr i32 blend_yc_normal_func = 0x007f20;
 		
@@ -117,6 +127,7 @@ namespace OFS {
 		constexpr i32 get_scene_size = 0x02b980;
 		constexpr i32 scene_has_alpha = 0x02ba00;
 
+		constexpr i32 exedit_edit_open = 0x03ac30;
 
 		constexpr i32 do_multi_thread_func = 0x06c650;
 

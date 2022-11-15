@@ -177,6 +177,12 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_FAILED_SJIS_MSGBOX
 	patch::failed_sjis_msgbox.init();
 #endif
+#ifdef PATCH_SWITCH_FAILED_LONGER_PATH
+	patch::failed_longer_path.init();
+#endif
+#ifdef PATCH_SWITCH_FAILED_FILE_DROP
+	patch::failed_file_drop.init();
+#endif
 
 #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
 	patch::AudioFile.init();
@@ -221,6 +227,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_PLAYBACK_SPEED
 	patch::playback_speed.init();
+#endif
+#ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
+	patch::setting_new_project.init();
 #endif
 	
 	patch::setting_dialog();

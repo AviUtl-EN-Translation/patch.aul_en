@@ -128,6 +128,12 @@ public:
             #ifdef PATCH_SWITCH_FAILED_SJIS_MSGBOX
                 patch::failed_sjis_msgbox.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_FAILED_LONGER_PATH
+                patch::failed_longer_path.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_FAILED_FILE_DROP
+                patch::failed_file_drop.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_THEME_CC
                 patch::theme_cc.switch_load(cr);
             #endif
@@ -181,6 +187,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
+                patch::setting_new_project.switch_load(cr);
             #endif
         
             #ifdef PATCH_SWITCH_UNDO
@@ -460,6 +469,12 @@ public:
             #ifdef PATCH_SWITCH_FAILED_SJIS_MSGBOX
                 patch::failed_sjis_msgbox.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_FAILED_LONGER_PATH
+                patch::failed_longer_path.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_FAILED_FILE_DROP
+                patch::failed_file_drop.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_THEME_CC
                 patch::theme_cc.switch_store(switch_);
             #endif
@@ -503,7 +518,7 @@ public:
                 patch::add_extension.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_DIALOG_NEW_FILE
-                patch::dialog_new_file .switch_store(switch_);
+                patch::dialog_new_file.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_SECOND_CACHE
                 patch::second_cache.switch_store(switch_);
@@ -513,6 +528,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
+                patch::setting_new_project.switch_store(switch_);
             #endif
 
             #ifdef PATCH_SWITCH_UNDO
