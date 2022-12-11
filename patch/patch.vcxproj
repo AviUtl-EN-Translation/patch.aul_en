@@ -106,6 +106,7 @@
     <ClInclude Include="patch_tra_change_drawfilter.hpp" />
     <ClInclude Include="patch_tra_specified_speed.hpp" />
     <ClInclude Include="patch_undo.hpp" />
+    <ClInclude Include="patch_yc_rgb_conv.hpp" />
     <ClInclude Include="restorable_patch.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stopwatch.hpp" />
@@ -162,6 +163,7 @@
     <ClCompile Include="patch_susie_load.cpp" />
     <ClCompile Include="patch_tra_change_drawfilter.cpp" />
     <ClCompile Include="patch_undo.cpp" />
+    <ClCompile Include="patch_yc_rgb_conv.cpp" />
     <ClCompile Include="util_others.cpp" />
   </ItemGroup>
   <ItemGroup>
