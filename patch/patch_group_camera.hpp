@@ -27,7 +27,7 @@
 namespace patch {
 
     // init at exedit load
-    // グループ制御とカメラ制御の併用でバグる野を修正
+    // グループ制御とカメラ制御の併用でバグるのを修正
     inline class group_camera_t {
         bool enabled = true;
         bool enabled_i;
