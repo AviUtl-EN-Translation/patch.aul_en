@@ -73,7 +73,7 @@ namespace patch {
 	private:
 		HWND hwnd;
 
-		bool detail_showed;
+		bool detail_showed = true;
 		HWND hwnd_detail_text;
 		HWND hwnd_save_text;
 		HWND hwnd_link;

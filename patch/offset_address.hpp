@@ -23,12 +23,36 @@ namespace OFS {
 		constexpr i32 default_resource_hmod = 0x2c525c;
 		constexpr i32 getsys_versionstr_arg = 0x022187;
 		constexpr i32 current_resource_hmod = 0x2d910c;
+		constexpr i32 filter_n = 0x258d04;
 		constexpr i32 edit_handle_ptr = 0x08717c;
 		constexpr i32 saveProjectFile = 0x024160;
-		
-		constexpr i32 str_dot_avi = 0x0745fc; // ".avi"
-		
+		constexpr i32 exfunc = 0x0a8c78;
+
+
+		constexpr i32 ini_shiftselect = 0x086398;
+
+		constexpr i32 get_exe_dir = 0x02c8c0;
+
+		constexpr i32 filter_change_size_ptr = 0x0814e8;
+		constexpr i32 filter_change_framerate_ptr = 0x080b28;
 		constexpr i32 filter_clipping_and_resize_ptr = 0x07ad58;
+
+		constexpr i32 str_AviUtl = 0x0742a0; // "AviUtl"
+		
+
+		constexpr i32 str_dot_avi = 0x0745fc; // ".avi"
+		constexpr i32 str_asterisk_dot_aul = 0x075a10; // "*.aul"
+		constexpr i32 str_asterisk_dot_auc = 0x0748fc; // "*.auc"
+		constexpr i32 str_asterisk_dot_aui = 0x07498c; // "*.aui"
+		constexpr i32 str_asterisk_dot_auf = 0x0752fc; // "*.auf"
+		constexpr i32 str_asterisk_dot_auo = 0x0750d4; // "*.auo"
+
+		constexpr i32 str_percent_s_percent_s = 0x0743c8; // "%s%s"
+		constexpr i32 str_percent_s_percent_s_percent_s = 0x0743e8; // "%s%s"
+
+		constexpr i32 str_plugins_backslash = 0x074904; // "plugins\\"
+
+
 	}
 
 	namespace ExEdit {
@@ -38,9 +62,21 @@ namespace OFS {
 		constexpr i32 exedit_hwnd = 0x177a44;
 		constexpr i32 settingdialog_hwnd = 0x1539c8;
 		
+
+		constexpr i32 tl_title = 0x0a4cfc;
+
 		constexpr i32 blend_yca_normal_func = 0x007df0;
 		constexpr i32 blend_yc_normal_func = 0x007f20;
 		
+		constexpr i32 rendering_mt_func = 0x078140;
+		constexpr i32 calc_xzuv_offset_range = 0x07c050;
+		constexpr i32 push_rendering_data = 0x07c3f0;
+		constexpr i32 rendering_data_array = 0x1ec890;
+		constexpr i32 rendering_data_count = 0x1ec728;
+		constexpr i32 rendering_inc_or_dec = 0x0ade4c;
+		constexpr i32 cam_screen_d16 = 0x1ec858;
+		constexpr i32 z_offset_default = 0x1e48f8;
+
 		constexpr i32 ConvertFilter2Exo_TrackScaleJudge_RangeBegin = 0x028a8d;
 		constexpr i32 ConvertFilter2Exo_TrackScaleJudge_Overwrite1 = 0x028a84;
 		constexpr i32 ConvertFilter2Exo_TrackScaleJudge_Overwrite2 = 0x0289cb;
@@ -59,17 +95,21 @@ namespace OFS {
 
 		constexpr i32 getpixeldata = 0x09a65c;
 		constexpr i32 rgb2yc = 0x06fed0;
-
-		constexpr i32 exedit_max_h_add8 = 0x135c64;
-		constexpr i32 exedit_buffer_line = 0x135c68;
+		constexpr i32 yc_conv_w_loop_count = 0x1e4300;
 
 		constexpr i32 exedit_YC_vram_w = 0x149840;
 		constexpr i32 exedit_YC_vram_h = 0x14ca4c;
 
+		constexpr i32 exedit_max_h_add8 = 0x135c64;
+		constexpr i32 exedit_buffer_line = 0x135c68;
+
 		constexpr i32 exedit_max_w = 0x196748;
 		constexpr i32 exedit_max_h = 0x1920e0;
 
-		constexpr i32 memory_ptr = 0x01a5328;
+		constexpr i32 memory_ptr = 0x1a5328;
+
+		constexpr i32 fast_process = 0x2308a0;
+		constexpr i32 is_saving = 0x1a52e4;
 
 		constexpr i32 CreateFigure_var_ptr = 0x1e4798;
 		constexpr i32 CreateFigure_circle_func_call = 0x073882;
@@ -81,10 +121,10 @@ namespace OFS {
 		constexpr i32 efBorder_func_proc_ptr = 0x0515d0;
 		constexpr i32 efBorder_var_ptr = 0x1b1e30;
 		constexpr i32 efGlow_var_ptr = 0x1b2010;
-		constexpr i32 efPolorTransform_func_proc = 0x0748a0;
-		constexpr i32 efPolorTransform_func_proc_ptr = 0x0add30;
-		constexpr i32 efPolorTransform_mt_func_call = 0x074a62;
-		constexpr i32 efPolorTransform_var_ptr = 0x1e48c0;
+		constexpr i32 efPolarTransform_func_proc = 0x0748a0;
+		constexpr i32 efPolarTransform_func_proc_ptr = 0x0add30;
+		constexpr i32 efPolarTransform_mt_func_call = 0x074a62;
+		constexpr i32 efPolarTransform_var_ptr = 0x1e48c0;
 		constexpr i32 efDisplacementMap_mt_func_call = 0x01f154;
 		constexpr i32 efDisplacementMap_var_ptr = 0x11effc;
 		constexpr i32 efRadiationalBlur_func_proc = 0x00b310;
@@ -103,14 +143,42 @@ namespace OFS {
 		constexpr i32 ScriptProcessingFilter = 0x1b2b10;
 
 		constexpr i32 ini_extension_buf = 0x14cb58;
-		constexpr i32 str_DOUGAFILE = 0x09df6c; // "動画ファイル"
+		constexpr i32 str_DOUGAFILE= 0x09df6c; // "動画ファイル"
 		constexpr i32 str_ONSEIFILE = 0x0ba698; // "音声ファイル"
 
-		
+		constexpr i32 VideoFuncCount = 0x1a5384;
+
+		constexpr i32 GetCache = 0x00cff0;
+		constexpr i32 CreateCache = 0x00cd00;
+		constexpr i32 GetOrCreateCache = 0x04d7d0;
+		constexpr i32 CacheInfo = 0x0d7710;
+		constexpr i32 CachePriorityCount = 0x11eb1c;
+
+		constexpr i32 video_func_main = 0x048830;
+
+		constexpr i32 GetOrCreateSceneBufYC = 0x02a770;
+		constexpr i32 GetOrCreateSceneBufYCA = 0x02a830;
+		constexpr i32 SceneDisplaying = 0x1a5310;
+		constexpr i32 SceneSetting = 0x177a50;
+		constexpr i32 get_scene_image = 0x04ce20;
+		constexpr i32 get_scene_size = 0x02b980;
+		constexpr i32 scene_has_alpha = 0x02ba00;
+
+
+		constexpr i32 frame_cursor = 0x1a5304;
+		constexpr i32 frame_n = 0x14d3a0;
+		constexpr i32 double_framerate = 0x0a4068;
+		constexpr i32 double_framerate_scale = 0x0a4060;
+
 		constexpr i32 exedit_edit_open = 0x03ac30;
 
+		constexpr i32 do_multi_thread_func = 0x06c650;
+
+		constexpr i32 exfunc = 0x0a41e0;
 		constexpr i32 exfunc_10 = 0x04abe0;
 		constexpr i32 exfunc_08 = 0x04ab40;
+		constexpr i32 exfunc_44 = 0x081b40;
+		constexpr i32 exfunc_4c = 0x04a430;
 		constexpr i32 func_0x047ad0 = 0x047ad0;
 		constexpr i32 exfunc_64 = 0x04d040;
 		constexpr i32 scenechange_progress_times4096 = 0x230c60;
@@ -132,6 +200,9 @@ namespace OFS {
 		constexpr i32 luaL_Reg_obj_table = 0x09a5c0;
 		constexpr i32 exeditdir = 0x1b2b18;
 		constexpr i32 sScriptFolderName = 0x1b2b4c;
+
+		constexpr i32 effect_proc = 0x049370;
+		constexpr i32 obj_effect_noarg = 0x04b200;
 
 		constexpr i32 l_effect = 0x05d0a0;
 		constexpr i32 l_load = 0x05ef50;
@@ -174,6 +245,14 @@ namespace OFS {
 
 		constexpr i32 ObjectArrayPointer = 0x1e0fa4;
 		constexpr i32 NextObjectIdxArray = 0x1592d8;
+
+		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
+		constexpr i32 get_last_filter_idx = 0x0335f0;
+		constexpr i32 get_filterp = 0x047b00;
+
+		constexpr i32 TrackModeArray = 0x14d3b0;
+		constexpr i32 TrackInfoArrayLeft = 0x14d4c8;
+		constexpr i32 TrackInfoArrayRight = 0x14def0;
 
 		constexpr i32 ScaleColorBackGround = 0x0a4048;
 		constexpr i32 ScaleColorForeGround = 0x0a404c;

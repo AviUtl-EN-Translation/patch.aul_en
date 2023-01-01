@@ -17,7 +17,6 @@
 #include "macro.h"
 #ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
 
-#include <aviutl.hpp>
 #include <exedit.hpp>
 
 #include "global.hpp"

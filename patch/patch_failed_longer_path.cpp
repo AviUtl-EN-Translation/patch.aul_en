@@ -19,7 +19,7 @@
 
 namespace patch {
     BOOL __cdecl failed_longer_path_t::dlg_get_load_name_wrap(AviUtl::ExFunc* a_exfunc, LPSTR name, LPSTR filter, LPSTR def) {
-        char temp[264];
+        char temp[268];
         if (!a_exfunc->dlg_get_load_name(temp, filter, def))return FALSE;
         if (258 < lstrlenA(temp)) {
             HWND* settingdialog_hwnd = (HWND*)(GLOBAL::exedit_base + OFS::ExEdit::settingdialog_hwnd);
