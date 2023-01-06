@@ -14,7 +14,7 @@
 #pragma once
 #include "macro.h"
 
-#ifdef PATCH_SWITCH_OBJ_GLOW
+#ifdef PATCH_SWITCH_OBJ_BLUR
 
 #include <exedit.hpp>
 
@@ -28,22 +28,18 @@
 namespace patch {
 
     // init at exedit load
-    // グローのバグ修正
-
-    /* オフセットアドレス exedit + 55625 の修正
-        曲線移動などで しきい値 が負の数になった時にエラーが出る
-    */
+    // ぼかしのバグ修正
 
     /* 小さいオブジェクトに効果が無いのを修正
         スレッド数より小さいオブジェクトに効果が乗らない
     */
 
 
-    inline class obj_Glow_t {
+    inline class obj_Blur_t {
 
         bool enabled = true;
         bool enabled_i;
-        inline static const char key[] = "obj_glow";
+        inline static const char key[] = "obj_blur";
     public:
 
 
@@ -52,40 +48,9 @@ namespace patch {
 
             if (!enabled_i)return;
 
-            { // オフセットアドレス exedit + 55625 の修正
-
-                auto& cursor = GLOBAL::executable_memory_cursor;
-
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x054ed5, 6);
-                h.store_i16(0, '\x90\xe8');
-                h.replaceNearJmp(2, cursor);
-                /*
-                    10054ed5 8b4908             mov     ecx,dword ptr [ecx+08]
-                    10054ed8 c1e10c             shl     ecx,0c
-                    ↓
-                    10054ed5 90                 nop
-                    10054ed6 e8xXxXxXxX         call    &executable_memory_cursor
-
-                    ; しきい値 track[2] が0未満の時に0にする
-                */
-
-                static const char code_put[] =
-                    "\x8b\x49\x08"             // mov     ecx,dword ptr [ecx+08]
-                    "\x85\xc9"                 // test    ecx,ecx
-                    "\x7c\x04"                 // jl      skip,4
-                    "\xc1\xe1\x0c"             // shl     ecx,0c
-                    "\xc3"                     // ret
-                    "\x33\xc9"                 // xor     ecx,ecx
-                    "\xc3"                     // ret
-                    ;
-
-                memcpy(cursor, code_put, sizeof(code_put) - 1);
-                cursor += sizeof(code_put) - 1;
-            }
-
 #ifdef PATCH_SWITCH_SMALL_FILTER
             { // 小さいオブジェクトに効果が無いのを修正
-                constexpr int ofs[] = { 0x55574,0x556c2,0x557d2,0x55912,0x55a54,0x55cb6,0x55f10,0x56258,0x56a18,0x5710c,0x5776d,0x57dcc,0x5846c };
+                constexpr int ofs[] = { 0x0eb05,0x0ef11,0x0f34c,0x0f818,0x0fce2,0x0ff72,0x101cc,0x10618,0x10a6c,0x10f58,0x11432,0x11702 };
                 constexpr int n = sizeof(ofs) / sizeof(int);
                 constexpr int amin = small_filter.address_min(ofs, n);
                 constexpr int size = small_filter.address_max(ofs, n) - amin + 1;
@@ -111,7 +76,7 @@ namespace patch {
         void switch_store(ConfigWriter& cw) {
             cw.append(key, enabled);
         }
-    } Glow;
+    } Blur;
 } // namespace patch
 
-#endif // ifdef PATCH_SWITCH_OBJ_GLOW
+#endif // ifdef PATCH_SWITCH_OBJ_BLUR

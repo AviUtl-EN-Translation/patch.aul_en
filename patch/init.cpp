@@ -84,6 +84,10 @@ void init_t::InitAtPatchLoaded() {
 	patch::sysinfo_info_write();
 #endif
 
+#ifdef PATCH_SWITCH_KEYCONFIG
+	patch::KeyConfig.init();
+#endif
+
 #ifdef PATCH_SWITCH_ACCESS_KEY
 	patch::access_key.init();
 #endif
@@ -105,9 +109,6 @@ void init_t::InitAtExeditLoad() {
 	patch::theme_cc.init();
 #endif
 
-#ifdef PATCH_SWITCH_AUP_SCENE_SETTING
-	patch::aup_scene_setting.init();
-#endif
 #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
 	patch::tra_aviutlfilter.init();
 #endif
@@ -117,13 +118,13 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_TRA_SPECIFIED_SPEED
 	patch::tra_specified_speed.init();
 #endif
-#ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
-	patch::setting_new_project.init();
-#endif
 
 
 #ifdef PATCH_SWITCH_AUP_LAYER_SETTING
 	patch::aup_layer_setting.init();
+#endif
+#ifdef PATCH_SWITCH_AUP_SCENE_SETTING
+	patch::aup_scene_setting.init();
 #endif
 #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
 	patch::exo_aviutlfilter.init();
@@ -187,20 +188,45 @@ void init_t::InitAtExeditLoad() {
 	patch::failed_file_drop.init();
 #endif
 
+#ifdef PATCH_SWITCH_OBJ_AUDIOFILE
+	patch::AudioFile.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
 	patch::ColorCorrection.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_BLUR
+	patch::Blur.init();
 #endif
 #ifdef PATCH_SWITCH_OBJ_GLOW
 	patch::Glow.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_SHARP
+	patch::Sharp.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_MASK
+	patch::Mask.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_RESIZE
+	patch::Resize.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_ROTATION
+	patch::Rotation.init();
+#endif
+
 #ifdef PATCH_SWITCH_OBJ_LENSBLUR
 	patch::LensBlur.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_IMAGELOOP
+	patch::ImageLoop.init();
 #endif
 #ifdef PATCH_SWITCH_OBJ_NOISE
 	patch::Noise.init();
 #endif
 #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
 	patch::obj_specialcolorconv.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
+	patch::PortionFilter.init();
 #endif
 
 #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
@@ -219,11 +245,32 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_ADD_EXTENSION
 	patch::add_extension.init();
 #endif
-#ifdef PATCH_SWITCH_DIALOG_NEW_FILE
-	patch::dialog_new_file.init();
+#ifdef PATCH_SWITCH_SECOND_CACHE
+	patch::second_cache.init();
+#endif
+#ifdef PATCH_SWITCH_SCENE_CACHE
+	patch::scene_cache.init();
 #endif
 #ifdef PATCH_SWITCH_PLAYBACK_SPEED
 	patch::playback_speed.init();
+#endif
+#ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
+	patch::setting_new_project.init();
+#endif
+#ifdef PATCH_SWITCH_SHARED_CACHE
+	patch::SharedCache.init();
+#endif
+#ifdef PATCH_SWITCH_RENDERING
+	patch::Rendering.init();
+#endif
+#ifdef PATCH_SWITCH_YC_RGB_CONV
+	patch::yc_rgb_conv.init();
+#endif
+#ifdef PATCH_SWITCH_GROUP_CAMERA_SCENE
+	patch::group_camera_scene.init();
+#endif
+#ifdef PATCH_SWITCH_CHANGE_DISP_SCENE
+	patch::change_disp_scene.init();
 #endif
 	
 	patch::setting_dialog();
@@ -259,8 +306,11 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_CL
 			if (patch::fast::cl.init()) {
 				if (patch::fast::cl.is_enabled_i()) {
-					#ifdef PATCH_SWITCH_FAST_POLORTRANSFORM
-						patch::fast::PolorTransform.init();
+					#ifdef PATCH_SWITCH_FAST_BLEND
+						patch::fast::Blend_cl.init();
+					#endif
+					#ifdef PATCH_SWITCH_FAST_POLARTRANSFORM
+						patch::fast::PolarTransform.init();
 					#endif
 					#ifdef PATCH_SWITCH_FAST_DISPLACEMENTMAP
 						patch::fast::DisplacementMap.init();
@@ -291,6 +341,9 @@ void init_t::InitAtExeditLoad() {
 	if (patch::undo.is_enabled_i()) {
 		#ifdef PATCH_SWITCH_UNDO_REDO
 			patch::redo.init();
+		#endif
+		#ifdef PATCH_SWITCH_DIALOG_NEW_FILE
+			patch::dialog_new_file.init();
 		#endif
 	}
 #endif
@@ -358,6 +411,11 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 		}
 	}
 #endif
+#ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
+	else if (lstrcmpiA(filename, "script_sort.auf") == 0) {
+		patch::patch_script_sort.init(ret);
+	}
+#endif
 #ifdef PATCH_SWITCH_WARNING_OLD_LSW
 	else if (lstrcmpiA(filename, "lwcolor.auc") == 0) {
 		static const SHA256 r940_hash(0xc7, 0xe2, 0x51, 0xde, 0xd2, 0xf8, 0x21, 0xcb, 0x1b, 0xc6, 0xb1, 0x9a, 0x66, 0x43, 0xd3, 0x0d, 0xa4, 0xeb, 0xd6, 0x97, 0x1e, 0x34, 0x1a, 0xb2, 0x11, 0xd9, 0x41, 0x1d, 0xcc, 0xbf, 0x9a, 0x18);
@@ -376,6 +434,7 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 			"bakusoku.auf",
 			"eclipse_fast.auf",
 			"redo.auf",
+			"script_sort_patch.auf",
 		};
 
 		std::string check = filename;
@@ -442,8 +501,13 @@ BOOL __cdecl init_t::func_initWrap(AviUtl::FilterPlugin* fp) {
 		patch::lua_getvalueex.init();
 	#endif
 
+	#ifdef PATCH_SWITCH_WARNING_DUPLICATE_PLUGINS
+		// 本当はexeditが無くても動くようにするのが良さそうだけど面倒なのでここに
+		patch::WarningDuplicate.init();
+	#endif
+
 #endif
-	
+
 	return TRUE;
 }
 

@@ -108,7 +108,6 @@ int __cdecl redo_t::pre_run_undo() {
     if (UndoDataPtrArray[i - 1]->data_id == UndoInfo_current_id) {
         int scene_idx = get_scene_idx_UndoData(i - 1);
         if (scene_idx != *SceneDisplaying_ptr) {
-            //void*& editpm = *(void**)uintptr_t(gp_editp);
             change_disp_scene(scene_idx, *fp_g_ptr, *editp_ptr);
         }
     }

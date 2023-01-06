@@ -29,7 +29,6 @@
 
 
 #define PATCH_SWITCH_ACCESS_KEY access_key
-#define PATCH_SWITCH_FILEINFO file_info
 #define PATCH_SWITCH_SUSIE_LOAD susie_load
 #define PATCH_SWITCH_SPLASH splash
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
@@ -95,18 +94,20 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43 beta1"
+#define PATCH_VERSION_STR "r43_ss_2"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
 
 #define PATCH_SWITCH_ACCESS_KEY access_key
+#define PATCH_SWITCH_KEYCONFIG key_config
 #define PATCH_SWITCH_COLORPALETTE_CACHE colorpalette_cache
+#define PATCH_SWITCH_FILEINFO file_info
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
 #define PATCH_SWITCH_TRA_CHANGE_DRAWFILTER tra_change_drawfilter
 #define PATCH_SWITCH_TRA_SPECIFIED_SPEED tra_specified_speed
-#define PATCH_SWITCH_AUP_SCENE_SETTING aup_scene_setting
 #define PATCH_SWITCH_AUP_LAYER_SETTING aup_layer_setting
+#define PATCH_SWITCH_AUP_SCENE_SETTING aup_scene_setting
 #define PATCH_SWITCH_EXO_AVIUTL_FILTER exo_aviutl_filter
 #define PATCH_SWITCH_EXO_TRACK_MINUSVAL exo_track_minusval
 #define PATCH_SWITCH_EXO_SCENEIDX exo_sceneidx
@@ -122,21 +123,39 @@
 #define PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG settingdialog_excolorconfig
 #define PATCH_SWITCH_CANCEL_BOOST_CONFLICT
 #define PATCH_SWITCH_WARNING_OLD_LSW
+#define PATCH_SWITCH_WARNING_DUPLICATE_PLUGINS
 #define PATCH_SWITCH_FAILED_SJIS_MSGBOX failed_sjis
 #define PATCH_SWITCH_FAILED_LONGER_PATH failed_longpath
 #define PATCH_SWITCH_FAILED_FILE_DROP failed_filedrop
+#define PATCH_SWITCH_SMALL_FILTER small_filter
+#define PATCH_SWITCH_OBJ_AUDIOFILE obj_audiofile
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
+#define PATCH_SWITCH_OBJ_BLUR obj_blur
 #define PATCH_SWITCH_OBJ_GLOW obj_glow
+#define PATCH_SWITCH_OBJ_SHARP obj_sharp
+#define PATCH_SWITCH_OBJ_MASK obj_mask
+#define PATCH_SWITCH_OBJ_RESIZE obj_resize
+#define PATCH_SWITCH_OBJ_ROTATION obj_rotation
 #define PATCH_SWITCH_OBJ_LENSBLUR obj_lensblur
+#define PATCH_SWITCH_OBJ_IMAGELOOP obj_imageloop
 #define PATCH_SWITCH_OBJ_NOISE obj_noise
 #define PATCH_SWITCH_OBJ_SPECIALCOLORCONV obj_specialcolorconv
+#define PATCH_SWITCH_OBJ_PORTIONFILTER obj_portionfilter
 #define PATCH_SWITCH_RCLICKMENU_SPLIT rclickmenu_split
 #define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete
 #define PATCH_SWITCH_BLEND blend
 #define PATCH_SWITCH_ADD_EXTENSION add_extension
 #define PATCH_SWITCH_DIALOG_NEW_FILE dlg_newfile
+#define PATCH_SWITCH_SCENE_CACHE scenecache
 #define PATCH_SWITCH_PLAYBACK_SPEED pb_speed
 #define PATCH_SWITCH_SETTING_NEW_PROJECT setting_newproject
+#define PATCH_SWITCH_SHARED_CACHE shared_cache
+#define PATCH_SWITCH_RENDERING rendering
+#define PATCH_SWITCH_YC_RGB_CONV ycrgbconv
+#define PATCH_SWITCH_GROUP_CAMERA_SCENE group_camera_scene
+#define PATCH_SWITCH_CHANGE_DISP_SCENE change_dispscene
+#define PATCH_SWITCH_SCRIPT_SORT_PATCH script_sort_patch
+
 
 #define PATCH_SWITCH_UNDO undo
 #ifdef PATCH_SWITCH_UNDO
@@ -158,9 +177,6 @@
 	#define PATCH_SWITCH_LUA_RAND lua_rand
 	#define PATCH_SWITCH_LUA_RANDEX lua_randex
 	#define PATCH_SWITCH_LUA_PATH lua_path
-
-	//#define PATCH_SWITCH_LUA_COPYBUFFER_SMEM lua_copybuffer_smem
-
 #endif // ifdef PATCH_SWITCH_LUA
 
 #define PATCH_SWITCH_FAST fast
@@ -175,12 +191,13 @@
 
 	#define PATCH_SWITCH_CL cl
 	#ifdef PATCH_SWITCH_CL
-		#define PATCH_SWITCH_FAST_POLORTRANSFORM fast_polortransform
+		#define PATCH_SWITCH_FAST_POLARTRANSFORM fast_polartransform
 		#define PATCH_SWITCH_FAST_DISPLACEMENTMAP fast_displacementmap
 		#define PATCH_SWITCH_FAST_RADIATIONALBLUR fast_radiationalblur
 		#define PATCH_SWITCH_FAST_FLASH fast_flash
 		#define PATCH_SWITCH_FAST_DIRECTIONALBLUR fast_directionalblur
 		#define PATCH_SWITCH_FAST_LENSBLUR fast_lensblur
+	//	#define PATCH_SWITCH_FAST_BLEND fast_blend
 
 	#endif // define PATCH_SWITCH_CL
 
