@@ -57,8 +57,8 @@ namespace patch {
 
         static int __stdcall mid_render();
 
-        static void __cdecl rendering_mt_wrap(int thread_id, int thread_num, int unuse1, int unuse2);
-        static void __cdecl do_multi_thread_func_wrap(AviUtl::MultiThreadFunc func, BOOL is_multithread);
+        //static void __cdecl rendering_mt_wrap(int thread_id, int thread_num, int unuse1, int unuse2);
+        //static void __cdecl do_multi_thread_func_wrap(AviUtl::MultiThreadFunc func, BOOL is_multithread);
 
         static void __cdecl calc_xzuv_wrap(int poly_num, polydata_double* pd);
         //static int __cdecl calc_xzuv_offset_range_wrap(polydata_double* pd, int p1, int p2, double* x_offset, double* x_range, double* u_offset, double* v_offset, double* u_range, double* v_range, double* z_offset, double* z_range);
@@ -154,10 +154,11 @@ namespace patch {
                 h.store_i16(25, '\xeb\xed');
 
             }
+            /*
             { // マルチスレッド処理を効率化
                 ReplaceNearJmp(GLOBAL::exedit_base + 0x7981a, do_multi_thread_func_wrap);
             }
-
+            */
 
             { // 回転45、obj.w==obj.h、obj.y==-obj.screen、(他条件有り)　の時の描画が正常ではないのを修正
                 calc_xzuv_offset_range = reinterpret_cast<decltype(calc_xzuv_offset_range)>(GLOBAL::exedit_base + OFS::ExEdit::calc_xzuv_offset_range);

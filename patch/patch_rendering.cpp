@@ -33,11 +33,12 @@ namespace patch {
 			}
 		}
 		*rendering_data_count_ptr = 4096;
-		//reinterpret_cast<void(__cdecl*)(int, BOOL)>(GLOBAL::exedit_base + OFS::ExEdit::do_multi_thread_func)(GLOBAL::exedit_base + OFS::ExEdit::rendering_mt_func, TRUE);
-        do_multi_thread_func_wrap((AviUtl::MultiThreadFunc)rendering_mt_func, TRUE);
+		reinterpret_cast<void(__cdecl*)(int, BOOL)>(GLOBAL::exedit_base + OFS::ExEdit::do_multi_thread_func)(GLOBAL::exedit_base + OFS::ExEdit::rendering_mt_func, TRUE);
+        //do_multi_thread_func_wrap((AviUtl::MultiThreadFunc)rendering_mt_func, TRUE);
         return 0; // rendering_data_countをいくつにするか
 	}
 
+    /*
     bool mtflag[4096];
     int e1, e2;
 
@@ -94,6 +95,7 @@ namespace patch {
         memset(mtflag, 0, *rendering_data_count_ptr);
         reinterpret_cast<void(__cdecl*)(AviUtl::MultiThreadFunc, BOOL)>(GLOBAL::exedit_base + OFS::ExEdit::do_multi_thread_func)((AviUtl::MultiThreadFunc)&rendering_mt_wrap, flag);
     }
+    */
 
     /*
     int __cdecl rendering_t::calc_xzuv_offset_range_wrap(polydata_double* pd, int p1, int p2, double* x_offset, double* x_range,
