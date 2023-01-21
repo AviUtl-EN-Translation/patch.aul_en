@@ -284,6 +284,12 @@ public:
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_MOTIONBLUR
+                    patch::fast::MotionBlur.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_BLUR
+                    patch::fast::Blur.switch_load(cr);
+                #endif
         
                 #ifdef PATCH_SWITCH_CL
                     patch::fast::cl.switch_load(cr);
@@ -669,6 +675,12 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_MOTIONBLUR
+                    patch::fast::MotionBlur.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_BLUR
+                    patch::fast::Blur.switch_store(switch_);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL

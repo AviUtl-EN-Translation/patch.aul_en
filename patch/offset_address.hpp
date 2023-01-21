@@ -120,6 +120,8 @@ namespace OFS {
 		constexpr i32 efBorder_func_proc_var_ptr = 0x0a5d28;
 		constexpr i32 efBorder_func_proc_ptr = 0x0515d0;
 		constexpr i32 efBorder_var_ptr = 0x1b1e30;
+		constexpr i32 efBlur_func_proc_ptr = 0x0a0750;
+		constexpr i32 efBlur_var_ptr = 0x11ec34;
 		constexpr i32 efGlow_var_ptr = 0x1b2010;
 		constexpr i32 efPolarTransform_func_proc = 0x0748a0;
 		constexpr i32 efPolarTransform_func_proc_ptr = 0x0add30;
@@ -139,6 +141,13 @@ namespace OFS {
 		constexpr i32 efLensBlur_Media_mt_func_call = 0x012761;
 		constexpr i32 efLensBlur_Filter_mt_func_call = 0x012786;
 		constexpr i32 efLensBlur_var_ptr = 0x11ec5c;
+		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
+
+
+		constexpr i32 PixelYCA_ssss2fbbs = 0x070220;
+		constexpr i32 PixelYCA_fbbs2ssss = 0x0703f0;
+		constexpr i32 PixelYCA_sss2fbb = 0x070550;
+		constexpr i32 PixelYCA_fbb2sss = 0x070700;
 
 		constexpr i32 ScriptProcessingFilter = 0x1b2b10;
 

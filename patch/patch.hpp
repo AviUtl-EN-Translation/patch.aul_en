@@ -100,5 +100,7 @@
 #include "patch_obj_rotation.hpp"
 #include "patch_obj_portionfilter.hpp"
 #include "patch_obj_blur.hpp"
+//#include "patch_fast_motionblur.hpp"
+#include "patch_fast_blur.hpp"
 
 
