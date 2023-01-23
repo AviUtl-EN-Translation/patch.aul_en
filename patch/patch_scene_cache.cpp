@@ -18,6 +18,14 @@
 #ifdef PATCH_SWITCH_SCENE_CACHE
 namespace patch {
 
+	struct SceneCacheInfo {
+		int w;
+		int h;
+		int _padding1;
+		int _padding2;
+		int buf[1];
+	};
+
 	void* __cdecl scene_cache_t::get_scene_image_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int scene_idx, int frame, int subframe, int* w, int* h) {
 		int* SceneDisplaying = (int*)(GLOBAL::exedit_base + OFS::ExEdit::SceneDisplaying);
 		if (*SceneDisplaying != 0) {
@@ -35,10 +43,11 @@ namespace patch {
 		}
 		key += (int)&get_scene_image + scene_idx;
 
-		void* smem_ptr = a_exfunc->get_shared_mem(key, (frame << 7) | subframe, NULL);
-		if (smem_ptr != NULL) {
-			reinterpret_cast<void(__cdecl*)(int, int*, int*, ExEdit::FilterProcInfo*)>(GLOBAL::exedit_base + OFS::ExEdit::get_scene_size)(scene_idx, w, h, efpip);
-			return smem_ptr;
+		auto sceneci = (SceneCacheInfo*)a_exfunc->get_shared_mem(key, (frame << 7) | subframe, NULL);
+		if (sceneci != NULL) {
+			*w = sceneci->w;
+			*h = sceneci->h;
+			return sceneci->buf;
 		}
 		int t0 = GetTickCount();
 		void* img_ptr = get_scene_image(ofi, efpip, scene_idx, frame, subframe, w, h);
@@ -46,19 +55,19 @@ namespace patch {
 			return NULL;
 		}
 		if (time_shreshold < GetTickCount() - t0) {
-			int yc_size, flag;
+			int yc_size;
 			if (reinterpret_cast<BOOL(__cdecl*)(int)>(GLOBAL::exedit_base + OFS::ExEdit::scene_has_alpha)(scene_idx)) {
 				yc_size = 8;
-				flag = 0x13000003;
 			} else {
 				yc_size = 6;
-				flag = 0x13000002;
 			}
-			void* smem_ptr = a_exfunc->create_shared_mem(key, (frame << 7) | subframe, efpip->scene_line * *h * yc_size, NULL);
-			if (smem_ptr == NULL) {
+			sceneci = (SceneCacheInfo*)a_exfunc->create_shared_mem(key, (frame << 7) | subframe, efpip->obj_line * *h * yc_size + 16, NULL);
+			if (sceneci == NULL) {
 				return img_ptr;
 			}
-			memcpy(smem_ptr, img_ptr, efpip->scene_line * *h * yc_size);
+			sceneci->w = *w;
+			sceneci->h = *h;
+			memcpy(sceneci->buf, img_ptr, efpip->obj_line * *h * yc_size);
 		}
 		return img_ptr;
 	}
