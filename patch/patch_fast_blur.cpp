@@ -334,7 +334,6 @@ namespace patch::fast {
                 }
             }
         }
-
         for (; 0 < n; n--) {
             auto dst = (PixelYCA_fbbs*)((int)buf_dst + offset);
             auto src1 = (PixelYCA_fbbs*)((int)buf_src + offset);
@@ -776,8 +775,8 @@ namespace patch::fast {
                     *(int32_t*)&src->cb = *(int32_t*)&src->y = 0;
                 } else if (src_a < 0x1000) {
                     src->y *= (float)src_a * 0.000244140625f; // 1/4096
-                    src->cb = (int8_t)(src->cb * src_a >> 12);
-                    src->cr = (int8_t)(src->cr * src_a >> 12);
+                    src->cb = (int8_t)((int)src->cb * src_a >> 12);
+                    src->cr = (int8_t)((int)src->cr * src_a >> 12);
                 }
                 src++;
             }
@@ -789,13 +788,13 @@ namespace patch::fast {
             for (int x = efpip->obj_w; 0 < x; x--) {
                 int src_a = src->a;
                 if (0 < src_a && src_a < 0x1000) {
-                    src->y *= 4096.0f / (float)src_a;
+                    src->y = std::clamp(src->y * 4096.0f / (float)src_a, 0.0f, 4096.0f);
                     int round_c0 = src_a >> 1;
                     int round_c1 = round_c0;
                     if (src->cb < 0)round_c0 = -round_c0;
-                    src->cb = (int8_t)((((int)src->cb << 12) + round_c0) / src_a);
+                    src->cb = (int8_t)std::clamp((((int)src->cb << 12) + round_c0) / src_a, -128, 127);
                     if (src->cr < 0)round_c1 = -round_c1;
-                    src->cr = (int8_t)((((int)src->cr << 12) + round_c1) / src_a);
+                    src->cr = (int8_t)std::clamp((((int)src->cr << 12) + round_c1) / src_a, -128, 127);
                 }
                 src++;
             }
@@ -1441,9 +1440,9 @@ namespace patch::fast {
             for (int x = efpip->obj_w; 0 < x; x--) {
                 int src_a = src->a;
                 if (0 < src_a && src_a < 0x1000) {
-                    src->y = ((int)src->y << 12) / src_a;
-                    src->cb = ((int)src->cb << 12) / src_a;
-                    src->cr = ((int)src->cr << 12) / src_a;
+                    src->y = std::clamp(((int)src->y << 12) / src_a, 0, 4096);
+                    src->cb = std::clamp(((int)src->cb << 12) / src_a, -2048, 2048);
+                    src->cr = std::clamp(((int)src->cr << 12) / src_a, -2048, 2048);
                 }
                 src++;
             }
