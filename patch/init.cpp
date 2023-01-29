@@ -272,6 +272,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_CHANGE_DISP_SCENE
 	patch::change_disp_scene.init();
 #endif
+#ifdef PATCH_SWITCH_GROUP_ID
+	patch::group_id.init();
+#endif
 	
 	patch::setting_dialog();
 
@@ -301,6 +304,12 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_GLOW
 			patch::fast::Glow.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_MOTIONBLUR
+			patch::fast::MotionBlur.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_BLUR
+			patch::fast::Blur.init();
 		#endif
 		
 		#ifdef PATCH_SWITCH_CL

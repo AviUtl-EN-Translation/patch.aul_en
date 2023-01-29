@@ -233,6 +233,9 @@ public:
             #ifdef PATCH_SWITCH_CHANGE_DISP_SCENE
                 patch::change_disp_scene.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_GROUP_ID
+                patch::group_id.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
                 patch::patch_script_sort.switch_load(cr);
             #endif
@@ -283,6 +286,12 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_MOTIONBLUR
+                    patch::fast::MotionBlur.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_BLUR
+                    patch::fast::Blur.switch_load(cr);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL
@@ -619,6 +628,9 @@ public:
             #ifdef PATCH_SWITCH_CHANGE_DISP_SCENE
                 patch::change_disp_scene.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_GROUP_ID
+                patch::group_id.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
                 patch::patch_script_sort.switch_store(switch_);
             #endif
@@ -669,6 +681,12 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_MOTIONBLUR
+                    patch::fast::MotionBlur.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_BLUR
+                    patch::fast::Blur.switch_store(switch_);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL

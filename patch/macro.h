@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_3"
+#define PATCH_VERSION_STR "r43_ss_5"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -154,6 +154,7 @@
 #define PATCH_SWITCH_YC_RGB_CONV ycrgbconv
 #define PATCH_SWITCH_GROUP_CAMERA_SCENE group_camera_scene
 #define PATCH_SWITCH_CHANGE_DISP_SCENE change_dispscene
+#define PATCH_SWITCH_GROUP_ID group_id
 #define PATCH_SWITCH_SCRIPT_SORT_PATCH script_sort_patch
 
 
@@ -187,7 +188,9 @@
 	#define PATCH_SWITCH_FAST_TEXT fast_text
 	#define PATCH_SWITCH_FAST_CREATE_FIGURE fast_create_figure
 	#define PATCH_SWITCH_FAST_BORDER fast_border
+	#define PATCH_SWITCH_FAST_BLUR fast_blur
 	#define PATCH_SWITCH_FAST_GLOW fast_glow
+	//#define PATCH_SWITCH_FAST_MOTIONBLUR fast_motionblur
 
 	#define PATCH_SWITCH_CL cl
 	#ifdef PATCH_SWITCH_CL
