@@ -14,7 +14,7 @@
 #pragma once
 #include "macro.h"
 
-#ifdef PATCH_SWITCH_FAILED_LONGER_PATH
+#ifdef PATCH_SWITCH_FAILED_FILE_DROP
 
 #include <exedit.hpp>
 
@@ -32,55 +32,77 @@ namespace patch {
 
         inline static const char str_failed_drop_msg[] = "拡張編集へドロップされたファイルの種類が判別できませんでした\nexedit.iniを確認してください";
 
-
-
+        static char __stdcall init_flag();
+        inline static int flag;
+        static int __stdcall lstrcmpiA_wrap3c235(LPCSTR lpString1, LPCSTR lpString2);
         bool enabled = true;
         bool enabled_i;
         inline static const char key[] = "failed_file_drop";
     public:
+        
         void init() {
             enabled_i = enabled;
 
             if (!enabled_i)return;
 
+            {
+                /*
+                     1003c203 a058cb1410         mov     al,*ini_extension_buf
+                     ↓
+                     1003c203 e8XxXxXxXx         call    new_func
+                */
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x03c203, 5);
+                h.store_i8(0, '\xe8');
+                h.replaceNearJmp(1, &init_flag);
+            }
+            {
+                /*
+                     1003c233 ff15a4a10910       call    dword ptr[KERNEL32.lstrcmpiA]
+                     ↓
+                     1003c203 90e8XxXxXxXx       call    new_func
+                */
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x03c233, 6);
+                h.store_i16(0, '\x90\xe8');
+                h.replaceNearJmp(2, &lstrcmpiA_wrap3c235);
+            }
+            {
+                auto& cursor = GLOBAL::executable_memory_cursor;
 
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x03c454, 4);
+                h.replaceNearJmp(0, cursor);
+                /*
+                     1003c452 0f84f4760000        jz      10043b4c
+                     ↓
+                     1003c452 0f84XxXxXxXx        jz      executable_memory_cursor
+                */
 
-            auto& cursor = GLOBAL::executable_memory_cursor;
+                static const char code_put[] =
+                    "\x8b\x0dXXXX"                //  mov     ecx, [this::flag]
+                    "\x85\xc9"                    //  test    ecx, ecx
+                    "\x75\x27"                    //  jnz      skip +27
+                    "\x8d\x8c\x24\xd0\x00\x00\x00"//  lea     ecx,dword ptr [esp+000000d0]
+                    "\x51"                        //  push    ecx
+                    "\xe8XXXX"                    //  call    1004e1d0 ; ExtractExtension
+                    "\x83\xc4\x04"                //  add     esp,+04
+                    "\x68\x30\x20\x04\x00"        //  push    0x42030
+                    "\x50"                        //  push    eax
+                    "\x68XXXX"                    //  push    &str_failed_drop_msg
+                    "\xa1\x44\x7a\x17\x00"        //  mov     eax,[exedit+exedit_hwnd]
+                    "\x50"                        //  push    eax
+                    "\xff\x15XXXX"                //  call    dword ptr [exedit+MessageBoxA]
+                    "\xe9"                        //  jmp     10043b4c
+                    ;
 
-            OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x03c454, 4);
-            h.replaceNearJmp(0, cursor);
-            /*
-                 1003c452 0f84f4760000        jz      10043b4c
-                 ↓
-                 1003c452 0f84XxXxXxXx        jz      executable_memory_cursor
+                memcpy(cursor, code_put, sizeof(code_put) - 1);
+                store_i32(cursor + 2, &flag);
+                store_i32(cursor + 19, GLOBAL::exedit_base + 0x04e1d0 - (int)cursor - 23);
+                store_i32(cursor + 33, &str_failed_drop_msg);
+                store_i32(cursor + 38, GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd);
+                store_i32(cursor + 45, GLOBAL::exedit_base + 0x09a320);
+                cursor += sizeof(code_put) - 1 + 4;
+                store_i32(cursor - 4, GLOBAL::exedit_base + 0x043b4c - (int)cursor);
 
-
-
-            */
-
-            char code_put[] =
-                "\x8d\x8c\x24\xd0\x00\x00\x00"//  lea     ecx,dword ptr [esp+000000d0]
-                "\x51"                        //  push    ecx
-                "\xe8XXXX"                    //  call    1004e1d0 ; ExtractExtension
-                "\x83\xc4\x04"                //  add     esp,+04
-                "\x68\x30\x20\x04\x00"        //  push    0x42030
-                "\x50"                        //  push    eax
-                "\x68XXXX"                    //  push    &str_failed_drop_msg
-                "\xa1\x44\x7a\x17\x00"        //  mov     eax,[exedit+exedit_hwnd]
-                "\x50"                        //  push    eax
-                "\xff\x15\x20\xa3\x09\x00"    //  call    dword ptr [exedit+MessageBoxA]
-                "\xe9"                        //  jmp     10043b4c
-                ;
-
-            memcpy(cursor, code_put, sizeof(code_put) - 1);
-            store_i32(cursor + 9, GLOBAL::exedit_base + 0x04e1d0 - (int)cursor - 13);
-            store_i32(cursor + 23, &str_failed_drop_msg);
-            store_i32(cursor + 28, GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd);
-            store_i32(cursor + 35, GLOBAL::exedit_base + 0x09a320);
-            cursor += sizeof(code_put) - 1 + 4;
-            store_i32(cursor - 4, GLOBAL::exedit_base + 0x043b4c - (int)cursor);
-
-
+            }
         }
 
         void switching(bool flag) {
