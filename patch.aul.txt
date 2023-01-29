@@ -271,7 +271,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.create_figure" : boolean, ; 図形の高速化 (既定値: true)
             "fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
             "fast.glow" : boolean, ; グローの高速化 (既定値: true)
-            "fast.blur" : boolean, ; ぼかしの高速化 (既定値: true)
+            "fast.blur" : boolean, ; ぼかしの高速化/バグ修正 (既定値: true)
             "fast.cl" : boolean, ; fast.*でOpenCLが必要なオプションに必要なオプション (既定値: true)
                 "fast.radiationalblur" : boolean, ; fast.clが前提 放射ブラーの高速化 (既定値: true)
                 "fast.polartransform" : boolean, ; fast.clが前提 極座標変換の高速化 (既定値: true)
