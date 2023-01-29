@@ -47,7 +47,6 @@
     <ClInclude Include="patch_console.hpp" />
     <ClInclude Include="patch_dialog_new_file.hpp" />
     <ClInclude Include="patch_fast_blur.hpp" />
-    <ClInclude Include="patch_fast_motionblur.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
     <ClInclude Include="patch_keyconfig.hpp" />
@@ -148,7 +147,6 @@
     <ClCompile Include="patch_blend.cpp" />
     <ClCompile Include="patch_change_disp_scene.cpp" />
     <ClCompile Include="patch_fast_blur.cpp" />
-    <ClCompile Include="patch_fast_motionblur.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
     <ClCompile Include="patch_rendering.cpp" />
