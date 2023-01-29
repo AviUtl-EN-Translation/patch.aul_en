@@ -219,7 +219,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "ignore_media_param_reset" : boolean, ; 動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない (既定値: false)
         "failed_sjis_msgbox" : boolean, ; ファイルパスに使用できない文字が含まれている時に出すエラーメッセージを変更する (既定値: true)
         "failed_longer_path" : boolean, ; 読み込もうとしたファイルパスが長くて失敗するときにメッセージを出す/エラーが発生するのを修正 (既定値: true)
-        "failed_file_drop" : boolean, ; ドロップ処理で最終的に何も行われなかったときにメッセージを出力する (既定値: true)
+        "failed_file_drop" : boolean, ; exedit.iniに登録されていないファイルをタイムラインにドロップした時にメッセージを表示する (既定値: true)
         "theme_cc" : boolean, ; テーマ機能 (既定値: true)
         "exeditwindow_sizing" : boolean, ; 拡張編集ウィンドウの上部をドラッグして正常にリサイズできるようにする (既定値: true)
         "settingdialog_move" : boolean, ; 設定ダイアログを高ポーリングレートマウス環境で移動すると重たい の解消 (既定値: true)
