@@ -130,7 +130,7 @@
 #define PATCH_SWITCH_SMALL_FILTER small_filter
 #define PATCH_SWITCH_OBJ_AUDIOFILE obj_audiofile
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
-#define PATCH_SWITCH_OBJ_BLUR obj_blur
+//#define PATCH_SWITCH_OBJ_BLUR obj_blur // fast.blur実装により不要に
 #define PATCH_SWITCH_OBJ_GLOW obj_glow
 #define PATCH_SWITCH_OBJ_SHARP obj_sharp
 #define PATCH_SWITCH_OBJ_MASK obj_mask

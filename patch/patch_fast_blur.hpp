@@ -28,6 +28,7 @@
 namespace patch::fast {
 	// init at exedit load
 	// ぼかしをちょっとだけ速度アップ　AVX2を使用
+	// サイズ固定でぼかしサイズが大きい時のバグを修正
 	inline class Blur_t {
 
 		static BOOL __cdecl efBlur_effect_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
@@ -65,10 +66,6 @@ namespace patch::fast {
 		void init() {
 			enabled_i = enabled;
 			if (!enabled_i)return;
-
-
-			auto cpucmdset = get_CPUCmdSet();
-			if (!has_flag(cpucmdset, CPUCmdSet::F_AVX2))return;
 
 			{ // effect
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + OFS::ExEdit::efBlur_func_proc_ptr, 4);
