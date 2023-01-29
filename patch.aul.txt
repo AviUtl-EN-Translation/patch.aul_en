@@ -1,6 +1,9 @@
-patch.aul r43_ss_2
+patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
+
+patch.aul r43_ss_5
+https://scrapbox.io/nazosauna/patch.aul
 
 概要
     AviUtlや拡張編集のバグを直したり高速化をしたり新機能を追加したりするプラグインです。
@@ -27,7 +30,7 @@ https://scrapbox.io/ePi5131/patch.aul
     ・メニュー文字列を実態に即したものに変更
     ・動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない
     ・拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある
-    ・極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/縁取り/方向ブラー/レンズブラー/グローの高速化
+    ・極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/グロー/ぼかしの高速化
         OpenCL/AVX2を使用します
         わずかにオリジナルと結果が変わってしまいます (floatとdoubleの差です)
         また、アーティファクトなどのバグを解消することもあります
@@ -107,6 +110,7 @@ https://scrapbox.io/ePi5131/patch.aul
     ・Shiftを押しながらシーン切り替えをすると範囲選択がされるのを修正
     ・シーン切り替え時に拡張編集のウィンドウキャプションが変わらないのを修正
     ・スクリプト並び替え管理プラグインとの競合を解消
+    ・プロジェクトファイル読み込み時にグループ化IDの最大値が高い場合、整理する機能の追加
 
     追加
     ・コンソールの表示
@@ -221,7 +225,6 @@ https://scrapbox.io/ePi5131/patch.aul
         "settingdialog_move" : boolean, ; 設定ダイアログを高ポーリングレートマウス環境で移動すると重たい の解消 (既定値: true)
         "obj_audiofile" : boolean, ; 音声ファイルの再生速度最大値を修正 (既定値: true)
         "obj_colorcorrection" : boolean, ; 色調補正の色相計算を修正 (既定値: true)
-        "obj_blur" : boolean, ; ぼかしがスレッド数より小さいサイズに対して正常に反映されないバグを修正 (既定値: true)
         "obj_glow" : boolean, ; グローのしきい値が負の値になった時にエラーとなる・スレッド数より小さいサイズに対して正常に反映されないバグを修正 (既定値: true)
         "obj_sharp" : boolean, ; シャープがスレッド数より小さいサイズに対して正常に反映されないバグを修正 (既定値: true)
         "obj_mask" : boolean, ; マスクがスレッド数より小さいサイズに対して正常に反映されないバグを修正 (既定値: true)
@@ -246,6 +249,7 @@ https://scrapbox.io/ePi5131/patch.aul
         "yc_rgb_conv" : boolean, ; 改行のみのテキストで一部スクリプトを使うとエラーが発生するのを修正 (既定値: true)
         "group_camera_scene" : boolean, ; グループ制御とカメラ制御を併用しているシーンを呼び出すと起こる不具合を修正 (既定値: true)
         "change_disp_scene" : boolean, ; シーン切り替え時のバグを修正 (既定値: true)
+        "group_id" : boolean, ; プロジェクトファイル読み込み時にグループ化IDの最大値が高い場合、整理する (既定値: true)
         "patch_script_sort" : boolean, ; スクリプト並び替え管理プラグインとの競合を解消 (既定値: true)
         "undo" : boolean, ; 元に戻す 関連のバグ修正 (既定値: true)
             "undo.redo" : boolean, ; やり直す を追加 (既定値: true)
@@ -267,6 +271,7 @@ https://scrapbox.io/ePi5131/patch.aul
             "fast.create_figure" : boolean, ; 図形の高速化 (既定値: true)
             "fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
             "fast.glow" : boolean, ; グローの高速化 (既定値: true)
+            "fast.blur" : boolean, ; ぼかしの高速化 (既定値: true)
             "fast.cl" : boolean, ; fast.*でOpenCLが必要なオプションに必要なオプション (既定値: true)
                 "fast.radiationalblur" : boolean, ; fast.clが前提 放射ブラーの高速化 (既定値: true)
                 "fast.polartransform" : boolean, ; fast.clが前提 極座標変換の高速化 (既定値: true)
