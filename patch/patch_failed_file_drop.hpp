@@ -26,7 +26,7 @@
 namespace patch {
 
     // init at exedit load
-    // ドロップ処理で最終的に何も行われなかったときにメッセージを出力する
+    // exedit.iniに登録されていないファイルをタイムラインにドロップした時にメッセージを表示する
 
     inline class failed_file_drop_t {
 
