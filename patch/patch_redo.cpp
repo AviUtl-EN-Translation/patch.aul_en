@@ -54,13 +54,21 @@ int __cdecl redo_t::f8d290(void* ret, int object_idx, int flag) {
     // ----------------------------------
 
     if (running_undo) {
-        move_redo_data();
-    } else if (flag == 2) { // オブジェクト追加の場合のみ追加後にUndoデータ生成を行うので、最適化の整合性がとれないことがあるため対策
+        if (flag & 2) {
+            auto ObjectArrayPointer = *ObjectArrayPointer_ptr;
+            auto objflag = *(int*)&ObjectArrayPointer[object_idx].flag;
+            *(int*)&ObjectArrayPointer[object_idx].flag = 0;
+            move_redo_data();
+            *(int*)&ObjectArrayPointer[object_idx].flag = objflag;
+        } else {
+            move_redo_data();
+        }
+    } else if (flag & 2) {
         auto ObjectArrayPointer = *ObjectArrayPointer_ptr;
-        auto objflag = ObjectArrayPointer[object_idx].flag;
-        ObjectArrayPointer[object_idx].flag = (ExEdit::Object::Flag)0;
+        auto objflag = *(int*)&ObjectArrayPointer[object_idx].flag;
+        *(int*)&ObjectArrayPointer[object_idx].flag = 0;
         optimize_undo_data();
-        ObjectArrayPointer[object_idx].flag = objflag;
+        *(int*)&ObjectArrayPointer[object_idx].flag = objflag;
     } else {
         optimize_undo_data();
     }
