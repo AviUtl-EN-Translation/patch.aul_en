@@ -236,6 +236,9 @@ public:
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
+                patch::borderonly_text.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
                 patch::patch_script_sort.switch_load(cr);
             #endif
@@ -277,6 +280,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_TEXT
                     patch::fast::text.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_TEXTBORDER
+                    patch::fast::textborder.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
                     patch::fast::create_figure.switch_load(cr);
@@ -631,6 +637,9 @@ public:
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
+                patch::borderonly_text.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
                 patch::patch_script_sort.switch_store(switch_);
             #endif
@@ -672,6 +681,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_TEXT
                     patch::fast::text.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_TEXTBORDER
+                    patch::fast::textborder.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
                     patch::fast::create_figure.switch_store(switch_);

@@ -102,5 +102,7 @@
 #include "patch_obj_blur.hpp"
 #include "patch_fast_blur.hpp"
 #include "patch_group_id.hpp"
+#include "patch_fast_text_border.hpp"
+#include "patch_border_only_text.hpp"
 
 

@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_7"
+#define PATCH_VERSION_STR "r43_ss_8"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -141,6 +141,7 @@
 #define PATCH_SWITCH_OBJ_NOISE obj_noise
 #define PATCH_SWITCH_OBJ_SPECIALCOLORCONV obj_specialcolorconv
 #define PATCH_SWITCH_OBJ_PORTIONFILTER obj_portionfilter
+#define PATCH_SWITCH_BORDER_ONLY_TEXT border_only_text
 #define PATCH_SWITCH_RCLICKMENU_SPLIT rclickmenu_split
 #define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete
 #define PATCH_SWITCH_BLEND blend
@@ -186,6 +187,7 @@
 	#define PATCH_SWITCH_FAST_SETTINGDIALOG fast_settingdialog
 	#define PATCH_SWITCH_FAST_EXEDITWINDOW fast_exeditwindow
 	#define PATCH_SWITCH_FAST_TEXT fast_text
+	#define PATCH_SWITCH_FAST_TEXTBORDER fast_text_border
 	#define PATCH_SWITCH_FAST_CREATE_FIGURE fast_create_figure
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 	#define PATCH_SWITCH_FAST_BLUR fast_blur

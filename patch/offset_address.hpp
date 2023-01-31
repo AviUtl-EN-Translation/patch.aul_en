@@ -111,6 +111,9 @@ namespace OFS {
 		constexpr i32 fast_process = 0x2308a0;
 		constexpr i32 is_saving = 0x1a52e4;
 
+		constexpr i32 CreateFontBorder_var_ptr = 0x1a6bb0;
+		constexpr i32 efTextShadowBorderComboHWND_ptr = 0x23635c;
+
 		constexpr i32 CreateFigure_var_ptr = 0x1e4798;
 		constexpr i32 CreateFigure_circle_func_call = 0x073882;
 		constexpr i32 CreateFigure_circle_func_mt_call = 0x0738ac;

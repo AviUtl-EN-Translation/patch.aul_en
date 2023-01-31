@@ -328,6 +328,12 @@
     <ClInclude Include="patch_group_id.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_text_border.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_border_only_text.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -484,6 +490,12 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_failed_file_drop.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_text_border.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_border_only_text.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

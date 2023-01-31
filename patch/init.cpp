@@ -275,6 +275,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_GROUP_ID
 	patch::group_id.init();
 #endif
+#ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
+	patch::borderonly_text.init();
+#endif
 	
 	patch::setting_dialog();
 
@@ -295,6 +298,9 @@ void init_t::InitAtExeditLoad() {
 
 		#ifdef PATCH_SWITCH_FAST_TEXT
 			patch::fast::text.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_TEXTBORDER
+			patch::fast::textborder.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
 			patch::fast::create_figure.init();
