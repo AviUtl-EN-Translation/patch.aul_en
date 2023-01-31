@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_7
+patch.aul r43_ss_8
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -38,7 +38,7 @@ https://scrapbox.io/nazosauna/patch.aul
         円/三角形/五角形/六角形/星形の計算を僅かに最適化
         マスクやディスプレイスメントマップのソースとしての図形にも効果がある
     ・テキストの軽量化
-        キャッシュをとります
+        キャッシュをとります。縁取り文字の処理を最適化します
     ・Luaの環境が分かれてしまうことがある
     ・package.path,package.cpathはどんなときでもscriptフォルダを含めるように
     ・obj.randでs=-2^31,e=2^31-1とすると例外になる
@@ -149,6 +149,9 @@ https://scrapbox.io/nazosauna/patch.aul
     ・やり直し 機能
         元に戻すの逆
 
+    ・テキストオブジェクトに 縁のみ 縁のみ(細) を追加
+
+
 設定
     patch.aulと同じパスにpatch.aul.jsonが生成されて、これが設定ファイルになります。
     設定ファイルはAviUtlの起動時に1度だけ読み込まれて、終了時に1度だけ保存されるため、注意してください。
@@ -250,6 +253,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "group_camera_scene" : boolean, ; グループ制御とカメラ制御を併用しているシーンを呼び出すと起こる不具合を修正 (既定値: true)
         "change_disp_scene" : boolean, ; シーン切り替え時のバグを修正 (既定値: true)
         "group_id" : boolean, ; プロジェクトファイル読み込み時にグループ化IDの最大値が高い場合、整理する (既定値: true)
+        "borderonly_text" : boolean, ; テキストに縁のみを追加する。fast.textborderがtrueの必要あり (既定値: true)
         "patch_script_sort" : boolean, ; スクリプト並び替え管理プラグインとの競合を解消 (既定値: true)
         "undo" : boolean, ; 元に戻す 関連のバグ修正 (既定値: true)
             "undo.redo" : boolean, ; やり直す を追加 (既定値: true)
@@ -268,6 +272,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.exeditwindow" : boolean, ; 拡張編集ウィンドウの描画の最適化 (既定値: true)
             "fast.settingdialog" : boolean, ; 設定ダイアログの描画の最適化 (既定値: true)
             "fast.text" : boolean, ; テキストの軽量化 (既定値: true)
+            "fast.textborder" : boolean, ; テキスト縁取り文字の軽量化 (既定値: true)
             "fast.create_figure" : boolean, ; 図形の高速化 (既定値: true)
             "fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
             "fast.glow" : boolean, ; グローの高速化 (既定値: true)
