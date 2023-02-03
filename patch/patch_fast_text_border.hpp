@@ -33,16 +33,8 @@ namespace patch::fast {
 		inline static const char key[] = "fast.textborder";
 
 	public:
-		static void __cdecl draw_font_border(ExEdit::PixelYCA*, int, int, void*, int, int, int, int, int, int, int, int, int);
-		static void short_font_border(int thread_id, int thread_num, void* n1, void* n2);
-		static void short_font_border_pre_h_mt(int thread_id, int thread_num, void* n1, void* n2);
-		static void short_font_border_pre_v_mt(int thread_id, int thread_num, void* n1, void* n2);
-		static void byte_font_border(int thread_id, int thread_num, void* n1, void* n2);
-		static void byte_font_border_pre_h_mt(int thread_id, int thread_num, void* n1, void* n2);
-		static void byte_font_border_pre_v_mt(int thread_id, int thread_num, void* n1, void* n2);
+		static void __cdecl create_font_border(ExEdit::PixelYCA*, int, int, void*, int, int, int, int, int, int, int, int, int);
 
-		static void short_font_border_only(int thread_id, int thread_num, void* n1, void* n2);
-		static void byte_font_border_only(int thread_id, int thread_num, void* n1, void* n2);
 		inline static void(__cdecl* do_multi_thread_func)(AviUtl::MultiThreadFunc*, BOOL);
 		inline static void(__cdecl* blend_yca_normal_func)(ExEdit::PixelYCA*, int, int, int, int);
 		
@@ -85,7 +77,7 @@ namespace patch::fast {
 			do_multi_thread_func = reinterpret_cast<decltype(do_multi_thread_func)>(GLOBAL::exedit_base + OFS::ExEdit::do_multi_thread_func);
 			blend_yca_normal_func = reinterpret_cast<decltype(blend_yca_normal_func)>(GLOBAL::exedit_base + OFS::ExEdit::blend_yca_normal_func);
 			
-			ReplaceNearJmp(GLOBAL::exedit_base + 0x50ea3, &draw_font_border);
+			ReplaceNearJmp(GLOBAL::exedit_base + 0x50ea3, &create_font_border);
 			
 		}
 

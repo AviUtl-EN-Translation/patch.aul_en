@@ -55,19 +55,27 @@ namespace patch {
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08c657, 5);
 				h.store_i8(0, '\xe8');
 				h.replaceNearJmp(1, cursor);
-
+				/*
 				static const char code_put[] =
 					"\xe8XXXX"                     // call    newfunc
-					"\xbfXXXX"                     // jz      exedit+b8f18
+					"\xbfXXXX"                     // mov     edi,exedit+b8f18
 					"\xc3"                         // ret
 					;
-
 				memcpy(cursor, code_put, sizeof(code_put) - 1);
-
 				store_i32(cursor + 1, (int32_t)&cb_add_border - (int32_t)cursor - 5);
-
 				cursor += sizeof(code_put) - 1;
 				store_i32(cursor - 5, GLOBAL::exedit_base + 0x0b8f18);
+				*/
+				store_i8(cursor, '\xe8');
+				cursor += 5;
+				store_i32(cursor - 4, (int32_t)&cb_add_border - (int32_t)cursor);
+				store_i8(cursor, '\xbf');
+				cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + 0x0b8f18);
+				cursor += 4;
+				store_i8(cursor, '\xc3');
+				cursor++;
+
 			}
 			{ // 縁のみの時の処理を定義する
 				{
@@ -185,7 +193,7 @@ namespace patch {
 					memcpy(cursor, (void*)(GLOBAL::exedit_base + 0x50e68), 0x50ea3 - 0x50e68);
 					cursor += 0x50ea3 - 0x50e68 + 4;
 
-					store_i32(cursor - 4, (int32_t)&fast::TextBorder_t::draw_font_border - (int32_t)cursor);
+					store_i32(cursor - 4, (int32_t)&fast::TextBorder_t::create_font_border - (int32_t)cursor);
 
 					/*
 					static const char code_put2[] =

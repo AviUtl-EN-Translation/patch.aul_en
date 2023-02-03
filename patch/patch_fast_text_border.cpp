@@ -26,8 +26,8 @@
 namespace patch::fast {
 
 
-	void TextBorder_t::short_font_border_pre_h_mt(int thread_id, int thread_num, void* n1, void* n2) {
-		auto font = (CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
+	void short_font_border_create_mask1(int thread_id, int thread_num, void* n1, void* n2) {
+		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int border_size = font->border;
 		int border_range = border_size * 2;
@@ -81,7 +81,7 @@ namespace patch::fast {
 		}
 	}
 
-	void sb_font_border_pre_v_mt(int thread_id, int thread_num, int src_elm, void* n2) {
+	void sb_font_border_create_mask2(int thread_id, int thread_num, int src_elm, void* n2) {
 		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int border_range = font->border * 2;
@@ -135,13 +135,13 @@ namespace patch::fast {
 			src += thread_num;
 		}
 	}
-	void TextBorder_t::short_font_border_pre_v_mt(int thread_id, int thread_num, void* n1, void* n2) {
-		sb_font_border_pre_v_mt(thread_id, thread_num, sizeof(short), n2);
+	void short_font_border_create_mask2(int thread_id, int thread_num, void* n1, void* n2) {
+		sb_font_border_create_mask2(thread_id, thread_num, sizeof(short), n2);
 	}
 
-	void TextBorder_t::short_font_border(int thread_id, int thread_num, void* n1, void* n2) {
+	void short_font_border(int thread_id, int thread_num, void* n1, void* n2) {
 		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		auto font = (CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
+		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
 		auto masksrc0 = (char*)((short*)font->src + font->src_h * font->src_line);
@@ -190,7 +190,7 @@ namespace patch::fast {
 						a = a * aa >> 12;
 					}
 					if (0 < a) {
-						blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
+						TextBorder_t::blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
 					}
 				}
 				mask++;
@@ -201,8 +201,8 @@ namespace patch::fast {
 
 
 
-	void TextBorder_t::byte_font_border_pre_h_mt(int thread_id, int thread_num, void* n1, void* n2) {
-		auto font = (CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
+	void byte_font_border_create_mask1(int thread_id, int thread_num, void* n1, void* n2) {
+		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int border_size = font->border;
 		int border_range = border_size * 2;
@@ -256,13 +256,13 @@ namespace patch::fast {
 		}
 	}
 
-	void TextBorder_t::byte_font_border_pre_v_mt(int thread_id, int thread_num, void* n1, void* n2) {
-		sb_font_border_pre_v_mt(thread_id, thread_num, sizeof(char), n2);
+	void byte_font_border_create_mask2(int thread_id, int thread_num, void* n1, void* n2) {
+		sb_font_border_create_mask2(thread_id, thread_num, sizeof(char), n2);
 	}
 
-	void TextBorder_t::byte_font_border(int thread_id, int thread_num, void* n1, void* n2) {
+	void byte_font_border(int thread_id, int thread_num, void* n1, void* n2) {
 		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		auto font = (CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
+		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
 		auto masksrc0 = (char*)((char*)font->src + font->src_h * font->src_line);
@@ -311,7 +311,7 @@ namespace patch::fast {
 						a = a * aa >> 12;
 					}
 					if (0 < a) {
-						blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
+						TextBorder_t::blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
 					}
 				}
 				mask++;
@@ -322,9 +322,9 @@ namespace patch::fast {
 
 
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
-	void TextBorder_t::short_font_border_only(int thread_id, int thread_num, void* n1, void* n2) {
+	void short_font_border_only(int thread_id, int thread_num, void* n1, void* n2) {
 		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		auto font = (CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
+		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
 		auto masksrc0 = (char*)((short*)font->src + font->src_h * font->src_line);
@@ -374,10 +374,11 @@ namespace patch::fast {
 					}
 					if (0 < a) {
 						if (0 <= srcyoy && srcyoy <= yy_max && 0 <= srcxox && srcxox <= xx_max) {
+							// 正確な式は違うけどこれでほぼ問題無いはず。正しい式はたぶん右のような感じ a = (0x1000 - src_a) * a * 0x1000 / (0x1000000 - (0x1000 - a) * (0x1000 - src_a));
 							a -= (int)*((short*)font->src + font->src_line * srcyoy + srcxox) << 2;
 						}
 						if (0 < a) {
-							fast::TextBorder_t::blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
+							TextBorder_t::blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
 						}
 					}
 				}
@@ -387,9 +388,9 @@ namespace patch::fast {
 		}
 	}
 
-	void TextBorder_t::byte_font_border_only(int thread_id, int thread_num, void* n1, void* n2) {
+	void byte_font_border_only(int thread_id, int thread_num, void* n1, void* n2) {
 		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		auto font = (CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
+		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
 		auto masksrc0 = (char*)((char*)font->src + font->src_h * font->src_line);
@@ -440,10 +441,11 @@ namespace patch::fast {
 
 					if (0 < a) {
 						if (0 <= srcyoy && srcyoy <= yy_max && 0 <= srcxox && srcxox <= xx_max) {
+							// 正確な式は違うけどこれでほぼ問題無いはず。正しい式はたぶん右のような感じ a = (0x1000 - src_a) * a * 0x1000 / (0x1000000 - (0x1000 - a) * (0x1000 - src_a));
 							a -= (int)*((char*)font->src + font->src_line * srcyoy + srcxox) << 6;
 						}
 						if (0 < a) {
-							fast::TextBorder_t::blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
+							TextBorder_t::blend_yca_normal_func((ExEdit::PixelYCA*)dst, font->color_y, font->color_cb, font->color_cr, a);
 						}
 					}
 				}
@@ -456,7 +458,7 @@ namespace patch::fast {
 
 
 
-	void __cdecl TextBorder_t::draw_font_border(ExEdit::PixelYCA* dst, int ofsx, int ofsy, void* src,
+	void __cdecl TextBorder_t::create_font_border(ExEdit::PixelYCA* dst, int ofsx, int ofsy, void* src,
 		int gmBlackBoxX, int gmBlackBoxY, int y, int cb, int cr, int alpha, int flag, int type, int size) {
 
 		auto font = (CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
@@ -512,12 +514,12 @@ namespace patch::fast {
 		font->color_y = y;
 		font->color_cb = cb;
 		font->color_cr = cr;
-		BOOL mtflag = (0x3f < font->dst_h);
+		BOOL mtflag = (0x1f < font->dst_h);
 
 		if (flag & 0x20000) {
 			font->src_line = gmBlackBoxX;
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_pre_h_mt, flag);
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_pre_v_mt, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_create_mask1, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_create_mask2, flag);
 
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 			if (4 < type) {
@@ -528,8 +530,8 @@ namespace patch::fast {
 			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border, flag);
 		} else {
 			font->src_line = gmBlackBoxX + 3U & 0xfffc;
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_pre_h_mt, flag);
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_pre_v_mt, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_create_mask1, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_create_mask2, flag);
 
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 			if (4 < type) {
