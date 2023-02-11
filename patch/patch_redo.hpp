@@ -3,12 +3,10 @@
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
-
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
@@ -58,8 +56,7 @@ namespace patch {
         inline static int pre_scene_idx = 0;
         inline static int UndoInfo_max_id = 0;
         inline static int UndoInfo_object_new = 0;
-        inline static int UndoInfo_pre_id = 0;
-        inline static bool new_object = true;
+        inline static bool optimized = true;
         inline static bool running_undo = false;
 
 
@@ -80,8 +77,7 @@ namespace patch {
             UndoData* undodata = UndoDataPtrArray[undo_id];
             if (undodata->object_id & 0x1000000) {
                 return undodata->object_layer_disp;
-            }
-            else {
+            } else {
                 return (*ObjectArrayPointer_ptr)[undodata->object_id].scene_set;
             }
         }
@@ -162,8 +158,7 @@ namespace patch {
                     }
                 }
                 remove_UndoData(id1);
-            }
-            else {
+            } else {
                 remove_UndoData(id2);
             }
         }
@@ -171,13 +166,15 @@ namespace patch {
         // 新しく追加されたデータに対して、重複があれば統合する
         static void optimize_new_undo_buffer() {
             int& UndoInfo_object_num = *UndoInfo_object_num_ptr;
-            UndoData* newdata = UndoDataPtrArray[UndoInfo_object_num - 1];
-            UndoData* undodata;
-            for (int i = UndoInfo_object_new; i < UndoInfo_object_num - 1; i++) {
-                undodata = UndoDataPtrArray[i];
-                if (undodata->object_id == newdata->object_id && undodata->data_id == newdata->data_id) {
-                    integrate_undodata(i, UndoInfo_object_num - 1);
-                    break;
+            if (UndoInfo_object_new < UndoInfo_object_num) {
+                UndoData* newdata = UndoDataPtrArray[UndoInfo_object_num - 1];
+                UndoData* undodata;
+                for (int i = UndoInfo_object_new; i < UndoInfo_object_num - 1; i++) {
+                    undodata = UndoDataPtrArray[i];
+                    if (undodata->object_id == newdata->object_id && undodata->data_id == newdata->data_id) {
+                        integrate_undodata(i, UndoInfo_object_num - 1);
+                        break;
+                    }
                 }
             }
         }
@@ -202,8 +199,7 @@ namespace patch {
                     ptr1 = (void*)&layer_setting_ofsptr[undodata->object_id & 0xffffff];
                     ptr2 = &undodata->data;
                     cmpsize = 8;
-                }
-                else {
+                } else {
                     ptr1 = (void*)&ObjectArrayPointer[undodata->object_id];
                     if (undodata->data_size > 0x1c) {
                         ptr2 = &undodata->data;
@@ -225,13 +221,11 @@ namespace patch {
                         void* ptr4 = reinterpret_cast<void*>(reinterpret_cast<DWORD>(&undodata->data) + cmpsize);
                         int excmpsize = undodata->data_size - 0x1c - cmpsize;
                         if (memcmp(ptr3, ptr4, excmpsize))return true;
-                    }
-                    else {
+                    } else {
                         ptr2 = &undodata->object_flag;
                         if (undodata->object_flag == 0) {
                             cmpsize = 4;
-                        }
-                        else {
+                        } else {
                             cmpsize = 0x10;
                         }
                     }
@@ -286,30 +280,19 @@ namespace patch {
         static void optimize_undo_data() {
             int& UndoInfo_current_id = *UndoInfo_current_id_ptr;
             int& UndoInfo_object_num = *UndoInfo_object_num_ptr;
-            int& UndoInfo_write_offset = *UndoInfo_write_offset_ptr;
 
-            if (new_object) {
-                new_object = FALSE;
-                UndoInfo_pre_id = UndoInfo_current_id;
-                UndoInfo_object_new = UndoInfo_object_num;
-            }
 
-            if (UndoInfo_object_new < UndoInfo_object_num) {
+            if (!optimized) {
+                optimized = true;
                 optimize_new_undo_buffer();
-
-                if (UndoInfo_pre_id < UndoInfo_current_id) {
-                    remove_emptiness_UndoData();
-
-                    if (UndoInfo_object_new < UndoInfo_object_num) { // 変更があった
-                        add_scene_idx();
-                        remove_old_UndoData(UndoInfo_pre_id);
-                        UndoInfo_pre_id = UndoInfo_current_id;
-                        UndoInfo_max_id = UndoInfo_current_id - 1;
-                        UndoInfo_object_new = UndoInfo_object_num;
-                    }
-                    else {
-                        UndoInfo_current_id--;
-                    }
+                remove_emptiness_UndoData();
+                if (UndoInfo_object_new < UndoInfo_object_num) {
+                    add_scene_idx();
+                    remove_old_UndoData(UndoInfo_current_id - 1);
+                    UndoInfo_max_id = UndoInfo_current_id - 1;
+                    UndoInfo_object_new = UndoInfo_object_num;
+                } else {
+                    UndoInfo_current_id--;
                 }
             }
 
@@ -320,24 +303,26 @@ namespace patch {
             int& UndoInfo_current_id = *UndoInfo_current_id_ptr;
             int& UndoInfo_object_num = *UndoInfo_object_num_ptr;
 
-            if (!new_object) {
+            if (!optimized) {
+                optimized = true;
+                optimize_new_undo_buffer();
+                remove_emptiness_UndoData();
                 if (UndoInfo_object_new < UndoInfo_object_num) {
-                    optimize_new_undo_buffer();
-
-                    remove_emptiness_UndoData();
-                    if (UndoInfo_object_new < UndoInfo_object_num) { // 変更があった
-                        add_scene_idx();
-                        remove_old_UndoData(UndoInfo_current_id);
-                        UndoInfo_max_id = UndoInfo_current_id;
-                    }
-                    else {
-                        UndoInfo_current_id--;
-                    }
+                    add_scene_idx();
+                    remove_old_UndoData(UndoInfo_current_id);
+                    UndoInfo_max_id = UndoInfo_current_id;
+                    UndoInfo_object_new = UndoInfo_object_num;
+                } else {
+                    UndoInfo_current_id--;
                 }
             }
-            UndoInfo_pre_id = UndoInfo_current_id;
-            UndoInfo_object_new = UndoInfo_object_num;
-            new_object = TRUE;
+        }
+
+        // add_undo_idの後処理
+        static void end_add_undo_count() {
+            // debug_print_undodata();
+            optimize_undo_data();
+            optimized = false;
         }
 
         // set_undoの先頭に追加する処理
@@ -415,6 +400,19 @@ namespace patch {
             change_disp_scene = reinterpret_cast<decltype(change_disp_scene)>(GLOBAL::exedit_base + 0x02ba60);
 
 
+            /*  undo_idが増えた時に前データの最適化を行う
+                1008d174 c390909090   ret nop*4
+                →       e900000000   jmp        end_add_undo_count()
+            */
+            
+            {
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08d174, 5);
+                h.store_i8(0, '\xe9'); // jmp (rel32)
+                h.replaceNearJmp(1, &end_add_undo_count);
+            }
+            
+
+
             /*  initに内容を追加する
                 void __cdecl InitUndo(void) { // 8d140
                     UndoInfo_object_num = -1;
@@ -433,13 +431,10 @@ namespace patch {
                     UndoInfo_write_offset = 0;
                     UndoInfo_object_num = 0;
                 }
-
                 1008d15a 7e 08           JLE
                 1008d162 7f 0a           JG
-
             byte jle2jl[1] = { 0x7c };
             exedit_ReplaceData(0x8d15a, jle2jl, 1);
-
             byte jg2jge[1] = { 0x7d };
             exedit_ReplaceData(0x8d162, jg2jge, 1);
             */
@@ -458,7 +453,6 @@ namespace patch {
             /*  undoの前処理
                 1008d4a9 a1084e2410     EAX = UndoInfo_object_num
                 →       e8--------     pre_run_undo();
-
             */
             {
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08d4a9, 5);
@@ -501,7 +495,6 @@ namespace patch {
             1008d734 a31c4e2410         mov     UndoInfo_limit_mode = eax
             1008d739 89                 err
             1008d73a e8--------         call    end_run_undo()
-
             */
             {
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08d723, 2);
@@ -515,7 +508,6 @@ namespace patch {
 
             /*  AllocUndoBufferにて削除が行われる場合にUndoInfo_object_newを再計算する必要あり
             1008d22a e8 31 4d 00 00     CALL    exedit_memmove()
-
             exedit_ReplaceCall(0x8d22b, &redo_8d22b_patch);
             */
 
@@ -524,33 +516,25 @@ namespace patch {
                     if (object_num < 15000 && write_offset + data_size < UndoInfo_buffer_size) {
                         return TRUE;
                     }
-
                     if (object_num < 1) break;
-
                     for (i = 1; i < object_num; i++) {
                         if (UndoDataPtrArray[i]->data_id != UndoDataPtrArray[0]->data_id) break;
                     }
                     if (i == object_num) break;
-
                     // -------------- ここから下を関数に置き換える ---------------------
-
                     buffer_size = (DWORD)UndoDataPtrArray[i] - (DWORD)buffer_ptr;
                     FUN_10091f60(buffer_ptr, (void)UndoDataPtrArray[i], write_offset - buffer_size); // memmove相当の関数
-
                     buffer_ptr = UndoInfo_buffer_ptr;
                     object_num = UndoInfo_object_num - i;
                     write_offset = UndoInfo_write_offset - buffer_size;
                     UndoInfo_object_num = object_num;
                     UndoInfo_write_offset = write_offset;
-
                     offset = 0;
                     for (i = 0; i < object_num; i++) { //
                         UndoDataPtrArray[i] = (UndoData*)((DWORD)buffer_ptr + offset);
                         offset += ((UndoData*)((DWORD)buffer_ptr + offset))->data_size;
                     }
                 }
-
-
                 1008d21a 8b04bda8632310  MOV   EAX,dword ptr [EDI*0x4 + 0x102363a8]
                 1008d221
                 ..
@@ -558,8 +542,6 @@ namespace patch {
                 1008d235 8b2d104e2410    MOV   EBP,dword ptr [UndoInfo_write_offset]
                 ..
                 1008d274 e95dffffff      JMP   1008d1d6
-
-
                 ↓
                 1008d21a 57              PUSH  EDI ; == i
                 1008d21b e8--------      CALL  AllocUndoBuffer_patch(i)
@@ -570,7 +552,6 @@ namespace patch {
                 1008d235 8b2d104e2410    MOV   EBP,dword ptr [UndoInfo_write_offset]
                 1008d23b eb99            JMP   1008d1d6
                 1008d23d
-
             */
             {
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08d21a, 6);
@@ -602,6 +583,7 @@ namespace patch {
 
             // この後呼ばれるrun_undo()でも同じ処理が行われることになるが、ここで先に処理してredoが可能かどうかを判定する必要がある
             optimize_newer_undo_data();
+            //debug_print_undodata();
 
             // 上記処理にて新しい操作が行われていたとしたら、現在が最新状態という事になるのでredoはできない
             if (UndoInfo_current_id >= UndoInfo_max_id)return;
@@ -615,7 +597,6 @@ namespace patch {
             run_undo();
 
             UndoInfo_current_id++;
-            UndoInfo_pre_id = UndoInfo_current_id;
             reverse_UndoDataPtrArray();
         }
 
@@ -629,25 +610,25 @@ namespace patch {
         void switch_load(ConfigReader& cr) {
             cr.regist(key, [this](json_value_s* value) {
                 ConfigReader::load_variable(value, enabled);
-            });
+                });
             cr.regist(key, [this](json_value_s* value) {
                 ConfigReader::load_variable(value, enabled);
-            });
+                });
         }
 
         void switch_store(ConfigWriter& cw) {
             cw.append(key, enabled);
         }
-        
-		void config_load(ConfigReader& cr) {
+
+        void config_load(ConfigReader& cr) {
             cr.regist(c_shift_name, [this](json_value_s* value) {
                 ConfigReader::load_variable(value, c_shift);
-            });
-		}
+                });
+        }
 
-		void config_store(ConfigWriter& cw) {
-			cw.append(c_shift_name, c_shift);
-		}
+        void config_store(ConfigWriter& cw) {
+            cw.append(c_shift_name, c_shift);
+        }
 
     } redo;
 }

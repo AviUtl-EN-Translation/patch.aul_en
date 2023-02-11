@@ -93,24 +93,28 @@ namespace patch {
         };
 
         if (*timeline_obj_click_mode_ptr == 2 || (*timeline_obj_click_mode_ptr == 3 && (*timeline_edit_both_adjacent_ptr & 1))) { // 左端 || (右端 && 環境設定の隣接するオブジェクトも選択がON )
-            auto eop = &(*ObjectArrayPointer_ptr)[object_idx];
-            int obj_idx = eop->index_midpt_leader;
-            if (obj_idx == -1) {
-                if (exists_movable_playback_pos(object_idx)) {
-                    set_undo(object_idx, 0);
-                    return;
-                }
-            } else if (obj_idx == object_idx) {
-                if (exists_movable_playback_pos(obj_idx)) {
-                    while (0 <= obj_idx) {
-                        set_undo(obj_idx, 0);
-                        obj_idx = NextObjectIdxArray[obj_idx];
-                    }
-                    return;
-                }
+            if (exists_movable_playback_pos(object_idx)) {
+                set_undo(object_idx, 1);
+                return;
             }
         }
         set_undo(object_idx, flag);
+    }
+    int __cdecl undo_t::f8d506(int object_idx) {
+        int dialog_idx = *ObjDlg_ObjectIndex_ptr;
+        if (dialog_idx < 0) {
+            return -1;
+        }
+        if (object_idx == dialog_idx) {
+            return dialog_idx;
+        }
+        int leader_idx = (*ObjectArrayPointer_ptr)[dialog_idx].index_midpt_leader;
+        if (0 <= leader_idx) {
+            if (object_idx == leader_idx) {
+                return dialog_idx;
+            }
+        }
+        return -1;
     }
 
     int __cdecl undo_t::efDraw_func_WndProc_wrap_06e2b4(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, ExEdit::Filter* efp) {
@@ -228,13 +232,13 @@ namespace patch {
 
     void __stdcall undo_t::f4355c(ExEdit::Object* obj) {
         AddUndoCount();
-        set_undo(obj - *ObjectArrayPointer_ptr, 0);
+        set_undo(obj - *ObjectArrayPointer_ptr, 1);
         *(int*)&obj->flag ^= 0x200;
     }
 
     void __stdcall undo_t::f435bd(ExEdit::Object* obj) {
         AddUndoCount();
-        set_undo(obj - *ObjectArrayPointer_ptr, 0);
+        set_undo(obj - *ObjectArrayPointer_ptr, 1);
         *(int*)&obj->flag ^= 0x100;
     }
 

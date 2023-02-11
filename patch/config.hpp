@@ -146,6 +146,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_TEXT
+                patch::Text.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_load(cr);
             #endif
@@ -290,14 +293,14 @@ public:
                 #ifdef PATCH_SWITCH_FAST_BORDER
                     patch::fast::Border.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_BLUR
+                    patch::fast::Blur.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_load(cr);
                 #endif
-                #ifdef PATCH_SWITCH_FAST_MOTIONBLUR
-                    patch::fast::MotionBlur.switch_load(cr);
-                #endif
-                #ifdef PATCH_SWITCH_FAST_BLUR
-                    patch::fast::Blur.switch_load(cr);
+                #ifdef PATCH_SWITCH_FAST_COLORKEY
+                    patch::fast::Colorkey.switch_load(cr);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL
@@ -547,6 +550,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_TEXT
+                patch::Text.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_store(switch_);
             #endif
@@ -691,14 +697,14 @@ public:
                 #ifdef PATCH_SWITCH_FAST_BORDER
                     patch::fast::Border.switch_store(switch_);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_BLUR
+                    patch::fast::Blur.switch_store(switch_);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_store(switch_);
                 #endif
-                #ifdef PATCH_SWITCH_FAST_MOTIONBLUR
-                    patch::fast::MotionBlur.switch_store(switch_);
-                #endif
-                #ifdef PATCH_SWITCH_FAST_BLUR
-                    patch::fast::Blur.switch_store(switch_);
+                #ifdef PATCH_SWITCH_FAST_COLORKEY
+                    patch::fast::Colorkey.switch_store(switch_);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL

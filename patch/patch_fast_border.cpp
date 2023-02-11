@@ -22,783 +22,830 @@
 #include "global.hpp"
 #include "offset_address.hpp"
 #include "util_int.hpp"
-#include "debug_log.hpp"
 #include <immintrin.h>
 
-//#define PATCH_STOPWATCH
-#include "stopwatch.hpp"
 
 namespace patch::fast {
 
-
-    // AVX2が有効かどうかを判定する関数を追加してください
-    // AVX2が無効の場合でも縁取り関連のバグ修正は行われるようになっています
     BOOL enable_avx2() {
-        auto cpucmdset = get_CPUCmdSet();
-        return has_flag(cpucmdset, CPUCmdSet::F_AVX2);
+        return has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2);
     }
 
-
-    void efBorder_horizontal_convolution_alpha_simd(int thread_id, int thread_num, void* param1, void* param2);
-    void efBorder_horizontal_convolution_alpha_simd2(int thread_id, int thread_num, void* param1, void* param2);
-    void efBorder_vertical_convolution_alpha_and_put_color_simd(int thread_id, int thread_num, void* param1, void* param2);
-    void efBorder_vertical_convolution_alpha_and_put_color_simd2(int thread_id, int thread_num, void* param1, void* param2);
-    void efBorder_vertical_convolution_alpha_simd(int thread_id, int thread_num, void* param1, void* param2);
-    void efBorder_vertical_convolution_alpha_simd2(int thread_id, int thread_num, void* param1, void* param2);
+    void horizontal_convolution_alpha(int thread_id, int thread_num, void* param1, void* param2);
+    void horizontal_convolution_alpha2(int thread_id, int thread_num, void* param1, void* param2);
+    void vertical_convolution_alpha_and_put_color(int thread_id, int thread_num, void* param1, void* param2);
+    void vertical_convolution_alpha_and_put_color2(int thread_id, int thread_num, void* param1, void* param2);
+    void vertical_convolution_alpha(int thread_id, int thread_num, void* param1, void* param2);
+    void vertical_convolution_alpha2(int thread_id, int thread_num, void* param1, void* param2);
 
     BOOL Border_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        if constexpr (true) {
-            static stopwatch_mem sw{};
-            sw.start();
 
-            auto& border = *(reinterpret_cast<efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr));
-            auto& ExEditMemory = *(void**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
+        auto border = (reinterpret_cast<efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr));
+        auto memory_ptr = (void**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
 
-            if (efp->track[0] <= 0) return TRUE;
+        if (efp->track[0] <= 0) return TRUE;
 
-            auto exdata = (ExEdit::Exdata::efBorder*)efp->exdata_ptr;
+        auto exdata = (ExEdit::Exdata::efBorder*)efp->exdata_ptr;
 
-            int obj_w = efpip->obj_w;
-            int obj_h = efpip->obj_h;
+        int obj_w = efpip->obj_w;
+        int obj_h = efpip->obj_h;
 
-            int temp;
-            int add_size = efp->track[0] * 2;
+        int add_size = efp->track[0] * 2;
 
-            border.inv_range = 0x1000 - efp->track[1] * 4096 / 1000;
+        add_size = (std::min)({ add_size, efpip->obj_line - obj_w, efpip->obj_max_h - obj_h });
+        add_size &= 0xfffffffe;
 
+        obj_w += add_size;
+        obj_h += add_size;
 
-            add_size = (std::min)({ add_size, efpip->obj_line - obj_w, efpip->obj_max_h - obj_h });
-            add_size &= 0xfffffffe;
-
-            obj_w += add_size;
-            obj_h += add_size;
-
-            // efpip->obj_tempに画像を読み込む
-            int file_w = 0;
-            int file_h = 0;
-            if (exdata->file[0] != '\0') {
-                if (efp->exfunc->load_image((ExEdit::PixelYCA*)ExEditMemory, exdata->file, &file_w, &file_h, 0, 0)) {
-                    for (int i = 0; i < obj_h; i += file_h) {
-                        for (int j = 0; j < obj_w; j += file_w) {
-                            efp->exfunc->bufcpy(efpip->obj_temp, j, i, ExEditMemory, 0, 0, file_w, file_h, 0, 0x13000003);
-                        }
+        // efpip->obj_tempに画像を読み込む
+        int file_w = 0;
+        int file_h = 0;
+        if (exdata->file[0] != '\0') {
+            if (efp->exfunc->load_image((ExEdit::PixelYCA*)*memory_ptr, exdata->file, &file_w, &file_h, 0, 0)) {
+                for (int i = 0; i < obj_h; i += file_h) {
+                    for (int j = 0; j < obj_w; j += file_w) {
+                        efp->exfunc->bufcpy(efpip->obj_temp, j, i, *memory_ptr, 0, 0, file_w, file_h, 0, 0x13000003);
                     }
                 }
             }
-
-
-            border.ExEditMemory = (unsigned short*)ExEditMemory;
-            border.add_size = add_size;
-            border.alpha = (int)round(65536.0 / ((double)efp->track[1] * add_size * 0.01 + 1.0));
-            temp = border.alpha;
-            int sft = 0;
-            while (sft < 16 && 64 < temp) {
-                temp >>= 1;
-                sft++;
-            }
-            border.alpha = temp;
-            border._alpha_shift = 16 - sft;
-
-            reinterpret_cast<void(__cdecl*)(short*, short*, short*, int)>(GLOBAL::exedit_base + OFS::ExEdit::rgb2yc)(&border.color_y, &border.color_cb, &border.color_cr, *(int*)&exdata->color & 0xffffff);
-
-            if (efpip->obj_w <= add_size) {
-                efp->aviutl_exfunc->exec_multi_thread_func(efBorder_horizontal_convolution_alpha_simd2, efp, efpip);
-            } else {
-                efp->aviutl_exfunc->exec_multi_thread_func(efBorder_horizontal_convolution_alpha_simd, efp, efpip);
-            }
-
-            if (efpip->obj_h <= add_size) {
-                if (file_w == 0 || file_h == 0) { // 画像なし
-                    efp->aviutl_exfunc->exec_multi_thread_func(efBorder_vertical_convolution_alpha_and_put_color_simd2, efp, efpip);
-                } else { // 画像あり
-                    efp->aviutl_exfunc->exec_multi_thread_func(efBorder_vertical_convolution_alpha_simd2, efp, efpip);
-                }
-            } else {
-                if (file_w == 0 || file_h == 0) { // 画像なし
-                    efp->aviutl_exfunc->exec_multi_thread_func(efBorder_vertical_convolution_alpha_and_put_color_simd, efp, efpip);
-                } else { // 画像あり
-                    efp->aviutl_exfunc->exec_multi_thread_func(efBorder_vertical_convolution_alpha_simd, efp, efpip);
-                }
-            }
-
-
-            efp->exfunc->bufcpy(efpip->obj_temp, add_size / 2, add_size / 2, efpip->obj_edit, 0, 0, efpip->obj_w, efpip->obj_h, 0, 3);
-
-            std::swap(efpip->obj_temp, efpip->obj_edit);
-
-            efpip->obj_w = obj_w;
-            efpip->obj_h = obj_h;
-
-
-            sw.stop();
-            return TRUE;
         }
-        else {
-            static stopwatch_mem sw{};
-            sw.start();
-            auto ret = ((decltype(ExEdit::Filter::func_proc))(GLOBAL::exedit_base + OFS::ExEdit::efBorder_func_proc_ptr))(efp, efpip);
-            sw.stop();
-            return ret;
+
+
+        border->ExEditMemory = (unsigned short*)*memory_ptr;
+
+        border->add_size = add_size;
+        border->alpha = (int)round(65536.0 / ((double)efp->track[1] * add_size * 0.01 + 1.0));
+        int temp = border->alpha;
+        int sft = 0;
+        while (sft < 16 && 64 < temp) {
+            temp >>= 1;
+            sft++;
         }
+        border->alpha = temp;
+        border->_alpha_shift = 16 - sft;
+
+        reinterpret_cast<void(__cdecl*)(short*, short*, short*, int)>(GLOBAL::exedit_base + OFS::ExEdit::rgb2yc)(&border->color_y, &border->color_cb, &border->color_cr, *(int*)&exdata->color & 0xffffff);
+
+        if (add_size < efpip->obj_w) {
+            efp->aviutl_exfunc->exec_multi_thread_func(horizontal_convolution_alpha, border, efpip);
+        } else {
+            efp->aviutl_exfunc->exec_multi_thread_func(horizontal_convolution_alpha2, border, efpip);
+        }
+
+        if (file_w == 0 || file_h == 0) { // 画像なし
+            if (add_size < efpip->obj_h) {
+                efp->aviutl_exfunc->exec_multi_thread_func(vertical_convolution_alpha_and_put_color, border, efpip);
+            } else {
+                efp->aviutl_exfunc->exec_multi_thread_func(vertical_convolution_alpha_and_put_color2, border, efpip);
+            }
+        } else { // 画像あり
+            if (add_size < efpip->obj_h) {
+                efp->aviutl_exfunc->exec_multi_thread_func(vertical_convolution_alpha, border, efpip);
+            } else {
+                efp->aviutl_exfunc->exec_multi_thread_func(vertical_convolution_alpha2, border, efpip);
+            }
+        }
+
+
+        efp->exfunc->bufcpy(efpip->obj_temp, add_size / 2, add_size / 2, efpip->obj_edit, 0, 0, efpip->obj_w, efpip->obj_h, 0, 3);
+
+        std::swap(efpip->obj_temp, efpip->obj_edit);
+
+        efpip->obj_w = obj_w;
+        efpip->obj_h = obj_h;
+
+
+        return TRUE;
     }
 
 
 
 #define ALPHA_TEMP_MAX 0xFFFF
 
-    void efBorder_horizontal_convolution_alpha_simd(int thread_id, int thread_num, void* param1, void* param2) {
-        auto& border = *reinterpret_cast<Border_t::efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr);
-        auto efp = static_cast<ExEdit::Filter*>(param1);
+    void horizontal_convolution_alpha(int thread_id, int thread_num, void* param1, void* param2) {
+        auto border = static_cast<Border_t::efBorder_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
+        int alpha = border->alpha;
+        int shift_r = border->_alpha_shift;
+        int border_range = border->add_size;
+        int loop2 = efpip->obj_w - border_range - 1;
+        int y = (efpip->obj_h * thread_id / thread_num + 7) & 0xfffffff8;
+        int src_line = efpip->obj_line * sizeof(ExEdit::PixelYCA);
+        auto src0 = (short*)((int)efpip->obj_edit + y * src_line) + 2;
+        int dst_line = efpip->obj_line * sizeof(unsigned short);
+        auto dst0 = (unsigned short*)((int)border->ExEditMemory + y * dst_line);
 
-        int begin_thread = efpip->obj_h * thread_id / thread_num;
-        int end_thread = efpip->obj_h * (thread_id + 1) / thread_num;
+        y = min((efpip->obj_h * (thread_id + 1) / thread_num + 7) & 0xfffffff8, efpip->obj_h) - y;
 
-        int y = begin_thread;
+        if (enable_avx2() && 8 <= y) {
+            __m256i offset256 = _mm256_mullo_epi32(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _mm256_set1_epi32(src_line));
+            __m256i border_alpha256 = _mm256_set1_epi32(alpha);
+            __m256i a_dst_max256 = _mm256_set1_epi32(ALPHA_TEMP_MAX);
+            int src_line8 = src_line * 8;
+            int dst_line8 = dst_line * 8;
+            int y7 = y & 7;
+            for (y >>= 3; 0 < y; y--) {
+                auto src1 = (int*)src0;
+                auto src2 = src1;
+                src0 = (short*)((int)src0 + src_line8);
+                auto dst1 = dst0;
+                dst0 = (unsigned short*)((int)dst0 + dst_line8);
 
-        if (enable_avx2()) {
-            __m256i offset256 = _mm256_mullo_epi32(_mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0), _mm256_set1_epi32(efpip->obj_line));
-            __m256i border_alpha256 = _mm256_set1_epi32(border.alpha);
-            __m256i a_mem_max256 = _mm256_set1_epi32(ALPHA_TEMP_MAX);
-            int end_y = end_thread - 7;
-            for (; y < end_y; y += 8) {
+                __m256i sum_a256 = _mm256_setzero_si256();
+                for (int x = border_range; 0 <= x; x--) {
+                    __m256i a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(src1, offset256, 1), 16);
+                    sum_a256 = _mm256_add_epi32(sum_a256, a256);
+                    a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
 
-                int* pix1 = (int*)((ExEdit::PixelYCA*)efpip->obj_edit + y * efpip->obj_line) + 1;
-                int* pix2 = pix1;
-                unsigned short* mem = border.ExEditMemory + y * efpip->obj_line;
-
-                __m256i a_sum256 = _mm256_setzero_si256();
-                int x;
-                for (x = 0; x <= border.add_size; x++) {
-                    __m256i a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pix1, offset256, 4), 16);
-                    a_sum256 = _mm256_add_epi32(a_sum256, a256);
-                    a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_mem_max256);
-
-                    for (int i = 0; i < 8; i++) {
-                        mem[i * efpip->obj_line] = (unsigned short)a256.m256i_u32[i];
+                    auto dst = dst1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = a256.m256i_u16[i];
+                        dst = (unsigned short*)((int)dst + dst_line);
                     }
 
-                    pix1 += 2;
-                    mem++;
+                    src1 += 2;
+                    dst1++;
                 }
+                for (int x = loop2; 0 < x; x--) {
+                    __m256i a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(src2, offset256, 1), 16);
+                    sum_a256 = _mm256_sub_epi32(sum_a256, a256);
+                    a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(src1, offset256, 1), 16);
+                    sum_a256 = _mm256_add_epi32(sum_a256, a256);
+                    a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
 
-
-                for (; x < efpip->obj_w; x++) {
-                    __m256i a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pix2, offset256, 4), 16);
-                    a_sum256 = _mm256_sub_epi32(a_sum256, a256);
-                    a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pix1, offset256, 4), 16);
-                    a_sum256 = _mm256_add_epi32(a_sum256, a256);
-                    a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_mem_max256);
-
-                    for (int i = 0; i < 8; i++) {
-                        mem[i * efpip->obj_line] = (unsigned short)a256.m256i_u32[i];
+                    auto dst = dst1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = a256.m256i_u16[i];
+                        dst = (unsigned short*)((int)dst + dst_line);
                     }
 
-                    pix1 += 2;
-                    pix2 += 2;
-                    mem++;
+                    src1 += 2;
+                    src2 += 2;
+                    dst1++;
                 }
-                int end_x = efpip->obj_w + border.add_size;
-                for (; x < end_x; x++) {
-                    __m256i a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pix2, offset256, 4), 16);
-                    a_sum256 = _mm256_sub_epi32(a_sum256, a256);
-                    a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_mem_max256);
+                for (int x = border_range; 0 < x; x--) {
+                    __m256i a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(src2, offset256, 1), 16);
+                    sum_a256 = _mm256_sub_epi32(sum_a256, a256);
+                    a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
 
-                    for (int i = 0; i < 8; i++) {
-                        mem[i * efpip->obj_line] = (unsigned short)a256.m256i_u32[i];
+                    auto dst = dst1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = a256.m256i_u16[i];
+                        dst = (unsigned short*)((int)dst + dst_line);
                     }
 
-                    pix2 += 2;
-                    mem++;
+                    src2 += 2;
+                    dst1++;
                 }
             }
+            y = y7;
         }
 
-        for (; y < end_thread; y++) {
-            short* pixa1 = (short*)((ExEdit::PixelYCA*)efpip->obj_edit + y * efpip->obj_line) + 3;
-            short* pixa2 = pixa1;
-            unsigned short* mem = border.ExEditMemory + y * efpip->obj_line;
-            int a_sum = 0;
+        src0++; // &pix.cr -> &pix.a 
+        for (; 0 < y; y--) {
+            auto src1 = src0;
+            auto src2 = src1;
+            src0 = (short*)((int)src0 + src_line);
+            auto dst = dst0;
+            dst0 = (unsigned short*)((int)dst0 + dst_line);
 
-            int x;
-            for (x = 0; x <= border.add_size; x++) {
-                a_sum += *pixa1;
-                *mem = (unsigned short)min(a_sum * border.alpha >> border._alpha_shift, ALPHA_TEMP_MAX);
+            int sum_a = 0;
+            for (int x = border_range; 0 <= x; x--) {
+                sum_a += *src1;
+                *dst = min(sum_a * alpha >> shift_r, ALPHA_TEMP_MAX);
 
-                pixa1 += 4;
-                mem++;
+                src1 += 4;
+                dst++;
             }
+            for (int x = loop2; 0 < x; x--) {
+                sum_a += *src1 - *src2;
+                *dst = min(sum_a * alpha >> shift_r, ALPHA_TEMP_MAX);
 
-            for (; x < efpip->obj_w; x++) {
-                a_sum += *pixa1 - *pixa2;
-                *mem = (unsigned short)min(a_sum * border.alpha >> border._alpha_shift, ALPHA_TEMP_MAX);
-
-                pixa1 += 4;
-                pixa2 += 4;
-                mem++;
+                src1 += 4;
+                src2 += 4;
+                dst++;
             }
-            for (x = 0; x < border.add_size; x++) {
-                a_sum -= *pixa2;
-                *mem = (unsigned short)min(a_sum * border.alpha >> border._alpha_shift, ALPHA_TEMP_MAX);
+            for (int x = border_range; 0 < x; x--) {
+                sum_a -= *src2;
+                *dst = min(sum_a * alpha >> shift_r, ALPHA_TEMP_MAX);
 
-                pixa2 += 4;
-                mem++;
+                src2 += 4;
+                dst++;
             }
         }
     }
 
-    void efBorder_horizontal_convolution_alpha_simd2(int thread_id, int thread_num, void* param1, void* param2) { // 51ae0
-        auto& border = *reinterpret_cast<Border_t::efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr);
-        auto efp = static_cast<ExEdit::Filter*>(param1);
+    void horizontal_convolution_alpha2(int thread_id, int thread_num, void* param1, void* param2) {
+        auto border = static_cast<Border_t::efBorder_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
+        int alpha = border->alpha;
+        int shift_r = border->_alpha_shift;
+        int border_range = border->add_size;
+        int obj_w = efpip->obj_w;
+        int loop2 = border_range - obj_w;
+        int y = (efpip->obj_h * thread_id / thread_num + 7) & 0xfffffff8;
+        int src_line = efpip->obj_line * sizeof(ExEdit::PixelYCA);
+        auto src0 = (short*)((int)efpip->obj_edit + y * src_line) + 2;
+        int dst_line = efpip->obj_line * sizeof(unsigned short);
+        auto dst0 = (unsigned short*)((int)border->ExEditMemory + y * dst_line);
 
-        int begin_thread = efpip->obj_h * thread_id / thread_num;
-        int end_thread = efpip->obj_h * (thread_id + 1) / thread_num;
+        y = min((efpip->obj_h * (thread_id + 1) / thread_num + 7) & 0xfffffff8, efpip->obj_h) - y;
 
-        int y = begin_thread;
+        if (enable_avx2() && 8 <= y) {
+            __m256i offset256 = _mm256_mullo_epi32(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _mm256_set1_epi32(src_line));
+            __m256i border_alpha256 = _mm256_set1_epi32(alpha);
+            __m256i a_dst_max256 = _mm256_set1_epi32(ALPHA_TEMP_MAX);
+            int src_line8 = src_line * 8;
+            int dst_line8 = dst_line * 8;
+            int y7 = y & 7;
+            for (y >>= 3; 0 < y; y--) {
+                auto src = (int*)src0;
+                auto dst1 = dst0;
+                dst0 = (unsigned short*)((int)dst0 + dst_line8);
 
-        if (enable_avx2()) {
-            __m256i offset256 = _mm256_mullo_epi32(_mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0), _mm256_set1_epi32(efpip->obj_line));
-            __m256i border_alpha256 = _mm256_set1_epi32(border.alpha);
-            __m256i a_mem_max256 = _mm256_set1_epi32(ALPHA_TEMP_MAX);
-            int end_y = end_thread - 7;
-            for (; y < end_y; y += 8) {
-
-                int* pix1 = (int*)((ExEdit::PixelYCA*)efpip->obj_edit + y * efpip->obj_line) + 1;
-                int* pix2 = pix1;
-                unsigned short* mem = border.ExEditMemory + y * efpip->obj_line;
-
-                __m256i a_sum256 = _mm256_setzero_si256();
                 __m256i a256;
-                int x;
-                for (x = 0; x < efpip->obj_w; x++) {
-                    a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pix1, offset256, 4), 16);
-                    a_sum256 = _mm256_add_epi32(a_sum256, a256);
-                    a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_mem_max256);
+                __m256i sum_a256 = _mm256_setzero_si256();
+                for (int x = obj_w; 0 < x; x--) {
+                    a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(src, offset256, 1), 16);
+                    sum_a256 = _mm256_add_epi32(sum_a256, a256);
+                    a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
 
-                    for (int i = 0; i < 8; i++) {
-                        mem[i * efpip->obj_line] = (unsigned short)a256.m256i_u32[i];
+                    auto dst = dst1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = a256.m256i_u16[i];
+                        dst = (unsigned short*)((int)dst + dst_line);
                     }
 
-                    pix1 += 2;
-                    mem++;
+                    src += 2;
+                    dst1++;
                 }
-
-                for (; x < border.add_size; x++) {
+                /*
+                for (int x = loop2; 0 < x; x--) {
+                    auto dst = dst1;
                     for (int i = 0; i < 8; i++) {
-                        mem[i * efpip->obj_line] = (unsigned short)a256.m256i_u32[i];
+                        *dst = a256.m256i_i32[i];
+                        dst = (int*)((int)dst + dst_line);
                     }
-                    mem++;
+                    dst1++;
                 }
-                for (x = 0; x < efpip->obj_w; x++) {
-                    a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pix2, offset256, 4), 16);
-                    a_sum256 = _mm256_sub_epi32(a_sum256, a256);
-                    a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_mem_max256);
+                */
+                auto dst2 = (unsigned short*)((int)dst1 + dst_line8);
+                for (int i = 14; 0 <= i; i -= 2) {
+                    dst1 = dst2 = (unsigned short*)((int)dst2 - dst_line);
+                    int a = a256.m256i_u16[i];
+                    for (int x = loop2; 0 < x; x--) {
+                        *dst1 = a;
+                        dst1++;
+                    }
+                }
+                src = (int*)src0;
+                src0 = (short*)((int)src0 + src_line8);
+                for (int x = obj_w; 0 < x; x--) {
+                    a256 = _mm256_srli_epi32(_mm256_i32gather_epi32(src, offset256, 1), 16);
+                    sum_a256 = _mm256_sub_epi32(sum_a256, a256);
+                    a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
 
-                    for (int i = 0; i < 8; i++) {
-                        mem[i * efpip->obj_line] = (unsigned short)a256.m256i_u32[i];
+                    auto dst = dst1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = a256.m256i_u16[i];
+                        dst = (unsigned short*)((int)dst + dst_line);
                     }
 
-                    pix2 += 2;
-                    mem++;
+                    src += 2;
+                    dst1++;
                 }
             }
+            y = y7;
         }
 
-        for (; y < end_thread; y++) {
-            short* pixa1 = (short*)((ExEdit::PixelYCA*)efpip->obj_edit + y * efpip->obj_line) + 3;
-            short* pixa2 = pixa1;
-            unsigned short* mem = border.ExEditMemory + y * efpip->obj_line;
-            unsigned int a_sum = 0;
-            unsigned short a;
+        src0++; // &pix.cr -> &pix.a 
+        for (; 0 < y; y--) {
+            auto src = src0;
+            auto dst = dst0;
+            dst0 = (unsigned short*)((int)dst0 + dst_line);
 
-            int x;
-            for (x = 0; x < efpip->obj_w; x++) {
-                a_sum += *pixa1;
-                *mem = a = (unsigned short)min(a_sum * border.alpha >> border._alpha_shift, ALPHA_TEMP_MAX);
+            int sum_a = 0;
+            for (int x = obj_w; 0 < x; x--) {
+                sum_a += *src;
+                *dst = min(sum_a * alpha >> shift_r, ALPHA_TEMP_MAX);
 
-                pixa1 += 4;
-                mem++;
+                src += 4;
+                dst++;
             }
-
-            for (; x < border.add_size; x++) {
-                *mem = a;
-                mem++;
+            unsigned short a = *(dst - 1);
+            for (int x = loop2; 0 < x; x--) {
+                *dst = a;
+                dst++;
             }
-            for (x = 0; x < efpip->obj_w; x++) {
-                a_sum -= *pixa2;
-                *mem = (unsigned short)min(a_sum * border.alpha >> border._alpha_shift, ALPHA_TEMP_MAX);
+            src = src0;
+            src0 = (short*)((int)src0 + src_line);
+            for (int x = obj_w; 0 < x; x--) {
+                sum_a -= *src;
+                *dst = min(sum_a * alpha >> shift_r, ALPHA_TEMP_MAX);
 
-                pixa2 += 4;
-                mem++;
+                src += 4;
+                dst++;
             }
         }
     }
 
-    void efBorder_vertical_convolution_alpha_and_put_color_simd(int thread_id, int thread_num, void* param1, void* param2) {
-        auto& border = *reinterpret_cast<Border_t::efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr);
-        auto efp = static_cast<ExEdit::Filter*>(param1);
+    void vertical_convolution_alpha_and_put_color(int thread_id, int thread_num, void* param1, void* param2) {
+        auto border = static_cast<Border_t::efBorder_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
 
-        ExEdit::PixelYCA* pix;
-        ExEdit::PixelYCA color = { border.color_y, border.color_cb, border.color_cr,0 };
+        ExEdit::PixelYCA color = { border->color_y, border->color_cb, border->color_cr,0 };
 
-        unsigned short* mem1;
-        unsigned short* mem2;
+        unsigned int alpha = border->alpha;
+        int shift_r = border->_alpha_shift;
+        int border_range = border->add_size;
+        int loop2 = efpip->obj_h - border_range - 1;
+        int x = ((efpip->obj_w + border_range) * thread_id / thread_num + 3) & 0xfffffffc;
+        auto src0 = (unsigned short*)border->ExEditMemory + x;
+        int src_line = efpip->obj_line * sizeof(unsigned short);
+        auto dst0 = (ExEdit::PixelYCA*)efpip->obj_temp + x;
+        int dst_line = efpip->obj_line * sizeof(ExEdit::PixelYCA);
 
-        int begin_thread = (efpip->obj_w + border.add_size) * thread_id / thread_num;
-        int end_thread = (efpip->obj_w + border.add_size) * (thread_id + 1) / thread_num;
+        x = min(((efpip->obj_w + border_range) * (thread_id + 1) / thread_num + 3) & 0xfffffffc, efpip->obj_w + border_range) - x;
 
-        int x = begin_thread;
-
-        if (enable_avx2()) {
+        if (enable_avx2() && 4 <= x) {
             __m256i color256 = _mm256_set1_epi64x(*(long long*)&color);
-            __m256i border_alpha256 = _mm256_set1_epi64x(border.alpha);
-            __m256i a_pix_max256 = _mm256_set1_epi64x(0x1000);
-            int end_x = end_thread - 3;
-            for (; x < end_x; x += 4) {
-                pix = (ExEdit::PixelYCA*)efpip->obj_temp + x;
-                mem1 = mem2 = border.ExEditMemory + x;
-
-                __m256i a_sum256 = _mm256_setzero_si256();
-
-                int y;
-                for (y = 0; y <= border.add_size; y++) {
-                    a_sum256 = _mm256_add_epi64(a_sum256, _mm256_cvtepu16_epi64(*(__m128i*)mem1));
-                    __m256i pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    pix256 = _mm256_srli_epi32(pix256, border._alpha_shift);
-                    pix256 = _mm256_min_epi32(pix256, a_pix_max256);
-                    pix256 = _mm256_slli_epi64(pix256, 48);
-                    *(__m256i*)pix = _mm256_or_si256(pix256, color256);
-
-                    pix += efpip->obj_line;
-                    mem1 += efpip->obj_line;
-                }
-                for (; y < efpip->obj_h; y++) {
-                    a_sum256 = _mm256_sub_epi64(a_sum256, _mm256_cvtepu16_epi64(*(__m128i*)mem2));
-                    a_sum256 = _mm256_add_epi64(a_sum256, _mm256_cvtepu16_epi64(*(__m128i*)mem1));
-                    __m256i pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    pix256 = _mm256_srli_epi32(pix256, border._alpha_shift);
-                    pix256 = _mm256_min_epi32(pix256, a_pix_max256);
-                    pix256 = _mm256_slli_epi64(pix256, 48);
-                    *(__m256i*)pix = _mm256_or_si256(pix256, color256);
-
-                    pix += efpip->obj_line;
-                    mem1 += efpip->obj_line;
-                    mem2 += efpip->obj_line;
-                }
-
-                for (y = 0; y < border.add_size; y++) {
-                    a_sum256 = _mm256_sub_epi64(a_sum256, _mm256_cvtepu16_epi64(*(__m128i*)mem2));
-                    __m256i pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    pix256 = _mm256_srli_epi32(pix256, border._alpha_shift);
-                    pix256 = _mm256_min_epi32(pix256, a_pix_max256);
-                    pix256 = _mm256_slli_epi64(pix256, 48);
-                    *(__m256i*)pix = _mm256_or_si256(pix256, color256);
-
-                    pix += efpip->obj_line;
-                    mem2 += efpip->obj_line;
-                }
-            }
-        }
-
-        for (; x < end_thread; x++) {
-            pix = (ExEdit::PixelYCA*)efpip->obj_temp + x;
-            mem1 = mem2 = border.ExEditMemory + x;
-
-            unsigned int a_sum = 0;
-            int y;
-            for (y = 0; y <= border.add_size; y++) {
-                a_sum += *mem1;
-                if (a_sum == 0) {
-                    pix->a = 0;
-                } else {
-                    color.a = (short)min(a_sum * border.alpha >> border._alpha_shift, 0x1000);
-                    *pix = color;
-                }
-
-                pix += efpip->obj_line;
-                mem1 += efpip->obj_line;
-            }
-            for (; y < efpip->obj_h; y++) {
-                a_sum += *mem1 - *mem2;
-                if (a_sum == 0) {
-                    pix->a = 0;
-                } else {
-                    color.a = (short)min(a_sum * border.alpha >> border._alpha_shift, 0x1000);
-                    *pix = color;
-                }
-
-                pix += efpip->obj_line;
-                mem1 += efpip->obj_line;
-                mem2 += efpip->obj_line;
-            }
-
-            for (y = 0; y < border.add_size; y++) {
-                a_sum -= *mem2;
-                if (a_sum == 0) {
-                    pix->a = 0;
-                } else {
-                    color.a = (short)min(a_sum * border.alpha >> border._alpha_shift, 0x1000);
-                    *pix = color;
-                }
-
-                pix += efpip->obj_line;
-                mem2 += efpip->obj_line;
-            }
-        }
-    }
-
-    void efBorder_vertical_convolution_alpha_and_put_color_simd2(int thread_id, int thread_num, void* param1, void* param2) {
-        auto& border = *reinterpret_cast<Border_t::efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr);
-        auto efp = static_cast<ExEdit::Filter*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-
-        ExEdit::PixelYCA* pix;
-        ExEdit::PixelYCA color = { border.color_y, border.color_cb, border.color_cr,0 };
-
-        unsigned short* mem1;
-        unsigned short* mem2;
-
-        int begin_thread = (efpip->obj_w + border.add_size) * thread_id / thread_num;
-        int end_thread = (efpip->obj_w + border.add_size) * (thread_id + 1) / thread_num;
-
-        int x = begin_thread;
-
-        if (enable_avx2()) {
-            __m256i color256 = _mm256_set1_epi64x(*(long long*)&color);
-            __m256i border_alpha256 = _mm256_set1_epi64x(border.alpha);
-            __m256i a_pix_max256 = _mm256_set1_epi64x(0x1000);
-            int end_x = end_thread - 3;
-            for (; x < end_x; x += 4) {
-                pix = (ExEdit::PixelYCA*)efpip->obj_temp + x;
-                mem1 = mem2 = border.ExEditMemory + x;
+            __m256i border_alpha256 = _mm256_set1_epi32(alpha);
+            __m256i a_dst_max256 = _mm256_set1_epi32(0x1000);
+            int x3 = x & 3;
+            for (x >>= 2; 0 < x; x--) {
+                auto src1 = (__m128i*)src0;
+                auto src2 = src1;
+                src0 += 4;
+                auto dst = (__m256i*)dst0;
+                dst0 += 4;
 
                 __m256i a_sum256 = _mm256_setzero_si256();
                 __m256i pix256;
 
-                int y;
-                for (y = 0; y < efpip->obj_h; y++) {
-                    a_sum256 = _mm256_add_epi64(a_sum256, _mm256_cvtepu16_epi64(*(__m128i*)mem1));
+                for (int y = border_range; 0 <= y; y--) {
+                    a_sum256 = _mm256_add_epi64(a_sum256, _mm256_cvtepu16_epi64(*src1));
                     pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    pix256 = _mm256_srli_epi32(pix256, border._alpha_shift);
-                    pix256 = _mm256_min_epi32(pix256, a_pix_max256);
+                    pix256 = _mm256_srli_epi32(pix256, shift_r);
+                    pix256 = _mm256_min_epi32(pix256, a_dst_max256);
                     pix256 = _mm256_slli_epi64(pix256, 48);
-                    *(__m256i*)pix = pix256 = _mm256_or_si256(pix256, color256);
+                    pix256 = _mm256_or_si256(pix256, color256);
+                    _mm256_store_si256(dst, pix256);
 
-                    pix += efpip->obj_line;
-                    mem1 += efpip->obj_line;
-                }
-                for (; y < border.add_size; y++) {
-                    *(__m256i*)pix = pix256;
-                    pix += efpip->obj_line;
+                    src1 = (__m128i*)((int)src1 + src_line);
+                    dst = (__m256i*)((int)dst + dst_line);
                 }
 
-                for (y = 0; y < efpip->obj_h; y++) {
-                    a_sum256 = _mm256_sub_epi64(a_sum256, _mm256_cvtepu16_epi64(*(__m128i*)mem2));
+                for (int y = loop2; 0 < y; y--) {
+                    a_sum256 = _mm256_sub_epi64(a_sum256, _mm256_cvtepu16_epi64(*src2));
+                    a_sum256 = _mm256_add_epi64(a_sum256, _mm256_cvtepu16_epi64(*src1));
                     pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    pix256 = _mm256_srli_epi32(pix256, border._alpha_shift);
-                    pix256 = _mm256_min_epi32(pix256, a_pix_max256);
+                    pix256 = _mm256_srli_epi32(pix256, shift_r);
+                    pix256 = _mm256_min_epi32(pix256, a_dst_max256);
                     pix256 = _mm256_slli_epi64(pix256, 48);
-                    *(__m256i*)pix = _mm256_or_si256(pix256, color256);
+                    pix256 = _mm256_or_si256(pix256, color256);
+                    _mm256_store_si256(dst, pix256);
 
-                    pix += efpip->obj_line;
-                    mem2 += efpip->obj_line;
+                    src1 = (__m128i*)((int)src1 + src_line);
+                    src2 = (__m128i*)((int)src2 + src_line);
+                    dst = (__m256i*)((int)dst + dst_line);
+                }
+
+                for (int y = border_range; 0 < y; y--) {
+                    a_sum256 = _mm256_sub_epi64(a_sum256, _mm256_cvtepu16_epi64(*src2));
+                    pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
+                    pix256 = _mm256_srli_epi32(pix256, shift_r);
+                    pix256 = _mm256_min_epi32(pix256, a_dst_max256);
+                    pix256 = _mm256_slli_epi64(pix256, 48);
+                    pix256 = _mm256_or_si256(pix256, color256);
+                    _mm256_store_si256(dst, pix256);
+
+                    src2 = (__m128i*)((int)src2 + src_line);
+                    dst = (__m256i*)((int)dst + dst_line);
                 }
             }
+            x = x3;
         }
 
-        for (; x < end_thread; x++) {
-            pix = (ExEdit::PixelYCA*)efpip->obj_temp + x;
-            mem1 = mem2 = border.ExEditMemory + x;
+        for (; 0 < x; x--) {
+            auto src1 = src0;
+            auto src2 = src1;
+            src0++;
+            auto dst = dst0;
+            dst0++;
 
             unsigned int a_sum = 0;
+            for (int y = border_range; 0 <= y; y--) {
+                a_sum += *src1;
+                color.a = (short)min(a_sum * border->alpha >> border->_alpha_shift, 0x1000);
+                *dst = color;
 
-            int y;
-            for (y = 0; y < efpip->obj_h; y++) {
-                a_sum += *mem1;
-                if (a_sum == 0) {
-                    pix->a = color.a = 0;
-                } else {
-                    color.a = (short)min(a_sum * border.alpha >> border._alpha_shift, 0x1000);
-                    *pix = color;
-                }
-
-                pix += efpip->obj_line;
-                mem1 += efpip->obj_line;
+                src1 = (unsigned short*)((int)src1 + src_line);
+                dst = (ExEdit::PixelYCA*)((int)dst + dst_line);
             }
 
-            for (; y < border.add_size; y++) {
-                *pix = color;
-                pix += efpip->obj_line;
+            for (int y = loop2; 0 < y; y--) {
+                a_sum += *src1 - *src2;
+                color.a = (short)min(a_sum * border->alpha >> border->_alpha_shift, 0x1000);
+                *dst = color;
+
+                src1 = (unsigned short*)((int)src1 + src_line);
+                src2 = (unsigned short*)((int)src2 + src_line);
+                dst = (ExEdit::PixelYCA*)((int)dst + dst_line);
             }
 
-            for (y = 0; y < efpip->obj_h; y++) {
-                a_sum -= *mem2;
-                if (a_sum == 0) {
-                    pix->a = 0;
-                } else {
-                    color.a = (short)min(a_sum * border.alpha >> border._alpha_shift, 0x1000);
-                    *pix = color;
-                }
+            for (int y = border_range; 0 < y; y--) {
+                a_sum -= *src2;
+                color.a = (short)min(a_sum * border->alpha >> border->_alpha_shift, 0x1000);
+                *dst = color;
 
-                pix += efpip->obj_line;
-                mem2 += efpip->obj_line;
+                src2 = (unsigned short*)((int)src2 + src_line);
+                dst = (ExEdit::PixelYCA*)((int)dst + dst_line);
             }
         }
     }
 
-    void efBorder_vertical_convolution_alpha_simd(int thread_id, int thread_num, void* param1, void* param2) {
-        auto& border = *reinterpret_cast<Border_t::efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr);
-        auto efp = static_cast<ExEdit::Filter*>(param1);
+    void vertical_convolution_alpha_and_put_color2(int thread_id, int thread_num, void* param1, void* param2) {
+        auto border = static_cast<Border_t::efBorder_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
 
-        unsigned short* mem1;
-        unsigned short* mem2;
+        ExEdit::PixelYCA color = { border->color_y, border->color_cb, border->color_cr,0 };
 
-        int begin_thread = (efpip->obj_w + border.add_size) * thread_id / thread_num;
-        int end_thread = (efpip->obj_w + border.add_size) * (thread_id + 1) / thread_num;
+        unsigned int alpha = border->alpha;
+        int shift_r = border->_alpha_shift;
+        int border_range = border->add_size;
+        int obj_h = efpip->obj_h;
+        int loop2 = border_range - obj_h;
+        int x = ((efpip->obj_w + border_range) * thread_id / thread_num + 3) & 0xfffffffc;
+        auto src0 = (unsigned short*)border->ExEditMemory + x;
+        int src_line = efpip->obj_line * sizeof(unsigned short);
+        auto dst0 = (ExEdit::PixelYCA*)efpip->obj_temp + x;
+        int dst_line = efpip->obj_line * sizeof(ExEdit::PixelYCA);
 
-        int x = begin_thread;
+        x = min(((efpip->obj_w + border_range) * (thread_id + 1) / thread_num + 3) & 0xfffffffc, efpip->obj_w + border_range) - x;
 
-        if (enable_avx2()) {
-            __m256i offset256 = _mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0);
-            __m256i border_alpha256 = _mm256_set1_epi32(border.alpha);
-            __m256i a_pix_max256 = _mm256_set1_epi32(0x1000);
-            int end_x = end_thread - 7;
-            for (; x < end_x; x += 8) {
-                int* pixa = (int*)((ExEdit::PixelYCA*)efpip->obj_temp + x) + 1;
-
-                mem1 = mem2 = border.ExEditMemory + x;
+        if (enable_avx2() && 4 <= x) {
+            __m256i color256 = _mm256_set1_epi64x(*(long long*)&color);
+            __m256i border_alpha256 = _mm256_set1_epi32(alpha);
+            __m256i a_dst_max256 = _mm256_set1_epi32(0x1000);
+            int x3 = x & 3;
+            for (x >>= 2; 0 < x; x--) {
+                auto src = (__m128i*)src0;
+                auto dst = (__m256i*)dst0;
+                dst0 += 4;
 
                 __m256i a_sum256 = _mm256_setzero_si256();
+                __m256i pix256;
 
-                int y;
-                for (y = 0; y <= border.add_size; y++) {
-                    a_sum256 = _mm256_add_epi32(a_sum256, _mm256_cvtepu16_epi32(*(__m128i*)mem1));
-                    __m256i a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_pix_max256);
-                    __m256i pixa256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pixa, offset256, 4), 16);
-                    a256 = _mm256_mullo_epi32(a256, pixa256);
-                    a256 = _mm256_srli_epi32(a256, 12);
-                    short* pixas = (short*)pixa + 1;
-                    for (int i = 0; i < 8; i++) {
-                        pixas[i * 4] = (unsigned short)a256.m256i_u32[i];
-                    }
+                for (int y = obj_h; 0 < y; y--) {
+                    a_sum256 = _mm256_add_epi64(a_sum256, _mm256_cvtepu16_epi64(*src));
+                    pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
+                    pix256 = _mm256_srli_epi32(pix256, shift_r);
+                    pix256 = _mm256_min_epi32(pix256, a_dst_max256);
+                    pix256 = _mm256_slli_epi64(pix256, 48);
+                    pix256 = _mm256_or_si256(pix256, color256);
+                    _mm256_store_si256(dst, pix256);
 
-                    pixa += efpip->obj_line * 2;
-                    mem1 += efpip->obj_line;
+                    src = (__m128i*)((int)src + src_line);
+                    dst = (__m256i*)((int)dst + dst_line);
                 }
 
-                for (; y < efpip->obj_h; y++) {
-                    a_sum256 = _mm256_add_epi32(a_sum256, _mm256_cvtepu16_epi32(*(__m128i*)mem1));
-                    a_sum256 = _mm256_sub_epi32(a_sum256, _mm256_cvtepu16_epi32(*(__m128i*)mem2));
-                    __m256i a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_pix_max256);
-                    __m256i pixa256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pixa, offset256, 4), 16);
-                    a256 = _mm256_mullo_epi32(a256, pixa256);
-                    a256 = _mm256_srli_epi32(a256, 12);
-                    short* pixas = (short*)pixa + 1;
-                    for (int i = 0; i < 8; i++) {
-                        pixas[i * 4] = (unsigned short)a256.m256i_u32[i];
-                    }
+                for (int y = loop2; 0 < y; y--) {
+                    _mm256_store_si256(dst, pix256);
 
-                    pixa += efpip->obj_line * 2;
-                    mem1 += efpip->obj_line;
-                    mem2 += efpip->obj_line;
+                    dst = (__m256i*)((int)dst + dst_line);
                 }
 
-                for (y = 0; y < border.add_size; y++) {
-                    a_sum256 = _mm256_sub_epi32(a_sum256, _mm256_cvtepu16_epi32(*(__m128i*)mem2));
-                    __m256i a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_pix_max256);
-                    __m256i pixa256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pixa, offset256, 4), 16);
-                    a256 = _mm256_mullo_epi32(a256, pixa256);
-                    a256 = _mm256_srli_epi32(a256, 12);
-                    short* pixas = (short*)pixa + 1;
-                    for (int i = 0; i < 8; i++) {
-                        pixas[i * 4] = (unsigned short)a256.m256i_u32[i];
-                    }
+                src = (__m128i*)src0;
+                src0 += 4;
+                for (int y = obj_h; 0 < y; y--) {
+                    a_sum256 = _mm256_sub_epi64(a_sum256, _mm256_cvtepu16_epi64(*src));
+                    pix256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
+                    pix256 = _mm256_srli_epi32(pix256, shift_r);
+                    pix256 = _mm256_min_epi32(pix256, a_dst_max256);
+                    pix256 = _mm256_slli_epi64(pix256, 48);
+                    pix256 = _mm256_or_si256(pix256, color256);
+                    _mm256_store_si256(dst, pix256);
 
-                    pixa += efpip->obj_line * 2;
-                    mem2 += efpip->obj_line;
+                    src = (__m128i*)((int)src + src_line);
+                    dst = (__m256i*)((int)dst + dst_line);
                 }
             }
+            x = x3;
         }
 
+        for (; 0 < x; x--) {
+            auto src = src0;
+            auto dst = dst0;
+            dst0++;
 
-        for (; x < end_thread; x++) {
-            short* pixa = (short*)((ExEdit::PixelYCA*)efpip->obj_temp + x) + 3;
-            mem1 = mem2 = border.ExEditMemory + x;
-
-            int a;
             unsigned int a_sum = 0;
 
-            int y;
-            for (y = 0; y <= border.add_size; y++) {
-                a_sum += *mem1;
-                a = a_sum * border.alpha >> border._alpha_shift;
-                if (a < 0x1000) {
-                    *pixa = (short)(*pixa * a >> 12);
-                }
-
-                pixa += efpip->obj_line * 4;
-                mem1 += efpip->obj_line;
+            for (int y = obj_h; 0 < y; y--) {
+                a_sum += *src;
+                color.a = (short)min(a_sum * border->alpha >> border->_alpha_shift, 0x1000);
+                *dst = color;
+                
+                src = (unsigned short*)((int)src + src_line);
+                dst = (ExEdit::PixelYCA*)((int)dst + dst_line);
             }
 
-            for (; y < efpip->obj_h; y++) {
-                a_sum += *mem1 - *mem2;
-                a = a_sum * border.alpha >> border._alpha_shift;
-                if (a < 0x1000) {
-                    *pixa = (short)(*pixa * a >> 12);
-                }
+            for (int y = loop2; 0 < y; y--) {
+                *dst = color;
 
-                pixa += efpip->obj_line * 4;
-                mem1 += efpip->obj_line;
-                mem2 += efpip->obj_line;
+                dst = (ExEdit::PixelYCA*)((int)dst + dst_line);
             }
 
-            for (y = 0; y < border.add_size; y++) {
-                a_sum -= *mem2;
-                a = a_sum * border.alpha >> border._alpha_shift;
-                if (a < 0x1000) {
-                    *pixa = (short)(*pixa * a >> 12);
-                }
+            src = src0;
+            src0++;
+            for (int y = obj_h; 0 < y; y--) {
+                a_sum -= *src;
+                color.a = (short)min(a_sum * border->alpha >> border->_alpha_shift, 0x1000);
+                *dst = color;
 
-                pixa += efpip->obj_line * 4;
-                mem2 += efpip->obj_line;
+                src = (unsigned short*)((int)src + src_line);
+                dst = (ExEdit::PixelYCA*)((int)dst + dst_line);
             }
         }
     }
 
-    void efBorder_vertical_convolution_alpha_simd2(int thread_id, int thread_num, void* param1, void* param2) {
-        auto& border = *reinterpret_cast<Border_t::efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr);
-        auto efp = static_cast<ExEdit::Filter*>(param1);
+    void vertical_convolution_alpha(int thread_id, int thread_num, void* param1, void* param2) {
+        auto border = static_cast<Border_t::efBorder_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
 
-        unsigned short* mem1;
-        unsigned short* mem2;
+        unsigned int alpha = border->alpha;
+        int shift_r = border->_alpha_shift;
+        int border_range = border->add_size;
+        int loop2 = efpip->obj_h - border_range - 1;
+        int x = ((efpip->obj_w + border_range) * thread_id / thread_num + 7) & 0xfffffff8;
+        auto src0 = (unsigned short*)border->ExEditMemory + x;
+        int src_line = efpip->obj_line * sizeof(unsigned short);
+        auto dst0 = (short*)((ExEdit::PixelYCA*)efpip->obj_temp + x) + 2;
+        int dst_line = efpip->obj_line * sizeof(ExEdit::PixelYCA);
 
-        int begin_thread = (efpip->obj_w + border.add_size) * thread_id / thread_num;
-        int end_thread = (efpip->obj_w + border.add_size) * (thread_id + 1) / thread_num;
+        x = min(((efpip->obj_w + border_range) * (thread_id + 1) / thread_num + 7) & 0xfffffff8, efpip->obj_w + border_range) - x;
 
-        int x = begin_thread;
-
-        if (enable_avx2()) {
+        if (enable_avx2() && 8 <= x) {
             __m256i offset256 = _mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0);
-            __m256i border_alpha256 = _mm256_set1_epi32(border.alpha);
-            __m256i a_pix_max256 = _mm256_set1_epi32(0x1000);
-            int end_x = end_thread - 7;
-            for (; x < end_x; x += 8) {
-                int* pixa = (int*)((ExEdit::PixelYCA*)efpip->obj_temp + x) + 1;
+            __m256i border_alpha256 = _mm256_set1_epi32(alpha);
+            __m256i a_dst_max256 = _mm256_set1_epi32(0x1000);
+            int x7 = x & 7;
+            for (x >>= 3; 0 < x; x--) {
+                auto src1 = (__m128i*)src0;
+                auto src2 = src1;
+                src0 += 8;
+                auto dst1 = (int*)dst0;
+                dst0 += 32;
 
-                mem1 = mem2 = border.ExEditMemory + x;
+                __m256i sum_a256 = _mm256_setzero_si256();
+                for (int y = border_range; 0 <= y; y--) {
+                    sum_a256 = _mm256_add_epi32(sum_a256, _mm256_cvtepu16_epi32(*src1));
+                    __m256i a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
+                    __m256i dsta256 = _mm256_srli_epi32(_mm256_i32gather_epi32(dst1, offset256, 4), 16);
+                    dsta256 = _mm256_mullo_epi32(dsta256, a256);
+                    dsta256 = _mm256_srli_epi32(dsta256, 12);
+                    auto dst = (short*)dst1 + 1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = dsta256.m256i_u16[i];
+                        dst += 4;
+                    }
 
-                __m256i a_sum256 = _mm256_setzero_si256();
+                    src1 = (__m128i*)((int)src1 + src_line);
+                    dst1 = (int*)((int)dst1 + dst_line);
+                }
+
+                for (int y = loop2; 0 < y; y--) {
+                    sum_a256 = _mm256_sub_epi32(sum_a256, _mm256_cvtepu16_epi32(*src2));
+                    sum_a256 = _mm256_add_epi32(sum_a256, _mm256_cvtepu16_epi32(*src1));
+                    __m256i a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
+                    __m256i dsta256 = _mm256_srli_epi32(_mm256_i32gather_epi32(dst1, offset256, 4), 16);
+                    dsta256 = _mm256_mullo_epi32(dsta256, a256);
+                    dsta256 = _mm256_srli_epi32(dsta256, 12);
+                    auto dst = (short*)dst1 + 1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = dsta256.m256i_u16[i];
+                        dst += 4;
+                    }
+
+                    src1 = (__m128i*)((int)src1 + src_line);
+                    src2 = (__m128i*)((int)src2 + src_line);
+                    dst1 = (int*)((int)dst1 + dst_line);
+                }
+
+                for (int y = border_range; 0 < y; y--) {
+                    sum_a256 = _mm256_sub_epi32(sum_a256, _mm256_cvtepu16_epi32(*src2));
+                    __m256i a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
+                    __m256i dsta256 = _mm256_srli_epi32(_mm256_i32gather_epi32(dst1, offset256, 4), 16);
+                    dsta256 = _mm256_mullo_epi32(dsta256, a256);
+                    dsta256 = _mm256_srli_epi32(dsta256, 12);
+                    auto dst = (short*)dst1 + 1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = dsta256.m256i_u16[i];
+                        dst += 4;
+                    }
+
+                    src2 = (__m128i*)((int)src2 + src_line);
+                    dst1 = (int*)((int)dst1 + dst_line);
+                }
+            }
+            x = x7;
+        }
+
+        dst0++;
+        for (; 0 < x; x--) {
+            auto src1 = src0;
+            auto src2 = src1;
+            src0++;
+            auto dst = dst0;
+            dst0 += 4;
+
+            unsigned int sum_a = 0;
+            for (int y = border_range; 0 <= y; y--) {
+                sum_a += *src1;
+                int a = sum_a * alpha >> shift_r;
+                if (a < 0x1000) {
+                    *dst = (short)(*dst * a >> 12);
+                }
+
+                src1 = (unsigned short*)((int)src1 + src_line);
+                dst = (short*)((int)dst + dst_line);
+            }
+
+            for (int y = loop2; 0 < y; y--) {
+                sum_a += *src1 - *src2;
+                int a = sum_a * alpha >> shift_r;
+                if (a < 0x1000) {
+                    *dst = (short)(*dst * a >> 12);
+                }
+
+                src1 = (unsigned short*)((int)src1 + src_line);
+                src2 = (unsigned short*)((int)src2 + src_line);
+                dst = (short*)((int)dst + dst_line);
+            }
+
+            for (int y = border_range; 0 < y; y--) {
+                sum_a -= *src2;
+                int a = sum_a * alpha >> shift_r;
+                if (a < 0x1000) {
+                    *dst = (short)(*dst * a >> 12);
+                }
+
+                src2 = (unsigned short*)((int)src2 + src_line);
+                dst = (short*)((int)dst + dst_line);
+            }
+        }
+    }
+
+    void vertical_convolution_alpha2(int thread_id, int thread_num, void* param1, void* param2) {
+        auto border = static_cast<Border_t::efBorder_var*>(param1);
+        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
+
+        unsigned int alpha = border->alpha;
+        int shift_r = border->_alpha_shift;
+        int border_range = border->add_size;
+        int obj_h = efpip->obj_h;
+        int loop2 = border_range - obj_h;
+        int x = ((efpip->obj_w + border_range) * thread_id / thread_num + 7) & 0xfffffff8;
+        auto src0 = (unsigned short*)border->ExEditMemory + x;
+        int src_line = efpip->obj_line * sizeof(unsigned short);
+        auto dst0 = (short*)((ExEdit::PixelYCA*)efpip->obj_temp + x) + 2;
+        int dst_line = efpip->obj_line * sizeof(ExEdit::PixelYCA);
+
+        x = min(((efpip->obj_w + border_range) * (thread_id + 1) / thread_num + 7) & 0xfffffff8, efpip->obj_w + border_range) - x;
+
+        if (enable_avx2() && 8 <= x) {
+            __m256i offset256 = _mm256_set_epi32(14, 12, 10, 8, 6, 4, 2, 0);
+            __m256i border_alpha256 = _mm256_set1_epi32(alpha);
+            __m256i a_dst_max256 = _mm256_set1_epi32(0x1000);
+            int x7 = x & 7;
+            for (x >>= 3; 0 < x; x--) {
+                auto src = (__m128i*)src0;
+                auto dst1 = (int*)dst0;
+                dst0 += 32;
+
                 __m256i a256;
-
-                int y;
-                for (y = 0; y < efpip->obj_h; y++) {
-                    a_sum256 = _mm256_add_epi32(a_sum256, _mm256_cvtepu16_epi32(*(__m128i*)mem1));
-                    a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_pix_max256);
-                    __m256i pixa256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pixa, offset256, 4), 16);
-                    pixa256 = _mm256_mullo_epi32(a256, pixa256);
-                    pixa256 = _mm256_srli_epi32(pixa256, 12);
-                    short* pixas = (short*)pixa + 1;
-                    for (int i = 0; i < 8; i++) {
-                        pixas[i * 4] = (unsigned short)pixa256.m256i_u32[i];
+                __m256i sum_a256 = _mm256_setzero_si256();
+                for (int y = obj_h; 0 < y; y--) {
+                    sum_a256 = _mm256_add_epi32(sum_a256, _mm256_cvtepu16_epi32(*src));
+                    a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
+                    __m256i dsta256 = _mm256_srli_epi32(_mm256_i32gather_epi32(dst1, offset256, 4), 16);
+                    dsta256 = _mm256_mullo_epi32(dsta256, a256);
+                    dsta256 = _mm256_srli_epi32(dsta256, 12);
+                    auto dst = (short*)dst1 + 1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = dsta256.m256i_u16[i];
+                        dst += 4;
                     }
 
-                    pixa += efpip->obj_line * 2;
-                    mem1 += efpip->obj_line;
+                    src = (__m128i*)((int)src + src_line);
+                    dst1 = (int*)((int)dst1 + dst_line);
                 }
 
-                for (; y < border.add_size; y++) {
-                    __m256i pixa256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pixa, offset256, 4), 16);
-                    pixa256 = _mm256_mullo_epi32(a256, pixa256);
-                    pixa256 = _mm256_srli_epi32(pixa256, 12);
-                    short* pixas = (short*)pixa + 1;
-                    for (int i = 0; i < 8; i++) {
-                        pixas[i * 4] = (unsigned short)pixa256.m256i_u32[i];
+                __m256i flag256 = _mm256_srli_epi32(a256, 12);
+                int n;
+                for (n = 7; 0 <= n; n--) { // 全alphaが0x1000なら丸ごと省略するってのを書いたけど効率良いのか不明
+                    if (flag256.m256i_i32[n] == 0) {
+                        for (int y = loop2; 0 < y; y--) {
+                            __m256i dsta256 = _mm256_srli_epi32(_mm256_i32gather_epi32(dst1, offset256, 4), 16);
+                            dsta256 = _mm256_mullo_epi32(dsta256, a256);
+                            dsta256 = _mm256_srli_epi32(dsta256, 12);
+                            auto dst = (short*)dst1 + 1;
+                            for (int i = 0; i < 16; i += 2) {
+                                *dst = dsta256.m256i_u16[i];
+                                dst += 4;
+                            }
+                            dst1 = (int*)((int)dst1 + dst_line);
+                        }
+                        break;
                     }
-
-                    pixa += efpip->obj_line * 2;
+                }
+                if (n == -1) {
+                    dst1 = (int*)((int)dst1 + dst_line * loop2);
                 }
 
-                for (y = 0; y < efpip->obj_h; y++) {
-                    a_sum256 = _mm256_sub_epi32(a_sum256, _mm256_cvtepu16_epi32(*(__m128i*)mem2));
-                    a256 = _mm256_mullo_epi32(a_sum256, border_alpha256);
-                    a256 = _mm256_srli_epi32(a256, border._alpha_shift);
-                    a256 = _mm256_min_epu32(a256, a_pix_max256);
-                    __m256i pixa256 = _mm256_srli_epi32(_mm256_i32gather_epi32(pixa, offset256, 4), 16);
-                    pixa256 = _mm256_mullo_epi32(a256, pixa256);
-                    pixa256 = _mm256_srli_epi32(pixa256, 12);
-                    short* pixas = (short*)pixa + 1;
-                    for (int i = 0; i < 8; i++) {
-                        pixas[i * 4] = (unsigned short)pixa256.m256i_u32[i];
+                src = (__m128i*)src0;
+                src0 += 8;
+                for (int y = obj_h; 0 < y; y--) {
+                    sum_a256 = _mm256_sub_epi32(sum_a256, _mm256_cvtepu16_epi32(*src));
+                    a256 = _mm256_mullo_epi32(sum_a256, border_alpha256);
+                    a256 = _mm256_srli_epi32(a256, shift_r);
+                    a256 = _mm256_min_epu32(a256, a_dst_max256);
+                    __m256i dsta256 = _mm256_srli_epi32(_mm256_i32gather_epi32(dst1, offset256, 4), 16);
+                    dsta256 = _mm256_mullo_epi32(dsta256, a256);
+                    dsta256 = _mm256_srli_epi32(dsta256, 12);
+                    auto dst = (short*)dst1 + 1;
+                    for (int i = 0; i < 16; i += 2) {
+                        *dst = dsta256.m256i_u16[i];
+                        dst += 4;
                     }
 
-                    pixa += efpip->obj_line * 2;
-                    mem2 += efpip->obj_line;
+                    src = (__m128i*)((int)src + src_line);
+                    dst1 = (int*)((int)dst1 + dst_line);
                 }
             }
+            x = x7;
         }
 
-        for (; x < end_thread; x++) {
-            short* pixa = (short*)((ExEdit::PixelYCA*)efpip->obj_temp + x) + 3;
-            mem1 = mem2 = border.ExEditMemory + x;
+        dst0++;
+        for (; 0 < x; x--) {
+            auto src = src0;
+            auto dst = dst0;
+            dst0 += 4;
 
             int a;
-            unsigned int a_sum = 0;
-
-            int y;
-            for (y = 0; y < efpip->obj_h; y++) {
-                a_sum += *mem1;
-                a = a_sum * border.alpha >> border._alpha_shift;
+            unsigned int sum_a = 0;
+            for (int y = obj_h; 0 < y; y--) {
+                sum_a += *src;
+                a = sum_a * alpha >> shift_r;
                 if (a < 0x1000) {
-                    *pixa = (short)(*pixa * a >> 12);
+                    *dst = (short)(*dst * a >> 12);
                 }
 
-                pixa += efpip->obj_line * 4;
-                mem1 += efpip->obj_line;
+                src = (unsigned short*)((int)src + src_line);
+                dst = (short*)((int)dst + dst_line);
             }
-            
             if (a < 0x1000) {
-                for (; y < border.add_size; y++) {
-                    *pixa = (short)(*pixa * a >> 12);
-                    pixa += efpip->obj_line * 4;
+                for (int y = loop2; 0 < y; y--) {
+                    *dst = (short)(*dst * a >> 12);
+                    dst = (short*)((int)dst + dst_line);
                 }
             } else {
-                pixa += efpip->obj_line * 4 * (border.add_size - efpip->obj_h);
+                dst = (short*)((int)dst + dst_line * loop2);
             }
 
-            for (y = 0; y < efpip->obj_h; y++) {
-                a_sum -= *mem2;
-                a = a_sum * border.alpha >> border._alpha_shift;
+            src = src0;
+            src0++;
+            for (int y = obj_h; 0 < y; y--) {
+                sum_a -= *src;
+                a = sum_a * alpha >> shift_r;
                 if (a < 0x1000) {
-                    *pixa = (short)(*pixa * a >> 12);
+                    *dst = (short)(*dst * a >> 12);
                 }
 
-                pixa += efpip->obj_line * 4;
-                mem2 += efpip->obj_line;
+                src = (unsigned short*)((int)src + src_line);
+                dst = (short*)((int)dst + dst_line);
             }
         }
     }
+
 
 }
 #endif // ifdef PATCH_SWITCH_FAST_BORDER

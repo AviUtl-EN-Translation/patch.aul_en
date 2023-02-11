@@ -48,6 +48,7 @@
     <ClInclude Include="patch_console.hpp" />
     <ClInclude Include="patch_dialog_new_file.hpp" />
     <ClInclude Include="patch_fast_blur.hpp" />
+    <ClInclude Include="patch_fast_colorkey.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
@@ -58,6 +59,7 @@
     <ClInclude Include="patch_obj_resize.hpp" />
     <ClInclude Include="patch_obj_rotation.hpp" />
     <ClInclude Include="patch_obj_sharp.hpp" />
+    <ClInclude Include="patch_obj_text.hpp" />
     <ClInclude Include="patch_rendering.hpp" />
     <ClInclude Include="patch_script_sort.hpp" />
     <ClInclude Include="patch_shared_cache.hpp" />
@@ -151,9 +153,11 @@
     <ClCompile Include="patch_change_disp_scene.cpp" />
     <ClCompile Include="patch_failed_file_drop.cpp" />
     <ClCompile Include="patch_fast_blur.cpp" />
+    <ClCompile Include="patch_fast_colorkey.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
+    <ClCompile Include="patch_obj_text.cpp" />
     <ClCompile Include="patch_rendering.cpp" />
     <ClCompile Include="patch_shared_cache.cpp" />
     <ClCompile Include="patch_exception_log.cpp" />
@@ -193,6 +197,7 @@
     <ClCompile Include="patch_setting_new_project.cpp" />
     <ClCompile Include="patch_splash.cpp" />
     <ClCompile Include="patch_susie_load.cpp" />
+    <ClCompile Include="patch_theme_cc.cpp" />
     <ClCompile Include="patch_tra_change_drawfilter.cpp" />
     <ClCompile Include="patch_undo.cpp" />
     <ClCompile Include="patch_yc_rgb_conv.cpp" />
@@ -303,6 +308,7 @@ xcopy /Y "$(SolutionDir)COPYING.LESSER" "$(SolutionDir)pack\"</Command>
       <AdditionalIncludeDirectories>aviutl_exedit_sdk;winwrap;%BOOST_1_78_0_DIR%;%CUDA_PATH%\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/source-charset:utf-8 /execution-charset:shift_jis %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -104,5 +104,7 @@
 #include "patch_group_id.hpp"
 #include "patch_fast_text_border.hpp"
 #include "patch_border_only_text.hpp"
+#include "patch_obj_text.hpp"
+#include "patch_fast_colorkey.hpp"
 
 

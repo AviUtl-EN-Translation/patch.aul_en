@@ -194,6 +194,36 @@ namespace patch {
 				cw.append(key_bpm_grid_col, bpm_grid_col);
 			}
 		} timeline;
+
+		inline static int vertical_thumb_min = 10;
+		inline static int horizontal_thumb_min = 1024;
+		static int __stdcall SetScrollInfo_wrap38dee(HWND hwnd, int nBar, SCROLLINFO* lpsi, BOOL redraw);
+		static int __stdcall SetScrollInfo_wrap38c65(HWND hwnd, int nBar, SCROLLINFO* lpsi, BOOL redraw);
+
+		struct {
+			inline static const char name[] = "scrollbar";
+
+
+			inline static const char key_vertical_thumb_min[] = "vertical_thumb_min";
+			inline static const char key_horizontal_thumb_min[] = "horizontal_thumb_min";
+
+
+			void load(ConfigReader& cr) {
+				cr.regist(key_vertical_thumb_min, [this](json_value_s* value) {
+					ConfigReader::load_variable(value, vertical_thumb_min);
+					});
+				cr.regist(key_horizontal_thumb_min, [this](json_value_s* value) {
+					ConfigReader::load_variable(value, horizontal_thumb_min);
+					});
+			}
+
+			void store(ConfigWriter& cw) {
+				cw.append(key_vertical_thumb_min, vertical_thumb_min);
+				cw.append(key_horizontal_thumb_min, horizontal_thumb_min);
+			}
+
+		} scrollbar;
+
 	public:
 		void init() {
 			enabled_i = enabled;
@@ -435,6 +465,18 @@ namespace patch {
 					}
 				}
 			}
+			{
+				if (1 < horizontal_thumb_min) {
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x38dec, 6);
+					h.store_i16(0, '\x90\xe8');
+					h.replaceNearJmp(2, &SetScrollInfo_wrap38dee);
+				}
+				if (1 < vertical_thumb_min) {
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x38c63, 6);
+					h.store_i16(0, '\x90\xe8');
+					h.replaceNearJmp(2, &SetScrollInfo_wrap38c65);
+				}
+			}
 		}
 
 		void switching(bool flag) {
@@ -470,6 +512,11 @@ namespace patch {
 				timeline.load(cr);
 				cr.load();
 			});
+			cr.regist(scrollbar.name, [this](json_value_s* value) {
+				ConfigReader cr(value);
+				scrollbar.load(cr);
+				cr.load();
+			});
 		}
 
 		void config_store(ConfigWriter& cw) {
@@ -493,6 +540,13 @@ namespace patch {
 				std::stringstream ss;
 				cw_timeline.write(ss);
 				cw.append(timeline.name, ss.str());
+			}
+			{
+				ConfigWriter cw_scrollbar(cw.get_level() + 1);
+				scrollbar.store(cw_scrollbar);
+				std::stringstream ss;
+				cw_scrollbar.write(ss);
+				cw.append(scrollbar.name, ss.str());
 			}
 		}
 	} theme_cc;

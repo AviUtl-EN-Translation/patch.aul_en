@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_8"
+#define PATCH_VERSION_STR "r43_ss_9"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -128,6 +128,7 @@
 #define PATCH_SWITCH_FAILED_LONGER_PATH failed_longpath
 #define PATCH_SWITCH_FAILED_FILE_DROP failed_filedrop
 #define PATCH_SWITCH_SMALL_FILTER small_filter
+#define PATCH_SWITCH_OBJ_TEXT obj_text
 #define PATCH_SWITCH_OBJ_AUDIOFILE obj_audiofile
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
 //#define PATCH_SWITCH_OBJ_BLUR obj_blur // fast.blur実装により不要に
@@ -192,6 +193,7 @@
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 	#define PATCH_SWITCH_FAST_BLUR fast_blur
 	#define PATCH_SWITCH_FAST_GLOW fast_glow
+	#define PATCH_SWITCH_FAST_COLORKEY fast_colorkey
 	//#define PATCH_SWITCH_FAST_MOTIONBLUR fast_motionblur
 
 	#define PATCH_SWITCH_CL cl

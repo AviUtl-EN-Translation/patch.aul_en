@@ -70,6 +70,8 @@ namespace patch {
 
         static void __cdecl set_undo_wrap_3e037(unsigned int object_idx, unsigned int flag);
 
+        static int __cdecl f8d506(int object_idx);
+
         static int __cdecl efDraw_func_WndProc_wrap_06e2b4(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, ExEdit::Filter* efp);
 
         static int __stdcall f8b97f(HWND hwnd, ExEdit::Filter* efp, WPARAM wparam, LPARAM lparam);
@@ -151,8 +153,35 @@ namespace patch {
 			// オブジェクトの左端をつまんで動かすと再生位置パラメータが変わるが、それが元に戻らない
 			ReplaceNearJmp(GLOBAL::exedit_base + 0x03e038, &set_undo_wrap_3e037);
 			
+            // 中間点ありオブジェクトで色などを変更→元に戻すで設定ダイアログが更新されない
 			// 一部フィルタのファイル参照を変更→元に戻すで設定ダイアログが更新されない(音声波形など)
-			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x08d50e, 4).store_i32(0, '\x0f\x1f\x40\x00'); // nop
+            {
+                /*
+                    1008d505 a1107a1710         mov     eax,[10177a10]
+                    1008d50a 3bd8               cmp     ebx,eax
+                    1008d50c 751d               jnz     1008d52b
+                    1008d50e 3bde               cmp     ebx,esi
+                    1008d510 7419               jz      1008d52b
+                    1008d512 f7c300000001       test    ebx,01000000
+                    1008d518 895c2410           mov     dword ptr [esp+10],ebx
+                    ↓
+                    1008d505 53                 push    ebx
+                    1008d506 e8XxXxXxXx         call    f8d507
+                    1008d50b 83c404             add     esp,+04
+                    1008d50e 85c0               test    eax,eax
+                    1008d510 7c19               jl      1008d52b
+                    1008d512 f7c300000001       test    ebx,01000000
+                    1008d518 89442410           mov     dword ptr [esp+10],eax
+                */
+
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08d505, 21);
+                h.store_i16(0, '\x53\xe8');
+                h.replaceNearJmp(2, &f8d506);
+                h.store_i32(6, '\x83\xc4\x04\x85');
+                h.store_i16(10, '\xc0\x7c');
+                h.store_i8(20, '\x44');
+            }
+			// OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x08d50e, 4).store_i32(0, '\x0f\x1f\x40\x00'); // nop
 
             // 部分フィルタのマスクの種類を変更してもUndoデータが生成されない
             ReplaceNearJmp(GLOBAL::exedit_base + 0x06e2b5, &efDraw_func_WndProc_wrap_06e2b4);

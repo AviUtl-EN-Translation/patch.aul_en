@@ -188,6 +188,9 @@ void init_t::InitAtExeditLoad() {
 	patch::failed_file_drop.init();
 #endif
 
+#ifdef PATCH_SWITCH_OBJ_TEXT
+	patch::Text.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
 	patch::AudioFile.init();
 #endif
@@ -308,14 +311,17 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_BORDER
 			patch::fast::Border.init();
 		#endif
+		#ifdef PATCH_SWITCH_FAST_BLUR
+			patch::fast::Blur.init();
+		#endif
 		#ifdef PATCH_SWITCH_FAST_GLOW
 			patch::fast::Glow.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_MOTIONBLUR
 			patch::fast::MotionBlur.init();
 		#endif
-		#ifdef PATCH_SWITCH_FAST_BLUR
-			patch::fast::Blur.init();
+		#ifdef PATCH_SWITCH_FAST_COLORKEY
+			patch::fast::Colorkey.init();
 		#endif
 		
 		#ifdef PATCH_SWITCH_CL
