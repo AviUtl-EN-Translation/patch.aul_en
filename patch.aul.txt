@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_8
+patch.aul r43_ss_9
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -30,8 +30,8 @@ https://scrapbox.io/nazosauna/patch.aul
     ・メニュー文字列を実態に即したものに変更
     ・動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない
     ・拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある
-    ・極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/グロー/ぼかしの高速化
-        OpenCL/AVX2を使用します
+    ・極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/グロー/ぼかし/カラーキーの高速化
+        OpenCL/AVX2を使用することがあります
         わずかにオリジナルと結果が変わってしまいます (floatとdoubleの差です)
         また、アーティファクトなどのバグを解消することもあります
     ・図形の高速化
@@ -138,7 +138,7 @@ https://scrapbox.io/nazosauna/patch.aul
         Alt+括弧内のキー を押すと飛べます。
 
     ・テーマ機能
-        ConstChangerでできるのと同じようなことができます。逆に言えばそれ以上はできません。
+        ConstChangerでできるのと同じようなことができます。
 
     ・Lua関連の仕様変更/追加関数
         ・randexクラスを追加 標準のrand関数の分布がおかしいので
@@ -189,7 +189,11 @@ https://scrapbox.io/nazosauna/patch.aul
         "timeline" : {
             "scale_col" : [fore, back], ; 拡大率の色 (既定値: [ "60a0ff", "204080" ])
             "bpm_grid_col" : [measure, beat], ; BPMグリッドの色 (既定値: [ "646464", "a0a0a0" ])
-        }
+	},
+	"scrollbar" : {
+		"vertical_thumb_min" : number, ; 縦方向スクロールバーのサムの大きさの最小値を調整。単位はレイヤー数 (既定値: 10)
+		"horizontal_thumb_min" : number, ; 横方向スクロールバーのサムの大きさの最小値を調整。単位はフレーム数 (既定値: 1024)
+	}
     },
     "redo" : { ; やり直し 機能について
         "shift" : true ; Ctrl+Shift+Z によるやり直し操作を有効化するか (既定値: true)
@@ -275,8 +279,9 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.textborder" : boolean, ; テキスト縁取り文字の軽量化 (既定値: true)
             "fast.create_figure" : boolean, ; 図形の高速化 (既定値: true)
             "fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
-            "fast.glow" : boolean, ; グローの高速化 (既定値: true)
             "fast.blur" : boolean, ; ぼかしの高速化/バグ修正 (既定値: true)
+            "fast.glow" : boolean, ; グローの高速化 (既定値: true)
+            "fast.colorkey" : boolean, ; カラーキーの高速化 (既定値: true)
             "fast.cl" : boolean, ; fast.*でOpenCLが必要なオプションに必要なオプション (既定値: true)
                 "fast.radiationalblur" : boolean, ; fast.clが前提 放射ブラーの高速化 (既定値: true)
                 "fast.polartransform" : boolean, ; fast.clが前提 極座標変換の高速化 (既定値: true)
@@ -289,7 +294,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        現在は "patch.aul r43 beta1" という文字列が格納されている
+        現在は "patch.aul r43_ss_9" という文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
