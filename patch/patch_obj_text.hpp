@@ -29,6 +29,7 @@ namespace patch {
     // init at exedit load
     // 改行のみのテキストが幅0 高さ1以上となってしまい、エラーの原因となるのを修正
 
+    // テキストで制御文字を使用した時に変な描画がされることがあるのを簡易修正
 
     inline class obj_Text_t {
 
@@ -55,7 +56,7 @@ namespace patch {
             { // テキスト作成時のバッファ初期化の方法を変える
 
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x050254, 4);
-               // h.replaceNearJmp(0, &yc_buffer_fill_wrap);
+                h.replaceNearJmp(0, &yc_buffer_fill_wrap);
             }
         }
 
