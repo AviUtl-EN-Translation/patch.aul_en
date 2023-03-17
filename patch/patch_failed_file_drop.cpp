@@ -30,6 +30,11 @@ namespace patch {
 		}
 		return ret;
 	}
-
+	int __stdcall failed_file_drop_t::MessageBoxA_wrap(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType) {
+		if (!lstrcmpA(lpCaption, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_dot_aup)) || !lstrcmpA(lpCaption, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_dot_exedit_backup))) {
+			lpText = (LPCSTR)str_failed_pfdrop_msg;
+		}
+		return MessageBoxA(hWnd, lpText, lpCaption, uType);
+	}
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_FAILED_FILE_DROP

@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_9"
+#define PATCH_VERSION_STR "r43_ss_10"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -154,6 +154,7 @@
 #define PATCH_SWITCH_SHARED_CACHE shared_cache
 #define PATCH_SWITCH_RENDERING rendering
 #define PATCH_SWITCH_YC_RGB_CONV ycrgbconv
+#define PATCH_SWITCH_CAMERA_SCENE camera_scene
 #define PATCH_SWITCH_GROUP_CAMERA_SCENE group_camera_scene
 #define PATCH_SWITCH_CHANGE_DISP_SCENE change_dispscene
 #define PATCH_SWITCH_GROUP_ID group_id

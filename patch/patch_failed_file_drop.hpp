@@ -31,10 +31,13 @@ namespace patch {
     inline class failed_file_drop_t {
 
         inline static const char str_failed_drop_msg[] = "拡張編集へドロップされたファイルの種類が判別できませんでした\nexedit.iniを確認してください";
+        inline static const char str_failed_pfdrop_msg[] = "現在、別のプロジェクトが開かれています\n読み込みを行う場合、ファイル＞閉じる などで閉じてください";
 
         static char __stdcall init_flag();
         inline static int flag;
         static int __stdcall lstrcmpiA_wrap3c235(LPCSTR lpString1, LPCSTR lpString2);
+        static int __stdcall MessageBoxA_wrap(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+
         bool enabled = true;
         bool enabled_i;
         inline static const char key[] = "failed_file_drop";
@@ -79,7 +82,7 @@ namespace patch {
                 static const char code_put[] =
                     "\x8b\x0dXXXX"                //  mov     ecx, [this::flag]
                     "\x85\xc9"                    //  test    ecx, ecx
-                    "\x75\x27"                    //  jnz      skip +27
+                    "\x75\x26"                    //  jnz     skip +26
                     "\x8d\x8c\x24\xd0\x00\x00\x00"//  lea     ecx,dword ptr [esp+000000d0]
                     "\x51"                        //  push    ecx
                     "\xe8XXXX"                    //  call    1004e1d0 ; ExtractExtension
@@ -87,9 +90,9 @@ namespace patch {
                     "\x68\x30\x20\x04\x00"        //  push    0x42030
                     "\x50"                        //  push    eax
                     "\x68XXXX"                    //  push    &str_failed_drop_msg
-                    "\xa1\x44\x7a\x17\x00"        //  mov     eax,[exedit+exedit_hwnd]
+                    "\xa1XXXX"                    //  mov     eax,[exedit+exedit_hwnd]
                     "\x50"                        //  push    eax
-                    "\xff\x15XXXX"                //  call    dword ptr [exedit+MessageBoxA]
+                    "\xe8XXXX"                    //  call    dword ptr [MessageBoxA_wrap]
                     "\xe9"                        //  jmp     10043b4c
                     ;
 
@@ -98,10 +101,11 @@ namespace patch {
                 store_i32(cursor + 19, GLOBAL::exedit_base + 0x04e1d0 - (int)cursor - 23);
                 store_i32(cursor + 33, &str_failed_drop_msg);
                 store_i32(cursor + 38, GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd);
-                store_i32(cursor + 45, GLOBAL::exedit_base + 0x09a320);
+                store_i32(cursor + 44, (int)&MessageBoxA_wrap - (int)cursor - 48);
                 cursor += sizeof(code_put) - 1 + 4;
                 store_i32(cursor - 4, GLOBAL::exedit_base + 0x043b4c - (int)cursor);
 
+                // lstrcmpA 0x9a1c0
             }
         }
 

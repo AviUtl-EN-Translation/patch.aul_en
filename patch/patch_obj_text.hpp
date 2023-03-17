@@ -37,19 +37,26 @@ namespace patch {
         inline static const char key[] = "obj_text";
     public:
         static void __cdecl exedit_exfunc_x40_ret_wrap(void*, int, int, wchar_t*, ExEdit::PixelBGR, ExEdit::PixelBGR, int, HFONT, int*, int*, int, int, int, int*, int);
-
+        static void __cdecl yc_buffer_fill_wrap(void*, int, int, int, int, short, short, short, short, int);
         void init() {
             enabled_i = enabled;
 
             if (!enabled_i)return;
-            /*
-                1004fee8 c3        ret
-                1004fee9 90909090  nop
-            */
-            OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x04fee8, 5);
-            h.store_i8(0, '\xe9'); // jmp
-            h.replaceNearJmp(1, &exedit_exfunc_x40_ret_wrap);
 
+            { // テキストの幅か高さが0であれば両方0にする
+                /*
+                    1004fee8 c3        ret
+                    1004fee9 90909090  nop
+                */
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x04fee8, 5);
+                h.store_i8(0, '\xe9'); // jmp
+                h.replaceNearJmp(1, &exedit_exfunc_x40_ret_wrap);
+            }
+            { // テキスト作成時のバッファ初期化の方法を変える
+
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x050254, 4);
+               // h.replaceNearJmp(0, &yc_buffer_fill_wrap);
+            }
         }
 
         void switching(bool flag) {

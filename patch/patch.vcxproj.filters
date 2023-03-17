@@ -340,6 +340,9 @@
     <ClInclude Include="patch_fast_colorkey.hpp">
       <Filter>feature\fast</Filter>
     </ClInclude>
+    <ClInclude Include="patch_camera_scene.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -512,6 +515,9 @@
     </ClCompile>
     <ClCompile Include="patch_fast_colorkey.cpp">
       <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_camera_scene.cpp">
+      <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

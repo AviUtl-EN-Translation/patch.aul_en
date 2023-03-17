@@ -269,6 +269,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_YC_RGB_CONV
 	patch::yc_rgb_conv.init();
 #endif
+#ifdef PATCH_SWITCH_CAMERA_SCENE
+	patch::camera_scene.init();
+#endif
 #ifdef PATCH_SWITCH_GROUP_CAMERA_SCENE
 	patch::group_camera_scene.init();
 #endif

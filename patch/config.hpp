@@ -230,6 +230,9 @@ public:
             #ifdef PATCH_SWITCH_YC_RGB_CONV
                 patch::yc_rgb_conv.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_CAMERA_SCENE
+                patch::camera_scene.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_GROUP_CAMERA_SCENE
                 patch::group_camera_scene.switch_load(cr);
             #endif
@@ -633,6 +636,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_YC_RGB_CONV
                 patch::yc_rgb_conv.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_CAMERA_SCENE
+                patch::camera_scene.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_GROUP_CAMERA_SCENE
                 patch::group_camera_scene.switch_store(switch_);

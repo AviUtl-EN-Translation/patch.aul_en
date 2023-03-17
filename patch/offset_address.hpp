@@ -100,6 +100,7 @@ namespace OFS {
 		constexpr i32 exedit_YC_vram_w = 0x149840;
 		constexpr i32 exedit_YC_vram_h = 0x14ca4c;
 
+		constexpr i32 exedit_buffer_size = 0x177a28;
 		constexpr i32 exedit_max_h_add8 = 0x135c64;
 		constexpr i32 exedit_buffer_line = 0x135c68;
 
@@ -107,6 +108,21 @@ namespace OFS {
 		constexpr i32 exedit_max_h = 0x1920e0;
 
 		constexpr i32 memory_ptr = 0x1a5328;
+		constexpr i32 zbuffer_ptr = 0x1ec7ac;
+		constexpr i32 zbuffer_size = 0x1e4900;
+		constexpr i32 clear_zbuffer = 0x07d320;
+
+		constexpr i32 shadowmap_ptr = 0x1e9ea8;
+		constexpr i32 shadowmap_size = 0x1ec888;
+		constexpr i32 clear_shadowmap = 0x07d390;
+
+		constexpr i32 camera_mode = 0x013596c;
+		constexpr i32 z_order_ofi = 0x134ed0;
+		constexpr i32 z_order_coord = 0x135110;
+		constexpr i32 camera_dlg_visible = 0x1359b4;
+		constexpr i32 select_camera_ofi = 0x1359ec;
+		constexpr i32 camera_value_change_mode = 0x135a80;
+		
 
 		constexpr i32 fast_process = 0x2308a0;
 		constexpr i32 is_saving = 0x1a52e4;
@@ -157,8 +173,10 @@ namespace OFS {
 		constexpr i32 ini_extension_buf = 0x14cb58;
 		constexpr i32 str_DOUGAFILE= 0x09df6c; // "動画ファイル"
 		constexpr i32 str_ONSEIFILE = 0x0ba698; // "音声ファイル"
+		constexpr i32 str_dot_exedit_backup = 0x0a5308;
+		constexpr i32 str_dot_aup = 0x0a5320;
 
-		constexpr i32 VideoFuncCount = 0x1a5384;
+
 
 		constexpr i32 GetCache = 0x00cff0;
 		constexpr i32 CreateCache = 0x00cd00;
@@ -167,6 +185,7 @@ namespace OFS {
 		constexpr i32 CachePriorityCount = 0x11eb1c;
 
 		constexpr i32 video_func_main = 0x048830;
+		constexpr i32 video_func_idx = 0x1a5384;
 
 		constexpr i32 GetOrCreateSceneBufYC = 0x02a770;
 		constexpr i32 GetOrCreateSceneBufYCA = 0x02a830;
