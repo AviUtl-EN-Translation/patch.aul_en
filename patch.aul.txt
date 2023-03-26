@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_10
+patch.aul r43_ss_11
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -30,7 +30,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・メニュー文字列を実態に即したものに変更
     ・動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない
     ・拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある
-    ・極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/グロー/ぼかし/カラーキーの高速化
+    ・極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/グロー/ぼかし/カラーキー/クロマキーの高速化
         OpenCL/AVX2を使用することがあります
         わずかにオリジナルと結果が変わってしまいます (floatとdoubleの差です)
         また、アーティファクトなどのバグを解消することもあります
@@ -114,6 +114,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・マスクにて、サイズが偶数でぼかしサイズが大きい時に描画がおかしいことがあったのを修正
     ・カメラ制御とシーンの入れ子で描画が正常でなくなるの修正
     ・テキストで制御文字を使用した時に変な描画がされることがあるのを簡易修正
+    ・クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更
     
 
     追加
@@ -187,6 +188,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "inactive_col" : [color, color, color], ; アルファチャンネル付きシーン中のフィルタオブジェクト などの灰系のオブジェクトの色 (既定値: [ "606060", "808080", "909090" ])
             "clipping_col" : color, ; 上のオブジェクトでクリッピング(オブジェクト)の色 (既定値: "c04040")
             "clipping_height" : number, ; 上のオブジェクトでクリッピング(オブジェクト)の印の高さ (既定値: -3)
+            "disp_dialog_col" : color, ; 設定ダイアログ表示中のオブジェクトの点線の色 (既定値: "ffffff)
             "midpt_size" : [number, number, number], ; 中間点の大きさ(レイヤーの高さ大,中,小) (既定値: [4, 3, 3])
             "name_col" : [color, color], ; オブジェクト名の色 ([有効時,無効時] 既定値: [ "ffffff", "a0a0a0" ])
         },
@@ -247,6 +249,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "obj_specialcolorconv" : boolean, ; 特定色域変換で変換前色に黒色を指定すると0除算が起こることがあるのを修正 (既定値: true)
         "obj_portionfilter" : boolean, ; 部分フィルタがスレッド数より小さいサイズに対して正常に反映されないバグを修正 (既定値: true)
         "settingdialog_excolorconfig" : boolean, ; 拡張色変換のウィンドウが下のフィルタに被るのを修正 (既定値: true)
+        "settingdialog_chromakey" : boolean, ; クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更 (既定値: true)
         "r_click_menu_split" : boolean, ; 右クリック分割で設定ダイアログが更新されないのを修正 (既定値: true)
         "r_click_menu_delete" : boolean, ; 右クリック削除でテキストの字間行間が変わることがあるのを修正 (既定値: true)
         "blend" : boolean, ; アルファチャンネルのあるフレームバッファで合成モード「通常」以外を使用すると誤った結果になるのを修正 (既定値: true)
@@ -287,6 +290,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.blur" : boolean, ; ぼかしの高速化/バグ修正 (既定値: true)
             "fast.glow" : boolean, ; グローの高速化 (既定値: true)
             "fast.colorkey" : boolean, ; カラーキーの高速化 (既定値: true)
+            "fast.chromakey" : boolean, ; クロマキーの高速化 (既定値: true)
             "fast.cl" : boolean, ; fast.*でOpenCLが必要なオプションに必要なオプション (既定値: true)
                 "fast.radiationalblur" : boolean, ; fast.clが前提 放射ブラーの高速化 (既定値: true)
                 "fast.polartransform" : boolean, ; fast.clが前提 極座標変換の高速化 (既定値: true)
