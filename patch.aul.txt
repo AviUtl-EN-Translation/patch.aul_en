@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_11
+patch.aul r43_ss_12
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -115,6 +115,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・カメラ制御とシーンの入れ子で描画が正常でなくなるの修正
     ・テキストで制御文字を使用した時に変な描画がされることがあるのを簡易修正
     ・クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更
+    ・複数選択状態で右トラックバーの値を変えた時に正常ではないのを修正
     
 
     追加
