@@ -1087,7 +1087,7 @@ namespace patch::fast {
                 dst->y = (short)(sum_y / blur_range);
                 dst->cb = (short)(sum_cb / blur_range);
                 dst->cr = (short)(sum_cr / blur_range);
-                dst->a = (short)(sum_y / blur_range);
+                dst->a = (short)(sum_a / blur_range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
         }
@@ -1440,7 +1440,7 @@ namespace patch::fast {
             for (int x = efpip->obj_w; 0 < x; x--) {
                 int src_a = src->a;
                 if (0 < src_a && src_a < 0x1000) {
-                    src->y = std::clamp(((int)src->y << 12) / src_a, 0, SHRT_MAX);
+                    src->y = std::clamp(((int)src->y << 12) / src_a, SHRT_MIN, SHRT_MAX);
                     src->cb = std::clamp(((int)src->cb << 12) / src_a, SHRT_MIN, SHRT_MAX);
                     src->cr = std::clamp(((int)src->cr << 12) / src_a, SHRT_MIN, SHRT_MAX);
                 }
@@ -1475,8 +1475,8 @@ namespace patch::fast {
             blur_h = min(blur_h, (efpip->obj_max_h - efpip->obj_h) / 2);
         }
 
-        int conv2_w = blur_w / 2;
-        int conv2_h = blur_h / 2;
+        int conv2_w = blur_w >> 1;
+        int conv2_h = blur_h >> 1;
         int conv1_w = blur_w - conv2_w;
         int conv1_h = blur_h - conv2_h;
         if (check0 == 0 && (efpip->obj_w <= conv1_w * 2 || efpip->obj_w <= conv2_w * 2 || efpip->obj_h <= conv1_h * 2 || efpip->obj_h <= conv2_h * 2)) {

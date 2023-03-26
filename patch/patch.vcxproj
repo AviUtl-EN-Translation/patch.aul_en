@@ -49,6 +49,7 @@
     <ClInclude Include="patch_console.hpp" />
     <ClInclude Include="patch_dialog_new_file.hpp" />
     <ClInclude Include="patch_fast_blur.hpp" />
+    <ClInclude Include="patch_fast_chromakey.hpp" />
     <ClInclude Include="patch_fast_colorkey.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="patch_obj_text.hpp" />
     <ClInclude Include="patch_rendering.hpp" />
     <ClInclude Include="patch_script_sort.hpp" />
+    <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
     <ClInclude Include="patch_shared_cache.hpp" />
     <ClInclude Include="patch_exception_history.hpp" />
     <ClInclude Include="patch_exception_log.hpp" />
@@ -155,12 +157,14 @@
     <ClCompile Include="patch_change_disp_scene.cpp" />
     <ClCompile Include="patch_failed_file_drop.cpp" />
     <ClCompile Include="patch_fast_blur.cpp" />
+    <ClCompile Include="patch_fast_chromakey.cpp" />
     <ClCompile Include="patch_fast_colorkey.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
     <ClCompile Include="patch_obj_text.cpp" />
     <ClCompile Include="patch_rendering.cpp" />
+    <ClCompile Include="patch_setting_dialog_chromakey.cpp" />
     <ClCompile Include="patch_shared_cache.cpp" />
     <ClCompile Include="patch_exception_log.cpp" />
     <ClCompile Include="patch_exception_log_dialog.cpp" />

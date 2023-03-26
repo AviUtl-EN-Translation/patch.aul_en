@@ -343,6 +343,12 @@
     <ClInclude Include="patch_camera_scene.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_chromakey.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_setting_dialog_chromakey.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -517,6 +523,12 @@
       <Filter>feature\fast</Filter>
     </ClCompile>
     <ClCompile Include="patch_camera_scene.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_chromakey.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_setting_dialog_chromakey.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

@@ -191,6 +191,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
                 patch::excolorconfig.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY
+                patch::dialog_chromakey.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
                 patch::rclickmenu_split.switch_load(cr);
             #endif
@@ -304,6 +307,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_COLORKEY
                     patch::fast::Colorkey.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_CHROMAKEY
+                    patch::fast::Chromakey.switch_load(cr);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL
@@ -598,6 +604,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
                 patch::excolorconfig.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY
+                patch::dialog_chromakey.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
                 patch::rclickmenu_split.switch_store(switch_);
             #endif
@@ -711,6 +720,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_COLORKEY
                     patch::fast::Colorkey.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_CHROMAKEY
+                    patch::fast::Chromakey.switch_store(switch_);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL

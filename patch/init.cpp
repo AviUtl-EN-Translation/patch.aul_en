@@ -235,6 +235,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
 	patch::excolorconfig.init();
 #endif
+#ifdef PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY
+	patch::dialog_chromakey.init();
+#endif
 
 #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
 	patch::rclickmenu_split.init();
@@ -325,6 +328,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_COLORKEY
 			patch::fast::Colorkey.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_CHROMAKEY
+			patch::fast::Chromakey.init();
 		#endif
 		
 		#ifdef PATCH_SWITCH_CL

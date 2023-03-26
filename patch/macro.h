@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_10"
+#define PATCH_VERSION_STR "r43_ss_11"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -121,6 +121,7 @@
 #define PATCH_SWITCH_EXEDITWINDOW_SIZING exeditwindow_sizing
 #define PATCH_SWITCH_SETTINGDIALOG_MOVE settingdialog_move
 #define PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG settingdialog_excolorconfig
+#define PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY settingdialog_chromakey
 #define PATCH_SWITCH_CANCEL_BOOST_CONFLICT
 #define PATCH_SWITCH_WARNING_OLD_LSW
 #define PATCH_SWITCH_WARNING_DUPLICATE_PLUGINS
@@ -195,6 +196,7 @@
 	#define PATCH_SWITCH_FAST_BLUR fast_blur
 	#define PATCH_SWITCH_FAST_GLOW fast_glow
 	#define PATCH_SWITCH_FAST_COLORKEY fast_colorkey
+	#define PATCH_SWITCH_FAST_CHROMAKEY fast_chromakey
 	//#define PATCH_SWITCH_FAST_MOTIONBLUR fast_motionblur
 
 	#define PATCH_SWITCH_CL cl

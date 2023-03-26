@@ -97,6 +97,7 @@ namespace patch {
 
 		} layer;
 
+		static inline HPEN disp_dialog_pen;
 		struct {
 			inline static const char name[] = "object";
 
@@ -108,8 +109,12 @@ namespace patch {
 			ColorBGR3 inactive_col;
 			ColorBGR clipping_col;
 			std::optional<int> clipping_height;
+			ColorBGR disp_dialog_col = 0xffffff;
+			//std::optional<int> disp_dialog_width = 0;
+			//std::optional<int> disp_dialog_style = 2;
 			std::optional<std::array<int, 3>> midpt_size;
 			ColorBGR2 name_col;
+
 
 			inline static const char key_media_col[] = "media_col";
 			inline static const char key_mfilter_col[] = "mfilter_col";
@@ -119,6 +124,9 @@ namespace patch {
 			inline static const char key_inactive_col[] = "inactive_col";
 			inline static const char key_clipping_col[] = "clipping_col";
 			inline static const char key_clipping_height[] = "clipping_height";
+			inline static const char key_disp_dialog_col[] = "disp_dialog_col";
+			//inline static const char key_disp_dialog_width[] = "disp_dialog_width";
+			//inline static const char key_disp_dialog_style[] = "disp_dialog_style";
 			inline static const char key_midpt_size[] = "midpt_size";
 			inline static const char key_name_col[] = "name_col";
 
@@ -147,6 +155,15 @@ namespace patch {
 				cr.regist(key_clipping_height, [this](json_value_s* jv) {
 					ConfigReader::load_variable(jv, clipping_height);
 				});
+				cr.regist(key_disp_dialog_col, [this](json_value_s* jv) {
+					ConfigReader::load_variable(jv, disp_dialog_col);
+				});
+				/*cr.regist(key_disp_dialog_width, [this](json_value_s* jv) {
+					ConfigReader::load_variable(jv, disp_dialog_width);
+				});
+				cr.regist(key_disp_dialog_style, [this](json_value_s* jv) {
+					ConfigReader::load_variable(jv, disp_dialog_style);
+				});*/
 				cr.regist(key_midpt_size, [this](json_value_s* jv) {
 					ConfigReader::load_variable(jv, midpt_size);
 				});
@@ -156,6 +173,7 @@ namespace patch {
 			}
 
 			void store(ConfigWriter& cw) {
+				
 				cw.append(key_media_col, media_col);
 				cw.append(key_mfilter_col, mfilter_col);
 				cw.append(key_audio_col, audio_col);
@@ -164,6 +182,9 @@ namespace patch {
 				cw.append(key_inactive_col, inactive_col);
 				cw.append(key_clipping_col, clipping_col);
 				cw.append(key_clipping_height, clipping_height);
+				cw.append(key_disp_dialog_col, disp_dialog_col);
+				//cw.append(key_disp_dialog_width, disp_dialog_width);
+				//cw.append(key_disp_dialog_style, disp_dialog_style);
 				cw.append(key_midpt_size, midpt_size);
 				cw.append(key_name_col, name_col);
 			}
@@ -431,6 +452,13 @@ namespace patch {
 					else {
 						o.ary[0] = h.load_i32<uint32_t>(0);
 						o.ary[1] = h.load_i32<uint32_t>(4);
+					}
+				}
+
+				{
+					if (object.disp_dialog_col.to_col_rgb() != 0xffffff) {
+						disp_dialog_pen = CreatePen(PS_DOT, 0, object.disp_dialog_col.to_col_rgb());
+						OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x375fb, 4).store_i32(0, &disp_dialog_pen);
 					}
 				}
 			}

@@ -107,5 +107,7 @@
 #include "patch_obj_text.hpp"
 #include "patch_fast_colorkey.hpp"
 #include "patch_camera_scene.hpp"
+#include "patch_fast_chromakey.hpp"
+#include "patch_setting_dialog_chromakey.hpp"
 
 
