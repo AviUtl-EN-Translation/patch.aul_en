@@ -39,7 +39,9 @@ namespace patch {
 		ctrl_hwnd = efp->exfunc->get_hwnd(efp->processing, 3, 1);
 		if (ctrl_hwnd) {
 			SetWindowPos(ctrl_hwnd, NULL, 0x80, y - 0x3d, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-			ShowWindow(ctrl_hwnd, efp->check[0]);
+			if (efp->check[0] == 0) {
+				ShowWindow(ctrl_hwnd, 0);
+			}
 		}
 		ctrl_hwnd = efp->exfunc->get_hwnd(efp->processing, 4, 2);
 		if (ctrl_hwnd) {

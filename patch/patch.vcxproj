@@ -63,6 +63,7 @@
     <ClInclude Include="patch_obj_sharp.hpp" />
     <ClInclude Include="patch_obj_text.hpp" />
     <ClInclude Include="patch_rendering.hpp" />
+    <ClInclude Include="patch_right_trackbar.hpp" />
     <ClInclude Include="patch_script_sort.hpp" />
     <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
     <ClInclude Include="patch_shared_cache.hpp" />

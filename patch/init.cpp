@@ -281,6 +281,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_CHANGE_DISP_SCENE
 	patch::change_disp_scene.init();
 #endif
+#ifdef PATCH_SWITCH_RIGHT_TRACKBAR
+	patch::right_trackbar.init();
+#endif
 #ifdef PATCH_SWITCH_GROUP_ID
 	patch::group_id.init();
 #endif

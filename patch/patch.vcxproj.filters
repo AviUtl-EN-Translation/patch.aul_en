@@ -349,6 +349,9 @@
     <ClInclude Include="patch_setting_dialog_chromakey.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_right_trackbar.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />

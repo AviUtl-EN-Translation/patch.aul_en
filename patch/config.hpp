@@ -242,6 +242,9 @@ public:
             #ifdef PATCH_SWITCH_CHANGE_DISP_SCENE
                 patch::change_disp_scene.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_RIGHT_TRACKBAR
+                patch::right_trackbar.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_load(cr);
             #endif
@@ -654,6 +657,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_CHANGE_DISP_SCENE
                 patch::change_disp_scene.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_RIGHT_TRACKBAR
+                patch::right_trackbar.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_store(switch_);

@@ -109,5 +109,6 @@
 #include "patch_camera_scene.hpp"
 #include "patch_fast_chromakey.hpp"
 #include "patch_setting_dialog_chromakey.hpp"
+#include "patch_right_trackbar.hpp"
 
 
