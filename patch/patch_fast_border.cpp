@@ -40,15 +40,14 @@ namespace patch::fast {
 
     BOOL Border_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
 
+        int obj_w = efpip->obj_w;
+        int obj_h = efpip->obj_h;
+        if (efp->track[0] <= 0 || obj_w <= 0 || obj_h <= 0) return TRUE;
+
         auto border = (reinterpret_cast<efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr));
         auto memory_ptr = (void**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
 
-        if (efp->track[0] <= 0) return TRUE;
-
         auto exdata = (ExEdit::Exdata::efBorder*)efp->exdata_ptr;
-
-        int obj_w = efpip->obj_w;
-        int obj_h = efpip->obj_h;
 
         int add_size = efp->track[0] * 2;
 

@@ -24,7 +24,17 @@ namespace patch::fast {
 	HFONT __cdecl text_t::MyCreateFont(const char* fontname, int height, int weight, BOOL italic, BOOL high_precision, BOOL vertical) {
 		HFONT& currentFont = load_i32<HFONT&>(GLOBAL::exedit_base + 0x236388);
 
-		height = -height;
+		char* current_font_name = (char*)(GLOBAL::exedit_base + OFS::ExEdit::current_font_name);
+		int& current_font_height = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::current_font_height);
+
+		if (*(char*)fontname != '\0') {
+			lstrcpyA(current_font_name, fontname);
+		}
+		if (0 < height) {
+			current_font_height = height;
+		}
+
+		height = -current_font_height;
 		if (high_precision) {
 			height *= 2;
 		}
@@ -32,11 +42,12 @@ namespace patch::fast {
 		char fontname_v[LF_FACESIZE + 1];
 		if (vertical) {
 			fontname_v[0] = '@';
-			strncpy_s(fontname_v + 1, LF_FACESIZE + 1, fontname, LF_FACESIZE);
-			fontname = fontname_v;
+			strncpy_s(fontname_v + 1, LF_FACESIZE + 1, current_font_name, LF_FACESIZE);
+		} else {
+			strncpy_s(fontname_v, LF_FACESIZE, current_font_name, LF_FACESIZE);
 		}
 
-		auto font = ::CreateFontA(height, 0, 0, 0, weight, italic, 0, 0, 1, 8, 0, 4, 0, fontname);
+		auto font = ::CreateFontA(height, 0, 0, 0, weight, italic, 0, 0, 1, 8, 0, 4, 0, fontname_v);
 		if (font == NULL)return currentFont = NULL;
 		LOGFONTW lfw;
 		::GetObjectW(font, sizeof(LOGFONTW), &lfw);

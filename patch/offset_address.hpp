@@ -275,6 +275,8 @@ namespace OFS {
 
 		constexpr i32 text_op_logfont_size = 0x050716;
 		constexpr i32 specialcolorconv_status2 = 0x0a14f4;
+		constexpr i32 current_font_name = 0x236368;
+		constexpr i32 current_font_height = 0x23634c;
 
 		constexpr i32 ObjectAllocNum = 0x1e0fa0;
 		constexpr i32 ObjectArrayPointer = 0x1e0fa4;
