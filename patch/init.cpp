@@ -154,6 +154,10 @@ void init_t::InitAtExeditLoad() {
 	patch::exo_fold_gui.init();
 #endif
 
+#ifdef PATCH_SWITCH_STR_MINUSVAL
+	patch::str_minusval.init();
+#endif
+
 #ifdef PATCH_SWITCH_CONSOLE
 	patch::console.init_at_exedit_init();
 #endif

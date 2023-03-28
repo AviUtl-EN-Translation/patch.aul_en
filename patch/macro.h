@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_13"
+#define PATCH_VERSION_STR "r43_ss_14"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -109,12 +109,13 @@
 #define PATCH_SWITCH_AUP_LAYER_SETTING aup_layer_setting
 #define PATCH_SWITCH_AUP_SCENE_SETTING aup_scene_setting
 #define PATCH_SWITCH_EXO_AVIUTL_FILTER exo_aviutl_filter
-#define PATCH_SWITCH_EXO_TRACK_MINUSVAL exo_track_minusval
+// #define PATCH_SWITCH_EXO_TRACK_MINUSVAL exo_track_minusval // str_minusval実装により不要に
 #define PATCH_SWITCH_EXO_SCENEIDX exo_sceneidx
 #define PATCH_SWITCH_EXO_TRACKPARAM exo_trackparam
 #define PATCH_SWITCH_EXO_MIDPT_AND_TRA exo_midpt_tra
 #define PATCH_SWITCH_EXO_SPECIALCOLORCONV exo_specialcolorconv
 #define PATCH_SWITCH_EXO_FOLD_GUI exo_fold_gui
+#define PATCH_SWITCH_STR_MINUSVAL str_minusval
 #define PATCH_SWITCH_TEXT_OP_SIZE text_op_size
 #define PATCH_SWITCH_IGNORE_MEDIA_PARAM_RESET ignore_media_param_reset
 #define PATCH_SWITCH_THEME_CC theme_cc

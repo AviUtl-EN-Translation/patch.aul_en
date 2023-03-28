@@ -123,6 +123,7 @@
     <ClInclude Include="patch_setting_new_project.hpp" />
     <ClInclude Include="patch_small_filter.hpp" />
     <ClInclude Include="patch_splash.hpp" />
+    <ClInclude Include="patch_str_minusval.hpp" />
     <ClInclude Include="patch_susie_load.hpp" />
     <ClInclude Include="patch_sysinfo_write.hpp" />
     <ClInclude Include="patch_text_op_size.hpp" />

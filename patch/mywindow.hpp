@@ -30,6 +30,7 @@ inline class mywindow_t {
 
 	inline static LRESULT CALLBACK wndproc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 		if (message != WM_COMMAND) return DefWindowProc(hwnd, message, wparam, lparam);
+#ifdef PATCH_SWITCH_EXO_TRACK_MINUSVAL
 		switch (LOWORD(wparam)) {
 		case 10000: {
 			patch::exo_trackminusval.switching(false);
@@ -40,6 +41,7 @@ inline class mywindow_t {
 			return FALSE;
 		}
 		}
+#endif
 		return DefWindowProc(hwnd, message, wparam, lparam);
 	}
 

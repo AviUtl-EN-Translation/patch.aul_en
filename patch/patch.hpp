@@ -110,5 +110,6 @@
 #include "patch_fast_chromakey.hpp"
 #include "patch_setting_dialog_chromakey.hpp"
 #include "patch_right_trackbar.hpp"
+#include "patch_str_minusval.hpp"
 
 

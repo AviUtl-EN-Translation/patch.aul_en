@@ -101,6 +101,9 @@ public:
             #ifdef PATCH_SWITCH_EXO_FOLD_GUI
                 patch::exo_fold_gui.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_STR_MINUSVAL
+                patch::str_minusval.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
                 patch::tra_aviutlfilter.switch_load(cr);
             #endif
@@ -516,6 +519,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_EXO_FOLD_GUI
                 patch::exo_fold_gui.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_STR_MINUSVAL
+                patch::str_minusval.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
                 patch::tra_aviutlfilter.switch_store(switch_);
