@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_14
+patch.aul r43_ss_15
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -35,7 +35,7 @@ https://scrapbox.io/nazosauna/patch.aul
         わずかにオリジナルと結果が変わってしまいます (floatとdoubleの差です)
         また、アーティファクトなどのバグを解消することもあります
     ・図形の高速化
-        円/三角形/五角形/六角形/星形の計算を僅かに最適化
+        円/三角形/五角形/六角形/星形の計算を最適化
         マスクやディスプレイスメントマップのソースとしての図形にも効果がある
     ・テキストの軽量化
         キャッシュをとります。縁取り文字の処理を最適化します
@@ -49,6 +49,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・元に戻す の多数のバグ修正
         ・レイヤー削除→元に戻すで他シーンのオブジェクトが消える
         ・Ctrlで複数オブジェクトを選択しながら設定ダイアログのトラックバーを動かすと一部オブジェクトが正常に戻らない
+        ・Ctrlで複数オブジェクトを選択しながら一部フィルタの色などを変更すると正常に戻らない
         ・オブジェクトの左端をつまんで動かすと再生位置パラメータが変わるが、それが元に戻らない
         ・一部フィルタのファイル参照を変更→元に戻すで設定ダイアログが更新されない(音声波形など)
         ・部分フィルタのマスクの種類を変更してもUndoデータが生成されない
@@ -252,7 +253,6 @@ https://scrapbox.io/nazosauna/patch.aul
         "settingdialog_excolorconfig" : boolean, ; 拡張色変換のウィンドウが下のフィルタに被るのを修正 (既定値: true)
         "settingdialog_chromakey" : boolean, ; クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更 (既定値: true)
         "r_click_menu_split" : boolean, ; 右クリック分割で設定ダイアログが更新されないのを修正 (既定値: true)
-        "r_click_menu_delete" : boolean, ; 右クリック削除でテキストの字間行間が変わることがあるのを修正 (既定値: true)
         "blend" : boolean, ; アルファチャンネルのあるフレームバッファで合成モード「通常」以外を使用すると誤った結果になるのを修正 (既定値: true)
         "rendering" : boolean, ; 描画のバグを修正 (既定値: true)
         "add_extension" : boolean, ; 動画、音声ファイル参照の時、exedit.iniにある拡張子を追加する (既定値: true)
