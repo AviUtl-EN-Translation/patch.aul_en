@@ -74,7 +74,7 @@ namespace patch::fast {
         border->ExEditMemory = (unsigned short*)*memory_ptr;
 
         border->add_size = add_size;
-        border->alpha = (int)round(65536.0 / ((double)efp->track[1] * add_size * 0.01 + 1.0));
+        border->alpha = (int)round(65536.0 / ((double)max(0, efp->track[1]) * add_size * 0.01 + 1.0));
         int temp = border->alpha;
         int sft = 0;
         while (sft < 16 && 64 < temp) {

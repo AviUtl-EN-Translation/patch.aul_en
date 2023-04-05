@@ -29,8 +29,8 @@ class Config2 {
     bool invalid_json;
 
 public:
-    void load(std::wstring_view path) {
-        auto hFile = CreateFileW(path.data(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    void load(const std::wstring& path) {
+        auto hFile = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
         if (hFile == INVALID_HANDLE_VALUE) return;
         DWORD ignore;
         auto size_low = GetFileSize(hFile, &ignore);
@@ -151,6 +151,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_OBJ_TEXT
                 patch::Text.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_OBJ_CREATE_FIGURE
+                patch::CreateFigure.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_load(cr);
@@ -387,10 +390,10 @@ public:
         cr.load();
     }
 
-    void store(std::wstring_view path) {
+    void store(const std::wstring& path) {
         if (invalid_json)return;
 
-        auto hFile = CreateFileW(path.data(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
+        auto hFile = CreateFileW(path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
         if (hFile == INVALID_HANDLE_VALUE) {
             patch_resource_message_w(PATCH_RS_PATCH_FAILED_TO_SAVE_SETTING, MB_TASKMODAL | MB_ICONEXCLAMATION);
             return;
@@ -570,6 +573,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_OBJ_TEXT
                 patch::Text.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_OBJ_CREATE_FIGURE
+                patch::CreateFigure.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_store(switch_);

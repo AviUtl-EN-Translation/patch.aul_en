@@ -56,6 +56,7 @@
     <ClInclude Include="patch_group_id.hpp" />
     <ClInclude Include="patch_keyconfig.hpp" />
     <ClInclude Include="patch_obj_blur.hpp" />
+    <ClInclude Include="patch_obj_create_figure.hpp" />
     <ClInclude Include="patch_obj_mask.hpp" />
     <ClInclude Include="patch_obj_portionfilter.hpp" />
     <ClInclude Include="patch_obj_resize.hpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="patch_yc_rgb_conv.hpp" />
     <ClInclude Include="restorable_patch.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="simd.hpp" />
     <ClInclude Include="stopwatch.hpp" />
     <ClInclude Include="timer.hpp" />
     <ClInclude Include="util.hpp" />

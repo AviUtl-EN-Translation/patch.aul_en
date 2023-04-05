@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_14"
+#define PATCH_VERSION_STR "r43_ss_15"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -131,6 +131,7 @@
 #define PATCH_SWITCH_FAILED_FILE_DROP failed_filedrop
 #define PATCH_SWITCH_SMALL_FILTER small_filter
 #define PATCH_SWITCH_OBJ_TEXT obj_text
+#define PATCH_SWITCH_OBJ_CREATE_FIGURE obj_create_figure
 #define PATCH_SWITCH_OBJ_AUDIOFILE obj_audiofile
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
 //#define PATCH_SWITCH_OBJ_BLUR obj_blur // fast.blur実装により不要に
@@ -146,7 +147,7 @@
 #define PATCH_SWITCH_OBJ_PORTIONFILTER obj_portionfilter
 #define PATCH_SWITCH_BORDER_ONLY_TEXT border_only_text
 #define PATCH_SWITCH_RCLICKMENU_SPLIT rclickmenu_split
-#define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete
+// #define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete // undo追加更新により不要に
 #define PATCH_SWITCH_BLEND blend
 #define PATCH_SWITCH_ADD_EXTENSION add_extension
 #define PATCH_SWITCH_DIALOG_NEW_FILE dlg_newfile

@@ -24,10 +24,11 @@
 #include "util.hpp"
 #include "global.hpp"
 #include "config_rw.hpp"
+#include "simd.hpp"
 
 namespace patch::fast {
 	// init at exedit load
-	// ＜図形、部分フィルタ、マスク、ディスプレイスメントマップ＞の図形（円、三角、五角、六角、星）の計算を効率化し少しだけ速度アップ
+	// ＜図形、部分フィルタ、マスク、ディスプレイスメントマップ＞の図形（円、三角、五角、六角、星）を速度アップ
 	inline class CreateFigure_t {
 		static void __cdecl CreateFigure_circle(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl CreateFigure_polygons(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);

@@ -1464,9 +1464,9 @@ namespace patch::fast {
         int aspect = efp->track[1];
         if (aspect) {
             if (aspect < 0) {
-                blur_w = blur_w * (1000 + aspect) / 1000;
+                blur_w = blur_w * max(0, 1000 + aspect) / 1000;
             } else {
-                blur_h = blur_h * (1000 - aspect) / 1000;
+                blur_h = blur_h * max(0, 1000 - aspect) / 1000;
             }
         }
         int check0 = efp->check[0];

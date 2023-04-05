@@ -71,7 +71,7 @@ namespace patch::fast {
                 int pixcr = cbcr[1];
                 cbcr += 4;
                 float pixangle = atan2((float)pixcr, (float)pixcb);
-                int sub_hue = max(0, std::abs((short)fmaf(pixangle, 10430.37835047045f, keyangle)) - hue_range);
+                int sub_hue = max(0, std::abs((short)round(fmaf(pixangle, 10430.37835047045f, keyangle))) - hue_range);
                 *buf_hue_angle = sub_hue;
                 buf_hue_angle++;
                 sub_hue += max(0, std::abs(max(std::abs(pixcb), std::abs(pixcr)) - satkey) - sat_range) << 3;
@@ -129,7 +129,7 @@ namespace patch::fast {
                 int pixcr = cbcr[1];
                 cbcr += 4;
                 float pixangle = atan2((float)pixcr, (float)pixcb);
-                int sub_hue = max(0, std::abs((short)fmaf(pixangle, 10430.37835047045f, keyangle)) - hue_range);
+                int sub_hue = max(0, std::abs((short)round(fmaf(pixangle, 10430.37835047045f, keyangle))) - hue_range);
                 sub_hue += max(0, std::abs(max(std::abs(pixcb), std::abs(pixcr)) - satkey) - sat_range) << 3;
                 *buf_alpha = min(sub_hue, 0x1000);
                 buf_alpha++;
@@ -432,7 +432,7 @@ namespace patch::fast {
                 int pixcb = cbcra[0];
                 int pixcr = cbcra[1];
                 float pixangle = atan2((float)pixcr, (float)pixcb);
-                int sub_hue = max(0, std::abs((short)fmaf(pixangle, 10430.37835047045f, keyangle)) - hue_range);
+                int sub_hue = max(0, std::abs((short)round(fmaf(pixangle, 10430.37835047045f, keyangle))) - hue_range);
                 int sub_sat = satkey - max(std::abs(pixcb), std::abs(pixcr));
                 int a = cbcra[2];
                 int hue_a = max(sub_hue, (sub_sat << 12) / satkey);
@@ -508,7 +508,7 @@ namespace patch::fast {
                 int pixcb = cbcra[0];
                 int pixcr = cbcra[1];
                 float pixangle = atan2((float)pixcr, (float)pixcb);
-                int sub_hue = max(0, std::abs((short)fmaf(pixangle, 10430.37835047045f, keyangle)) - hue_range);
+                int sub_hue = max(0, std::abs((short)round(fmaf(pixangle, 10430.37835047045f, keyangle))) - hue_range);
                 sub_hue += max(0, std::abs(max(std::abs(pixcb), std::abs(pixcr)) - satkey) - sat_range) << 3;
                 if (sub_hue < 0x1000) {
                     cbcra[2] = (short)(cbcra[2] * sub_hue >> 12);

@@ -1091,28 +1091,27 @@ kernel void LensBlur_Filter(global char* dst, global char* src, int scene_w, int
 )");
 #pragma endregion
 
-	template<size_t i, class Head>
-	static void KernelSetArg(cl::Kernel& kernel, Head head) {
-		kernel.setArg(i, head);
-	}
+template<size_t i, class Head>
+static void KernelSetArg(cl::Kernel& kernel, Head head) {
+	kernel.setArg(i, head);
+}
 
-	template<size_t i, class Head, class... Tail>
-	static void KernelSetArg(cl::Kernel& kernel, Head head, Tail... tail) {
-		kernel.setArg(i, head);
-		KernelSetArg<i + 1>(kernel, tail...);
-	}
+template<size_t i, class Head, class... Tail>
+static void KernelSetArg(cl::Kernel& kernel, Head head, Tail... tail) {
+	kernel.setArg(i, head);
+	KernelSetArg<i + 1>(kernel, tail...);
+}
 
-	bool enabled = true;
-	bool enabled_i;
-	inline static const char key[] = "fast.cl";
+bool enabled = true;
+bool enabled_i;
+inline static const char key[] = "fast.cl";
 
 public:
 	cl::Platform platform;
 	std::vector<cl::Device> devices;
 	cl::Context context;
 
-	std::byte program_mem[sizeof(cl::Program)];
-	bool program_opt;
+	std::optional<cl::Program> program;
 	cl::CommandQueue queue;
 
 	HMODULE CLLib;
@@ -1126,10 +1125,6 @@ public:
 	cl_t() :state(State::NotYet), CLLib(NULL) {}
 	~cl_t() {
 		FreeLibrary(CLLib);
-		if (program_opt) {
-			auto program = reinterpret_cast<cl::Program*>(program_mem);
-			program->~Program();
-		}
 	}
 
 	bool init() {
@@ -1137,30 +1132,29 @@ public:
 
 		if (!enabled_i)return true;
 
-		if (![]() {
+		if (![] {
 			__try {
 				auto load_ret = __HrLoadAllImportsForDll("OpenCL.dll");
 					if (FAILED(load_ret)) {
-						[load_ret]() {
-							debug_log("OpenCL not available {}", "delay load failed {}"_fmt(load_ret));
+						[load_ret] {
+							debug_log("OpenCL not available {}", std::format("delay load failed {}", load_ret));
 						}();
-						return false;
+								return false;
 					}
 				return true;
-			}
-			__except ([](int code) {
-				if (
-					code == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND) ||
-					code == VcppException(ERROR_SEVERITY_ERROR, ERROR_PROC_NOT_FOUND)
-				) {
-					return EXCEPTION_EXECUTE_HANDLER;
-				}
+			} __except ([](int code) {
+					if (
+						code == VcppException(ERROR_SEVERITY_ERROR, ERROR_MOD_NOT_FOUND) ||
+						code == VcppException(ERROR_SEVERITY_ERROR, ERROR_PROC_NOT_FOUND)
+						) {
+						return EXCEPTION_EXECUTE_HANDLER;
+					}
 				return EXCEPTION_CONTINUE_SEARCH;
-			} (GetExceptionCode())) {
-				debug_log("OpenCL not available {}\n", "delay load exception");
-				return false;
-			}
-		}()) {
+				} (GetExceptionCode())) {
+					debug_log("OpenCL not available {}\n", "delay load exception");
+					return false;
+				}
+			}()) {
 			state = State::Failed;
 			return false;
 		}
@@ -1172,9 +1166,8 @@ public:
 				cl::Platform::get(&platform);
 				platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 				context = cl::Context(devices);
-				new (&program_mem[0]) cl::Program(context, program_str.get(), false);
-				program_opt = true;
-				reinterpret_cast<cl::Program*>(program_mem)->build();
+				program.emplace(context, program_str.get(), false);
+				program->build();
 				program_str.re_encrypt();
 
 				struct DeviceInfo {
@@ -1203,30 +1196,24 @@ public:
 				}
 
 				queue = cl::CommandQueue(context, devices[0]);
-			}
-			catch (const cl::Error& err) {
+			} catch (const cl::Error& err) {
 				program_str.re_encrypt();
 
 				if (err.err() == CL_BUILD_PROGRAM_FAILURE) {
 					try {
-						if (program_opt) {
-							auto program = reinterpret_cast<cl::Program*>(program_mem);
+						if (program) {
 							if (auto status = program->getBuildInfo<CL_PROGRAM_BUILD_STATUS>(devices[0]); status == CL_BUILD_ERROR) {
 								debug_log(
 									"OpenCL Error (CL_BUILD_PROGRAM_FAILURE : CL_BUILD_ERROR)\n{}",
 									program->getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]).c_str()
 								);
-							}
-							else {
+							} else {
 								debug_log("OpenCL Error (CL_BUILD_PROGRAM_FAILURE)\nstatus: {}", status);
 							}
-							program_opt = false;
-							program->~Program();
 							state = State::Failed;
 							return false;
 						}
-					}
-					catch (const cl::Error& err) {
+					} catch (const cl::Error& err) {
 						debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
 						state = State::Failed;
 						return false;
@@ -1247,7 +1234,6 @@ public:
 
 	template<class... Args>
 	cl::Kernel readyKernel(std::string_view name, Args&&... args) {
-		auto program = reinterpret_cast<cl::Program*>(program_mem);
 		cl::Kernel kernel(*program, name.data());
 		KernelSetArg<0>(kernel, args...);
 		return kernel;
@@ -1259,11 +1245,11 @@ public:
 
 	bool is_enabled() { return enabled; }
 	bool is_enabled_i() { return enabled_i; }
-	
+
 	void switch_load(ConfigReader& cr) {
 		cr.regist(key, [this](json_value_s* value) {
 			ConfigReader::load_variable(value, enabled);
-		});
+			});
 	}
 
 	void switch_store(ConfigWriter& cw) {

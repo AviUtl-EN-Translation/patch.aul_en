@@ -195,6 +195,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_TEXT
 	patch::Text.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_CREATE_FIGURE
+	patch::CreateFigure.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
 	patch::AudioFile.init();
 #endif

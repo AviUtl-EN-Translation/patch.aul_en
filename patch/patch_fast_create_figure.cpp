@@ -16,37 +16,28 @@
 #include "patch_fast_create_figure.hpp"
 #ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
 
-
-//#define PATCH_STOPWATCH
-
 namespace patch::fast {
 
     void __cdecl CreateFigure_t::CreateFigure_circle(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // 73d20
         auto& figure = *reinterpret_cast<CreateFigure_var*>(GLOBAL::exedit_base + OFS::ExEdit::CreateFigure_var_ptr);
 
-        int begin_thread = thread_id * ((efpip->obj_h + 1) >> 1) / thread_num;
-        int end_thread = (thread_id + 1) * ((efpip->obj_h + 1) >> 1) / thread_num;
-        int obj_half_w = (efpip->obj_w + 1) >> 1;
         ExEdit::PixelYCA yca = { figure.color_y, figure.color_cb, figure.color_cr, 0 };
 
-        int inner = 0;
+        int obj_half_h = (efpip->obj_h + 1) >> 1;
+        int obj_half_w = (efpip->obj_w + 1) >> 1;
+        int yy = thread_id * 2 - efpip->obj_h + 1;
+
         int sizesq = figure.size * figure.size;
         int size_t8 = sizesq * 8 / efpip->obj_w * figure.size / efpip->obj_h;
-
-        if (figure.line_width) {
+        int inner = 0;
+        if (0 < figure.line_width) { // 0の場合塗りつぶしの挙動となるが、図形オブジェクトの場合0はここに来る前の関数で終了して描画無し。マスクは0で通す
             inner = figure.size - figure.line_width * 2 - 1;
-            if (inner < 0) {
-                inner = 0;
-            }
         }
 
-        int yy = begin_thread * 2 - efpip->obj_h + 1;
-
-
-        if (inner) {
-            int inner_t8 = (((figure.size * inner * 8) / efpip->obj_w) * figure.size) / efpip->obj_h;
+        if (0 < inner) {
             int innersq = inner * inner;
-            for (int y = begin_thread; y < end_thread; y++) {
+            int inner_t8 = figure.size * inner * 8 / efpip->obj_w * figure.size / efpip->obj_h;
+            for (int y = thread_id; y < obj_half_h; y += thread_num) {
                 int yysq = yy * figure.size / efpip->obj_h;
                 yysq *= yysq;
                 int innersq_myyaq = yysq + inner_t8 - innersq;
@@ -56,33 +47,40 @@ namespace patch::fast {
                 ExEdit::PixelYCA* pixrt = pixlt + efpip->obj_w - 1;
                 ExEdit::PixelYCA* pixrb = pixlb + efpip->obj_w - 1;
                 int xx = 1 - efpip->obj_w;
-                for (int x = 0; x < obj_half_w; x++) {
+                int x;
+                for (x = 0; x < obj_half_w; x++) {
                     int xxsq = xx * figure.size / efpip->obj_w;
                     xxsq *= xxsq;
                     int a = sizesq - yysq - xxsq;
                     if (a <= 0) {
                         a = 0;
-                    } else if (a < size_t8) {
-                        a = a * 0x1000 / size_t8;
                     } else {
-                        a = 0x1000;
+                        if (a < size_t8) {
+                            a = a * 0x1000 / size_t8;
+                        } else {
+                            a = 0x1000;
+                        }
+                        int a_inner = xxsq + innersq_myyaq;
+                        if (a_inner < 0) {
+                            yca.a = 0;
+                            break;
+                        } else if (a_inner < inner_t8) {
+                            a = a * a_inner / inner_t8;
+                        }
                     }
-                    int a_inner = xxsq + innersq_myyaq;
-                    if (a_inner < 0) {
-                        a = 0;
-                    } else if (a_inner < inner_t8) {
-                        a = a * a_inner / inner_t8;
-                    }
-
                     yca.a = (short)a;
                     *pixlt = *pixrt = *pixlb = *pixrb = yca;
                     pixlt++; pixrt--; pixlb++; pixrb--;
                     xx += 2;
                 }
-                yy += 2;
+                for (; x < obj_half_w; x++) { // a = 0 
+                    *pixlt = *pixrt = *pixlb = *pixrb = yca;
+                    pixlt++; pixrt--; pixlb++; pixrb--;
+                }
+                yy += 2 * thread_num;
             }
         } else {
-            for (int y = begin_thread; y < end_thread; y++) {
+            for (int y = thread_id; y < obj_half_h; y += thread_num) {
                 int yysq = yy * figure.size / efpip->obj_h;
                 yysq *= yysq;
                 ExEdit::PixelYCA* pixlt = (ExEdit::PixelYCA*)efpip->obj_edit + efpip->obj_line * y;
@@ -100,6 +98,7 @@ namespace patch::fast {
                     } else if (a < size_t8) {
                         a = a * 0x1000 / size_t8;
                     } else {
+                        yca.a = 0x1000;
                         break;
                     }
                     yca.a = (short)a;
@@ -107,12 +106,11 @@ namespace patch::fast {
                     pixlt++; pixrt--; pixlb++; pixrb--;
                     xx += 2;
                 }
-                yca.a = 0x1000;
-                for (; x < obj_half_w; x++) {
+                for (; x < obj_half_w; x++) { // a = 0x1000 
                     *pixlt = *pixrt = *pixlb = *pixrb = yca;
                     pixlt++; pixrt--; pixlb++; pixrb--;
                 }
-                yy += 2;
+                yy += 2 * thread_num;
             }
         }
     }
@@ -120,7 +118,7 @@ namespace patch::fast {
 
     void __cdecl CreateFigure_t::CreateFigure_polygons(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto& figure = *reinterpret_cast<CreateFigure_var*>(GLOBAL::exedit_base + OFS::ExEdit::CreateFigure_var_ptr);
-        
+
         int xp[10];
         int xylen[10];
         int yp[10];
@@ -168,47 +166,89 @@ namespace patch::fast {
         }
 
 
-        int thread_begin = thread_id * efpip->obj_h / thread_num;
-        int thread_end = (thread_id + 1) * efpip->obj_h / thread_num;
         int obj_half_w = (efpip->obj_w + 1) >> 1;
-        int a;
         ExEdit::PixelYCA yca = { figure.color_y, figure.color_cb, figure.color_cr, 0 };
 
-        double angle_rate = (double)figure.type / 6.283185307179586;
-        int yy = (thread_begin * 2 - efpip->obj_h) + 1;
-        for (int y = thread_begin; y < thread_end; y++) {
+        float angle_rate = (float)figure.type / 6.283185307179586f;
+        int yy = (thread_id * 2 - efpip->obj_h) + 1;
 
-            ExEdit::PixelYCA* pixl = (ExEdit::PixelYCA*)efpip->obj_edit + efpip->obj_line * y;
-            ExEdit::PixelYCA* pixr = pixl + efpip->obj_w - 1;
+        if (7 < obj_half_w && has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
+            __m256i xa = _mm256_set_epi32(-14, -12, -10, -8, -6, -4, -2, 0);
+            __m256 pi256 = _mm256_set1_ps(3.141592653589793f - 0.5f / angle_rate);
+            __m256 rate256 = _mm256_set1_ps(angle_rate);
+            __m256i type256 = _mm256_set1_epi32(figure.type);
+            __m256i min256 = _mm256_setzero_si256();
+            __m256i max256 = _mm256_set1_epi32(0x1000);
 
-            int xx = 1 - efpip->obj_w;
-            for (int x = 0; x < obj_half_w; x++) {
-                int pt = (int)((atan2((double)-xx, (double)yy) + 3.141592653589793) * angle_rate) % figure.type;
-                int dist = xylen[pt] - xp[pt] * xx - yp[pt] * yy;
-                if (0x40000 <= dist) {
-                    a = 0x1000;
-                } else if (dist <= 0) {
-                    a = 0;
-                } else {
-                    a = dist >> 6;
+            for (int y = thread_id; y < efpip->obj_h; y += thread_num) {
+                int xx = efpip->obj_w - 1;
+                ExEdit::PixelYCA* pixl = (ExEdit::PixelYCA*)efpip->obj_edit + efpip->obj_line * y;
+                ExEdit::PixelYCA* pixr = pixl + xx;
+
+                __m256i yy256 = _mm256_set1_epi32(yy);
+                __m256 yf256 = _mm256_cvtepi32_ps(yy256);
+
+                for (int x = (obj_half_w + 7) >> 3; 0 < x; x--) {
+                    __m256i xx256 = _mm256_add_epi32(_mm256_set1_epi32(xx), xa);
+                    __m256 angle256 = _mm256_atan2_ps(_mm256_cvtepi32_ps(xx256), yf256);
+                    angle256 = _mm256_mul_ps(_mm256_add_ps(angle256, pi256), rate256);
+                    __m256i pt256 = simd::_mm256_mod_epi32(_mm256_cvtps_epi32(angle256), type256);
+                    __m256i xp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(xp, pt256, 4), xx256);
+                    __m256i yp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(yp, pt256, 4), yy256);
+                    __m256i dist256 = _mm256_sub_epi32(xp256, yp256);
+                    dist256 = _mm256_add_epi32(_mm256_i32gather_epi32(xylen, pt256, 4), dist256);
+                    __m256i a256 = simd::_mm256_clamp_epi32(_mm256_srai_epi32(dist256, 6), min256, max256);
+                    
+                    for (int i = 0; i < 8; i++) {
+                        int a = a256.m256i_i32[i];
+                        if (0 < a && 0 < inner) {
+                            int subinner = dist256.m256i_i32[i] - inner;
+                            if (0 < subinner) {
+                                subinner = 0x40000 - subinner;
+                                if (0 < subinner) {
+                                    a = a * subinner >> 18;
+                                } else {
+                                    a = 0;
+                                }
+                            }
+                        }
+                        yca.a = (short)a;
+                        *pixl = *pixr = yca;
+                        pixl++; pixr--;
+                    }
+                    xx -= 16;
                 }
+                yy += 2 * thread_num;
+            }
+        } else {
+            for (int y = thread_id; y < efpip->obj_h; y += thread_num) {
+                int xx = efpip->obj_w - 1;
+                ExEdit::PixelYCA* pixl = (ExEdit::PixelYCA*)efpip->obj_edit + efpip->obj_line * y;
+                ExEdit::PixelYCA* pixr = pixl + xx;
 
-                if (inner) {
-                    int subinner = dist - inner;
-                    if (0 < subinner) {
-                        if (subinner < 0x40000) {
-                            a = a * (0x40000 - subinner) >> 18;
-                        } else {
-                            a = 0;
+                for (int x = obj_half_w; 0 < x; x--) {
+                    int pt = (int)((atan2((double)xx, (double)yy) + 3.141592653589793) * angle_rate) % figure.type;
+                    int dist = xylen[pt] + xp[pt] * xx - yp[pt] * yy;
+
+                    int a = std::clamp(dist >> 6, 0, 0x1000);
+                    if (0 < a && 0 < inner) {
+                        int subinner = dist - inner;
+                        if (0 < subinner) {
+                            subinner = 0x40000 - subinner;
+                            if (0 < subinner) {
+                                a = a * subinner >> 18;
+                            } else {
+                                a = 0;
+                            }
                         }
                     }
+                    yca.a = (short)a;
+                    *pixl = *pixr = yca;
+                    pixl++; pixr--;
+                    xx -= 2;
                 }
-                yca.a = (short)a;
-                *pixl = *pixr = yca;
-                pixl++; pixr--;
-                xx += 2;
+                yy += 2 * thread_num;
             }
-            yy += 2;
         }
     }
 

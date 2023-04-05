@@ -60,6 +60,9 @@ namespace patch {
 			set_undo(reinterpret_cast<int*>(GLOBAL::exedit_base + 0x179230)[object_idx], flag);
 		}
 
+        static void __cdecl change_any_exdata_set_undo(unsigned int select_id) {
+            set_undo(reinterpret_cast<int*>(GLOBAL::exedit_base + 0x179230)[select_id], 0);
+        }
 
         inline constexpr static int FILTER_ID_MOVIE = 0; // track 0 check 0 exdata 268 = maxframe
         inline constexpr static int FILTER_ID_AUDIO = 2; // track 0 check 0,1 exdata 268 = maxframe
@@ -147,8 +150,55 @@ namespace patch {
 				ReplaceNearJmp(GLOBAL::exedit_base + 0x042879, &set_undo_wrap_42878);
 			}
 
-			// Ctrlで複数オブジェクトを選択しながら設定ダイアログのトラックバーを動かすと一部オブジェクトが正常に戻らない
+			// Ctrlで複数オブジェクトを選択しながらトラックバーを動かすと一部オブジェクトが正常に戻らない
 			ReplaceNearJmp(GLOBAL::exedit_base + 0x040e5d, &set_undo_wrap_40e5c);
+
+            // Ctrlで複数オブジェクトを選択しながら一部フィルタの色などを変更すると正常に戻らない
+            {
+                /*
+                1004a92e 8d3417             lea     esi,dword ptr [edi+edx]
+                1004a931 8bd1               mov     edx,ecx
+                ↓
+                1004a92e e8XxXxXxXx         call    cursor
+
+                10000000 8d3417             lea     esi,dword ptr [edi+edx]
+                10000000 8b542414           mov     edx,dword ptr [esp+14]
+                10000000 51                 push    ecx
+                10000000 50                 push    eax
+                10000000 52                 push    edx
+                10000000 e8XxXxXxXx         call    new func
+                10000000 83c404             add     esp,04
+                10000000 58                 pop     eax
+                10000000 59                 pop     ecx
+                10000000 8bd1               mov     edx,ecx
+                10000000 c3                 ret
+                */
+                auto& cursor = GLOBAL::executable_memory_cursor;
+
+                static const char code_put[] = {
+                    "\x8d\x34\x17"             // lea     esi,dword ptr [edi+edx]
+                    "\x8b\x54\x24\x14"         // mov     edx,dword ptr[esp+14] ; select_id
+                    "\x51"                     // push    ecx
+                    "\x50"                     // push    eax
+                    "\x52"                     // push    edx
+                    "\xe8XXXX"                 // call    cursor
+                    "\x83\xc4\x04"             // add     esp,04
+                    "\x58"                     // pop     eax
+                    "\x59"                     // pop     ecx
+                    "\x8b\xd1"                 // mov     edx,ecx
+                    "\xc3"                     // ret
+                };
+
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x04a92e, 5);
+                h.store_i8(0, '\xe8');
+                h.replaceNearJmp(1, cursor);
+
+                memcpy(cursor, code_put, sizeof(code_put) - 1);
+                store_i32(cursor + 11, (int)&change_any_exdata_set_undo - ((int)cursor + 15));
+                cursor += sizeof(code_put) - 1;
+
+            }
+
 
 			// オブジェクトの左端をつまんで動かすと再生位置パラメータが変わるが、それが元に戻らない
 			ReplaceNearJmp(GLOBAL::exedit_base + 0x03e038, &set_undo_wrap_3e037);
@@ -165,21 +215,24 @@ namespace patch {
                     1008d512 f7c300000001       test    ebx,01000000
                     1008d518 895c2410           mov     dword ptr [esp+10],ebx
                     ↓
-                    1008d505 53                 push    ebx
-                    1008d506 e8XxXxXxXx         call    f8d507
-                    1008d50b 83c404             add     esp,+04
+                    1008d505 52                 push    edx
+                    1008d506 53                 push    ebx
+                    1008d507 e8XxXxXxXx         call    f8d507
+                    1008d50c 5b                 pop     ebx
+                    1008d50d 5a                 pop     edx
                     1008d50e 85c0               test    eax,eax
                     1008d510 7c19               jl      1008d52b
                     1008d512 f7c300000001       test    ebx,01000000
                     1008d518 89442410           mov     dword ptr [esp+10],eax
                 */
 
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08d505, 21);
-                h.store_i16(0, '\x53\xe8');
-                h.replaceNearJmp(2, &f8d506);
-                h.store_i32(6, '\x83\xc4\x04\x85');
-                h.store_i16(10, '\xc0\x7c');
-                h.store_i8(20, '\x44');
+                constexpr int vp_begin = 0x8d505;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8d51a - vp_begin);
+                h.store_i32(0x8d505 - vp_begin, '\x52\x53\xe8\x00');
+                h.replaceNearJmp(0x8d508 - vp_begin, &f8d506);
+                h.store_i32(0x8d50c - vp_begin, '\x5b\x5a\x85\xc0');
+                h.store_i8(0x8d510 - vp_begin, '\x7c');
+                h.store_i8(0x8d519 - vp_begin, '\x44');
             }
 			// OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x08d50e, 4).store_i32(0, '\x0f\x1f\x40\x00'); // nop
 
