@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_15"
+#define PATCH_VERSION_STR "r43_ss_16"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -161,6 +161,8 @@
 #define PATCH_SWITCH_GROUP_CAMERA_SCENE group_camera_scene
 #define PATCH_SWITCH_CHANGE_DISP_SCENE change_dispscene
 #define PATCH_SWITCH_RIGHT_TRACKBAR right_trackbar
+#define PATCH_SWITCH_SYNC_PLAY_CURSOR sync_play_cursor
+#define PATCH_SWITCH_EXCLUSION_FONT exclusion_font
 #define PATCH_SWITCH_GROUP_ID group_id
 #define PATCH_SWITCH_SCRIPT_SORT_PATCH script_sort_patch
 

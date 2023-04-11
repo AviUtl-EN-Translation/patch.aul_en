@@ -81,7 +81,7 @@ namespace patch {
 
         static int __stdcall f8ba87_8bad5(ExEdit::Filter* efp, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-        static int __stdcall f8bb4d_8bbcc(int value, int8_t* exdata, int offset, ExEdit::Filter* efp);
+        static BOOL __cdecl update_any_exdata_wrap(int offset, char* exdata_str, int8_t* exdata, ExEdit::Filter* efp, int value);
 
         static int* __stdcall f59e27(WPARAM wparam, LPARAM lparam, ExEdit::Filter* efp, UINT message);
 
@@ -260,20 +260,75 @@ namespace patch {
                 h.replaceNearJmp(2, &f8ba87_8bad5);
             }
 
-            // テキストオブジェクトの字間を変更してもUndoデータが生成されない
+            // テキストオブジェクトの字間・行間を変更してもUndoデータが生成されない
+            // 複数選択状態で何かしら操作をした時に字間・行間が意図せず変わることがあるのを修正
+            // 設定ダイアログのテキストを開くと余計な描画処理が2回走るのを修正
             {
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08bb48, 10);
-                h.store_i32(0, '\x57\x6a\x05\x56'); // push edi=efp; push 5; push esi=exdata
-                h.store_i16(4, '\x50\xe8'); //  push eax=value; call rel32
-                h.replaceNearJmp(6, &f8bb4d_8bbcc);
-            }
+                constexpr int vp_begin = 0x8bb5e;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8bbf7 - vp_begin);
+                {
+                    /* 字間
+                        1008bb5e 884605             mov     [esi+05],al
+                        1008bb61 8b8fe4000000       mov     ecx,dword ptr [edi+000000e4]
+                        1008bb67 68389a0b10         push    100b9a38
+                        1008bb6c 51                 push    ecx
+                        1008bb6d e86eecfbff         call    update_any_exdata
+                        1008bb72 83c408             add     esp,+08
+                        1008bb75 b801000000         mov     eax,00000001
+                        ↓
+                        1008bb5e 50                 push    eax ; value
+                        1008bb5f 57                 push    edi ; efp
+                        1008bb60 56                 push    esi ; exdata
+                        1008bb61 90                 nop
+                        1008bb62 b905000000         mov     ecx,00000005
+                        1008bb67 68389a0b10         push    100b9a38
+                        1008bb6c 51                 push    ecx
+                        1008bb6d e8XxXxXxXx         call    update_any_exdata_wrap
+                        1008bb72 83c414             add     esp,+14
+                        1008bb75 0f1f440000         nop
 
-            // テキストオブジェクトの行間を変更してもUndoデータが生成されない
-            {
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08bbc7, 10);
-                h.store_i32(0, '\x57\x6a\x06\x56'); // push edi=efp; push 6; push esi=exdata
-                h.store_i16(4, '\x50\xe8'); //  push eax=value; call rel32
-                h.replaceNearJmp(6, &f8bb4d_8bbcc);
+
+                        exdata[5] = value;
+                        update_any_exdata(efp->processing, s_spacing_x_100b9a38);
+                        return TRUE;
+                        ↓
+                        if(exdata[5] == value)return FALSE; // 変更点が無ければ描画しない＆複数選択オブジェクトを書き換えない
+                        efp->exfunc->set_undo(efp->processing, 0);
+                        exdata[5] = value;
+                        update_any_exdata(efp->processing, s_spacing_x_100b9a38);
+                        return TRUE;
+                    */
+                    h.store_i32(0x8bb5e - vp_begin, '\x50\x57\x56\x90');
+                    h.store_i16(0x8bb62 - vp_begin, '\xb9\x05');
+                    h.replaceNearJmp(0x8bb6e - vp_begin, &update_any_exdata_wrap);
+                    h.store_i32(0x8bb74 - vp_begin, '\x14\x0f\x1f\x44');
+                }
+                {
+                    /* 行間
+                        1008bbdd 884606             mov     [esi+06],al
+                        1008bbe0 8b87e4000000       mov     eax,dword ptr [edi+000000e4]
+                        1008bbe6 682c9a0b10         push    100b9a2c
+                        1008bbeb 50                 push    eax
+                        1008bbec e8efebfbff         call    update_any_exdata
+                        1008bbf1 83c408             add     esp,+08
+                        1008bbf4 b801000000         mov     eax,00000001
+                        ↓
+                        1008bbdd 50                 push    eax ; value
+                        1008bbde 57                 push    edi ; efp
+                        1008bbdf 56                 push    esi ; exdata
+                        1008bbe0 90                 nop
+                        1008bbe1 b806000000         mov     eax,00000006
+                        1008bbe6 682c9a0b10         push    100b9a2c
+                        1008bbeb 50                 push    eax
+                        1008bbec e8XxXxXxXx         call    update_any_exdata_wrap
+                        1008bbf1 83c414             add     esp,+14
+                        1008bbf4 0f1f440000         nop
+                    */
+                    h.store_i32(0x8bbdd - vp_begin, '\x50\x57\x56\x90');
+                    h.store_i16(0x8bbe1 - vp_begin, '\xb8\x06');
+                    h.replaceNearJmp(0x8bbed - vp_begin, &update_any_exdata_wrap);
+                    h.store_i32(0x8bbf3 - vp_begin, '\x14\x0f\x1f\x44');
+                }
             }
 
             // グループ制御とかの対象レイヤー数を変更してもUndoデータが生成されない

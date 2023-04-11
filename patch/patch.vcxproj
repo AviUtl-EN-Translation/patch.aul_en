@@ -48,6 +48,7 @@
     <ClInclude Include="patch_colorpalette_cache.hpp" />
     <ClInclude Include="patch_console.hpp" />
     <ClInclude Include="patch_dialog_new_file.hpp" />
+    <ClInclude Include="patch_exclusion_font.hpp" />
     <ClInclude Include="patch_fast_blur.hpp" />
     <ClInclude Include="patch_fast_chromakey.hpp" />
     <ClInclude Include="patch_fast_colorkey.hpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="patch_splash.hpp" />
     <ClInclude Include="patch_str_minusval.hpp" />
     <ClInclude Include="patch_susie_load.hpp" />
+    <ClInclude Include="patch_sync_play_cursor.hpp" />
     <ClInclude Include="patch_sysinfo_write.hpp" />
     <ClInclude Include="patch_text_op_size.hpp" />
     <ClInclude Include="patch_theme_cc.hpp" />

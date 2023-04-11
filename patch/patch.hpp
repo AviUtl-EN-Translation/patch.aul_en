@@ -112,5 +112,7 @@
 #include "patch_right_trackbar.hpp"
 #include "patch_str_minusval.hpp"
 #include "patch_obj_create_figure.hpp"
+#include "patch_sync_play_cursor.hpp"
+#include "patch_exclusion_font.hpp"
 
 

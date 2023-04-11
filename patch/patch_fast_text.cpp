@@ -27,7 +27,7 @@ namespace patch::fast {
 		char* current_font_name = (char*)(GLOBAL::exedit_base + OFS::ExEdit::current_font_name);
 		int& current_font_height = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::current_font_height);
 
-		if (*(char*)fontname != '\0') {
+		if (*(char*)fontname != '\0' && lstrlenA(fontname) < 32) {
 			lstrcpyA(current_font_name, fontname);
 		}
 		if (0 < height) {

@@ -203,6 +203,7 @@ namespace OFS {
 		constexpr i32 double_framerate_scale = 0x0a4060;
 
 		constexpr i32 exedit_edit_open = 0x03ac30;
+		constexpr i32 update_any_exdata = 0x04a7e0;
 
 		constexpr i32 do_multi_thread_func = 0x06c650;
 

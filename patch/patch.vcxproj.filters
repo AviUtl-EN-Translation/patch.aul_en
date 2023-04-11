@@ -359,6 +359,12 @@
     <ClInclude Include="patch_obj_create_figure.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_sync_play_cursor.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_exclusion_font.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />

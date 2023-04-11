@@ -130,8 +130,7 @@ namespace patch {
         auto ret = efDraw_func_WndProc(hwnd, message, wparam, lparam, editp, efp);
         if (ret) return ret;
         if (LOWORD(wparam) == 7708) {
-            AddUndoCount();
-            set_undo(object(efp->processing) - 1, 1);
+            efp->exfunc->set_undo(efp->processing, 0);
         }
         return ret;
     }
@@ -144,20 +143,21 @@ namespace patch {
     int __stdcall undo_t::f8ba87_8bad5(ExEdit::Filter* efp, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
         int ret = SendMessageA(hwnd, message, wparam, lparam);
         if (ret != -1) {
-            AddUndoCount();
-            set_undo(object(efp->processing) - 1, 1);
+            efp->exfunc->set_undo(efp->processing, 0);
         }
         return ret;
     }
 
-    int __stdcall undo_t::f8bb4d_8bbcc(int value, int8_t* exdata, int offset, ExEdit::Filter* efp) {
-        if (value < -100) value = -100;
-        else if (100 < value) value = 100;
-        if (exdata[offset] != value) {
-            AddUndoCount();
-            set_undo(object(efp->processing) - 1, 1);
+    BOOL __cdecl undo_t::update_any_exdata_wrap(int offset, char* exdata_str, int8_t* exdata, ExEdit::Filter* efp, int value) {
+        if (exdata[offset] == value) {
+            return FALSE;
         }
-        return value;
+
+        efp->exfunc->set_undo(efp->processing, 0);
+        exdata[offset] = value;
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)> (GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, exdata_str);
+
+        return TRUE;
     }
 
     int* __stdcall undo_t::f59e27(WPARAM wparam, LPARAM lparam, ExEdit::Filter* efp, UINT message) {
@@ -170,8 +170,7 @@ namespace patch {
         else if (99 < new_layer_num) new_layer_num = 99;
 
         if (new_layer_num != *exdata_layer_num) {
-            AddUndoCount();
-            set_undo(object(efp->processing) - 1, 1);
+            efp->exfunc->set_undo(efp->processing, 0);
         }
 
         return exdata_layer_num;

@@ -251,6 +251,12 @@ public:
             #ifdef PATCH_SWITCH_RIGHT_TRACKBAR
                 patch::right_trackbar.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_SYNC_PLAY_CURSOR
+                patch::sync_play_cursor.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_EXCLUSION_FONT
+                patch::exclusion_font.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_load(cr);
             #endif
@@ -386,6 +392,13 @@ public:
             cr.load();
         });
 #endif
+#ifdef PATCH_SWITCH_SCENE_CACHE
+        cr.regist("scene_cache", [](json_value_s* value) {
+            ConfigReader cr(value);
+        patch::scene_cache.config_load(cr);
+        cr.load();
+            });
+#endif
 
         cr.load();
     }
@@ -471,6 +484,20 @@ public:
             fast_text.write(ss);
 
             cw.append("fast_text", ss.str());
+            --level;
+        }
+#endif
+
+#ifdef PATCH_SWITCH_SCENE_CACHE
+        {
+            ConfigWriter scene_cache(++level);
+
+            patch::scene_cache.config_store(scene_cache);
+
+            std::stringstream ss;
+            scene_cache.write(ss);
+
+            cw.append("scene_cache", ss.str());
             --level;
         }
 #endif
@@ -672,6 +699,12 @@ public:
             #endif
             #ifdef PATCH_SWITCH_RIGHT_TRACKBAR
                 patch::right_trackbar.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SYNC_PLAY_CURSOR
+                patch::sync_play_cursor.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_EXCLUSION_FONT
+                patch::exclusion_font.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_store(switch_);

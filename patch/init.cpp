@@ -291,6 +291,12 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_RIGHT_TRACKBAR
 	patch::right_trackbar.init();
 #endif
+#ifdef PATCH_SWITCH_SYNC_PLAY_CURSOR
+	patch::sync_play_cursor.init();
+#endif
+#ifdef PATCH_SWITCH_EXCLUSION_FONT
+	patch::exclusion_font.init();
+#endif
 #ifdef PATCH_SWITCH_GROUP_ID
 	patch::group_id.init();
 #endif
