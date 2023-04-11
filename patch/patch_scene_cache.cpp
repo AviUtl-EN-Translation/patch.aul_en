@@ -54,7 +54,7 @@ namespace patch {
 		if (img_ptr == NULL) {
 			return NULL;
 		}
-		if (time_shreshold < GetTickCount() - t0) {
+		if (threshold_time_ms < GetTickCount() - t0) {
 			int yc_size;
 			if (reinterpret_cast<BOOL(__cdecl*)(int)>(GLOBAL::exedit_base + OFS::ExEdit::scene_has_alpha)(scene_idx)) {
 				yc_size = 8;
@@ -109,7 +109,7 @@ namespace patch {
 		if (img_ptr == NULL) {
 			return NULL;
 		}
-		if (time_shreshold < GetTickCount() - t0) {
+		if (threshold_time_ms < GetTickCount() - t0) {
 			int yc_size;
 			if (reinterpret_cast<BOOL(__cdecl*)(int)>(GLOBAL::exedit_base + OFS::ExEdit::scene_has_alpha)(scene_idx)) {
 				yc_size = 8;

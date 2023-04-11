@@ -28,6 +28,7 @@ namespace patch {
 
     // init at exedit load
     // Rootで取得した場合のみシーンのキャッシュをとる
+    // 仕様：シーンの画像構成に掛かった時間が一定を超えた時にキャッシュを生成する。シーンを切り替えた時点でキャッシュは破棄されます。
 
     inline class scene_cache_t {
 
@@ -38,7 +39,9 @@ namespace patch {
         inline static void* (__cdecl* get_scene_image)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int, int, int, int*, int*);
 
 
-        inline static unsigned int time_shreshold = 64;
+        inline static auto threshold_time_ms = 64;
+        inline static const char key_threshold_time[] = "threshold_time";
+
 
         bool enabled = true;
         bool enabled_i;
@@ -56,7 +59,7 @@ namespace patch {
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0835bd, 4);
                 h.replaceNearJmp(0, &get_scene_image_wrap);
             }
-            
+
             {   // mask
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x068a2d, 4);
                 h.replaceNearJmp(0, &get_scene_image_mask_wrap);
@@ -84,6 +87,16 @@ namespace patch {
 
         void switch_store(ConfigWriter& cw) {
             cw.append(key, enabled);
+        }
+
+        void config_load(ConfigReader& cr) {
+            cr.regist(key_threshold_time, [this](json_value_s* value) {
+                ConfigReader::load_variable(value, threshold_time_ms);
+                });
+        }
+
+        void config_store(ConfigWriter& cw) {
+            cw.append(key_threshold_time, threshold_time_ms);
         }
     } scene_cache;
 } // namespace patch
