@@ -136,6 +136,7 @@
     <ClInclude Include="patch_tra_specified_speed.hpp" />
     <ClInclude Include="patch_undo.hpp" />
     <ClInclude Include="patch_warning_duplicate_plugins.hpp" />
+    <ClInclude Include="patch_wave_file_reader.hpp" />
     <ClInclude Include="patch_yc_rgb_conv.hpp" />
     <ClInclude Include="restorable_patch.hpp" />
     <ClInclude Include="resource.h" />

@@ -40,7 +40,7 @@ namespace patch {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			{   // 音声ファイルの再生速度トラックの最大値2000.0のはずが800.0となってしまう処理があるのを修正
+			{
 				/*
                     004331c2 ff1550f24600       call    lstrcmpA
 

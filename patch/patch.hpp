@@ -114,5 +114,6 @@
 #include "patch_obj_create_figure.hpp"
 #include "patch_sync_play_cursor.hpp"
 #include "patch_exclusion_font.hpp"
+#include "patch_wave_file_reader.hpp"
 
 

@@ -318,7 +318,7 @@ kernel void DisplacementMap_zoom(global short* dst, global short* src, global sh
 	v_max = max(v_max, v_temp);
 
 	temp = (vd + 4096.0f) * zoom;
-	v_temp = (y + 1) * 0x1000 + (int)((float)(mem[(obj_line + 1) * 4] - 0x800) * temp);
+	v_temp = (y + 1) * 0x1000 + (int)((float)(mem[obj_line * 4 + 1] - 0x800) * temp);
 	v_min = min(v_min, v_temp);
 	v_max = max(v_max, v_temp);
 

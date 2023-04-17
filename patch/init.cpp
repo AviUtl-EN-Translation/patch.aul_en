@@ -100,6 +100,10 @@ void init_t::InitAtPatchLoaded() {
 	patch::fileinfo.init();
 #endif
 
+#ifdef PATCH_SWITCH_WAVE_FILE_READER
+	patch::wave_file_reader.init();
+#endif
+
 }
 
 void init_t::InitAtExeditLoad() {
