@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_16
+patch.aul r43_ss_17
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -116,10 +116,10 @@ https://scrapbox.io/nazosauna/patch.aul
     ・テキストで制御文字を使用した時に変な描画がされることがあるのを簡易修正
     ・クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更
     ・複数選択状態で右トラックバーの値を変えた時に正常ではないのを修正
-    ・再生停止をした時に再生開始位置のフレームが表示されることがあるのを修正
     ・複数選択状態で何かしら操作をした時に字間・行間が意図せず変わることがあるのを修正
     ・テキストの設定ダイアログを表示させると余計な描画処理が行われるのを修正
     ・フォント名が32バイト以上の場合、正常に扱うことはできないため表示しないように変更
+    ・Wave File Readerが読み込めない形式で失敗した時、別の入力プラグインに渡すように修正
     
 
     追加
@@ -224,6 +224,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "aup_scene_setting" : boolean, ; プロジェクトの保存/読み込み時にシーン設定の一部情報（グリッド設定など）が欠けるのを修正 (既定値: true)
         "colorpalette_cache" : boolean, ; bmpのキャッシュが作られる際に、カラーパレット分のデータ容量を取り忘れているのを修正 (既定値: true)
         "fileinfo" : boolean, ; ファイルの情報を開くと落ちる/ファイル制御情報が正しくないことがあるのを修正 (既定値: true)
+        "wave_file_reader" boolean, ; Wave File Readerが読み込めない形式で失敗した時、別の入力プラグインに渡すように修正 (既定値: true)
         "aup_layer_setting" : boolean, ; プロジェクトの保存時、レイヤー情報を保存する基準を変える (既定値: true)
         "exo_aviutl_filter" : boolean, ; 拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある (既定値: true)
         "exo_sceneidx" : boolean, ; オブジェクトファイルの入出力で、シーン番号を正しく扱えない (既定値: true)
@@ -272,7 +273,6 @@ https://scrapbox.io/nazosauna/patch.aul
         "group_camera_scene" : boolean, ; グループ制御とカメラ制御を併用しているシーンを呼び出すと起こる不具合を修正 (既定値: true)
         "change_disp_scene" : boolean, ; シーン切り替え時のバグを修正 (既定値: true)
         "right_trackbar" : boolean, ; 複数選択状態で右トラックバーの値を変えた時に正常ではないのを修正 (既定値: true)
-        "sync_play_cursor" : boolean, ; 再生停止をした時に再生開始位置のフレームが表示されることがあるのを修正 (既定値: true)
         "exclusion_font" : boolean, ; フォント名が32バイト以上の場合、正常に扱うことはできないため表示しないように変更 (既定値: true)
         "group_id" : boolean, ; プロジェクトファイル読み込み時にグループ化IDの最大値が高い場合、整理する (既定値: true)
         "borderonly_text" : boolean, ; テキストに縁のみを追加する。fast.textborderがtrueの必要あり (既定値: true)
