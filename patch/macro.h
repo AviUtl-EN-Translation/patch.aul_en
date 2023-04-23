@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_17"
+#define PATCH_VERSION_STR "r43_ss_18d"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -106,6 +106,7 @@
 #define PATCH_SWITCH_WAVE_FILE_READER wave_file_reader
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
 #define PATCH_SWITCH_TRA_CHANGE_DRAWFILTER tra_change_drawfilter
+#define PATCH_SWITCH_TRA_CHANGE_MODE tra_change_mode
 #define PATCH_SWITCH_TRA_SPECIFIED_SPEED tra_specified_speed
 #define PATCH_SWITCH_AUP_LAYER_SETTING aup_layer_setting
 #define PATCH_SWITCH_AUP_SCENE_SETTING aup_scene_setting

@@ -119,6 +119,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_TRA_CHANGE_DRAWFILTER
 	patch::tra_change_drawfilter.init();
 #endif
+#ifdef PATCH_SWITCH_TRA_CHANGE_MODE
+	patch::tra_change_mode.init();
+#endif
 #ifdef PATCH_SWITCH_TRA_SPECIFIED_SPEED
 	patch::tra_specified_speed.init();
 #endif

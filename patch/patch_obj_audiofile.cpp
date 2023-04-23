@@ -46,8 +46,8 @@ namespace patch {
             scale = 1;
         }
 
-        TrackInfo* trackinfol = (TrackInfo*)(GLOBAL::exedit_base + OFS::ExEdit::TrackInfoArrayLeft);
-        TrackInfo* trackinfor = (TrackInfo*)(GLOBAL::exedit_base + OFS::ExEdit::TrackInfoArrayRight);
+        TrackInfo* trackinfol = (TrackInfo*)(GLOBAL::exedit_base + OFS::ExEdit::TrackLeftInfoArray);
+        TrackInfo* trackinfor = (TrackInfo*)(GLOBAL::exedit_base + OFS::ExEdit::TrackRightInfoArray);
 
         trackinfor[track_id].value_s = trackinfol[track_id].value_s = efp->track_s[1];
         trackinfor[track_id].value_e = trackinfol[track_id].value_e = efp->track_e[1];

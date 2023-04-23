@@ -113,6 +113,9 @@ public:
             #ifdef PATCH_SWITCH_TRA_CHANGE_DRAWFILTER
                 patch::tra_change_drawfilter.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_TRA_CHANGE_MODE
+                patch::tra_change_mode.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_TRA_SPECIFIED_SPEED
                 patch::tra_specified_speed.switch_load(cr);
             #endif
@@ -564,6 +567,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_TRA_CHANGE_DRAWFILTER
                 patch::tra_change_drawfilter.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_TRA_CHANGE_MODE
+                patch::tra_change_mode.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_TRA_SPECIFIED_SPEED
                 patch::tra_specified_speed.switch_store(switch_);

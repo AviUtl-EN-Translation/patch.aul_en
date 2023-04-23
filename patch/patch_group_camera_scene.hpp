@@ -28,6 +28,8 @@ namespace patch {
 
     // init at exedit load
     // グループ制御とカメラ制御を併用しているシーンを呼び出すと起こる不具合を修正
+    // グループ制御と最大画像サイズを超える画像を併用しているシーンでも起こっていたようです
+
     inline class group_camera_scene_t {
         bool enabled = true;
         bool enabled_i;

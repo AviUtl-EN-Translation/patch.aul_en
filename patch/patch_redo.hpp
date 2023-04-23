@@ -205,6 +205,7 @@ namespace patch {
                         ptr2 = &undodata->data;
                         cmpsize = sizeof(ExEdit::Object);
 
+                        /* // patch_right_trackbarで修正したためたぶん不要になった
                         auto fix_track_right = [](ExEdit::Object* obj) {
                             int track_num = obj->track_n;
                             for (int i = 0; i < track_num; i++) {
@@ -216,6 +217,7 @@ namespace patch {
 
                         fix_track_right(static_cast<ExEdit::Object*>(ptr1)); // 処理順の関係かトラック右の値が変わってしまっていることがあるので直す
                         fix_track_right(static_cast<ExEdit::Object*>(ptr2));
+                        */
 
                         void* ptr3 = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(exdata_buffer) + ObjectArrayPointer[undodata->object_id].exdata_offset + 4);
                         void* ptr4 = reinterpret_cast<void*>(reinterpret_cast<DWORD>(&undodata->data) + cmpsize);

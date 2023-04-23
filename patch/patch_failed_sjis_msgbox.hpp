@@ -34,7 +34,8 @@ namespace patch {
 
     inline class failed_sjis_msgbox_t {
 
-        inline static const char str_new_failed_msg[] = "ファイルパスに使用できない文字が含まれています\nファイル名やフォルダ名を確認してください";
+        inline static const char str_new_failed_msg_question[] = "ファイルパスに使用できない文字が含まれています\nファイル名やフォルダ名を確認してください";
+        inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした。\nファイル名やフォルダ名に使用できない文字が含まれている可能性があります";
         static int __stdcall MessageBoxA_1(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_2(LPCSTR path, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
 

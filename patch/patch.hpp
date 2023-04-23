@@ -115,5 +115,6 @@
 #include "patch_sync_play_cursor.hpp"
 #include "patch_exclusion_font.hpp"
 #include "patch_wave_file_reader.hpp"
+#include "patch_tra_change_mode.hpp"
 
 

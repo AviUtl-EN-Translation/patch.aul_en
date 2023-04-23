@@ -133,6 +133,7 @@
     <ClInclude Include="patch_theme_cc.hpp" />
     <ClInclude Include="patch_tra_aviutlfilter.hpp" />
     <ClInclude Include="patch_tra_change_drawfilter.hpp" />
+    <ClInclude Include="patch_tra_change_mode.hpp" />
     <ClInclude Include="patch_tra_specified_speed.hpp" />
     <ClInclude Include="patch_undo.hpp" />
     <ClInclude Include="patch_warning_duplicate_plugins.hpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
+    <ClCompile Include="patch_obj_glow.cpp" />
     <ClCompile Include="patch_obj_text.cpp" />
     <ClCompile Include="patch_rendering.cpp" />
     <ClCompile Include="patch_setting_dialog_chromakey.cpp" />

@@ -368,6 +368,9 @@
     <ClInclude Include="patch_wave_file_reader.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_tra_change_mode.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -548,6 +551,9 @@
       <Filter>feature\fast</Filter>
     </ClCompile>
     <ClCompile Include="patch_setting_dialog_chromakey.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_obj_glow.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

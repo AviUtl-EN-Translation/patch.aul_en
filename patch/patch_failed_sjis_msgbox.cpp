@@ -12,17 +12,28 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
 #include "patch_failed_sjis_msgbox.hpp"
 #ifdef PATCH_SWITCH_FAILED_SJIS_MSGBOX
 
+#include <shlwapi.h>
 
 namespace patch {
     int __stdcall failed_sjis_msgbox_t::MessageBoxA_1(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType) {
         auto end = lpCaption + strlen(lpCaption);
         // sjisに0x3fは含まれないのでこれでよい
         if (std::find(lpCaption, end, '?') != end) {
-            lpText = str_new_failed_msg;
+            lpText = str_new_failed_msg_question;
+        } else if (!PathFileExistsA(lpCaption)) {
+            lpText = str_new_failed_msg_not_found;
+            /*
+            char path[261];
+            lstrcpyA(path, lpCaption);
+            for (int i = lstrlenA(path); 2 < i; i--) {
+                path[i] = '\0';
+                if (PathFileExistsA(path)) {
+                    printf("%s\n", path);
+                }
+            }*/
         }
         return MessageBoxA(hWnd, lpText, lpCaption, uType);
     }

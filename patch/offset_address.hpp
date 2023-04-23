@@ -287,9 +287,11 @@ namespace OFS {
 		constexpr i32 get_last_filter_idx = 0x0335f0;
 		constexpr i32 get_filterp = 0x047b00;
 
-		constexpr i32 TrackModeArray = 0x14d3b0;
-		constexpr i32 TrackInfoArrayLeft = 0x14d4c8;
-		constexpr i32 TrackInfoArrayRight = 0x14def0;
+		constexpr i32 TrackModeInfoArray = 0x14d3b0;
+		constexpr i32 TrackLeftInfoArray = 0x14d4c8;
+		constexpr i32 TrackRightInfoArray = 0x14def0;
+		constexpr i32 TrackParamInfoArray = 0x14e900;
+		constexpr i32 update_track = 0x2c470;
 
 		constexpr i32 ScaleColorBackGround = 0x0a4048;
 		constexpr i32 ScaleColorForeGround = 0x0a404c;

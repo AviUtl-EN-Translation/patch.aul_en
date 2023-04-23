@@ -38,14 +38,33 @@ namespace patch {
         スレッド数より小さいオブジェクトに効果が乗らない
     */
 
+    // 光成分のみチェックがある時に透過情報が失われるのを修正
 
     inline class obj_Glow_t {
+
+        static void __cdecl mt_mix_calc_alpha(int thi, int thn, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
         bool enabled = true;
         bool enabled_i;
         inline static const char key[] = "obj_glow";
     public:
 
+        struct efGlow_var { // 1b2010
+            int src_h;
+            int src_w;
+            int intensity;
+            int blur;
+            int diffusion_h;
+            int diffusion_w;
+            int diffusion_length;
+            short light_cb;
+            short light_cr;
+            short light_y;
+            short _padding;
+            void* buf_temp;
+            void* buf_temp2;
+            int threshold; // 1b203c
+        };
 
         void init() {
             enabled_i = enabled;
@@ -92,6 +111,20 @@ namespace patch {
                 small_filter(ofs, n, amin, size);
             }
 #endif // PATCH_SWITCH_SMALL_FILTER
+
+            {
+                /*
+                if (efp->check[2] == 0) {
+                    efp->aviutl_exfunc->exec_multi_thread_func(mt_mix_calc_alpha_original,efp,efpip);
+                }
+                ↓
+                efp->aviutl_exfunc->exec_multi_thread_func(mt_mix_calc_alpha,efp,efpip);
+                */
+                constexpr int vp_begin = 0x55486;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x5549a - vp_begin);
+                h.store_i16(0x55486 - vp_begin, '\xeb\x08');
+                h.store_i32(0x55496 - vp_begin, &mt_mix_calc_alpha);
+            }
 
         }
 
