@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_18"
+#define PATCH_VERSION_STR "r43_ss_19"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -188,6 +188,7 @@
 	#define PATCH_SWITCH_LUA_GETVALUE lua_getvalue
 	#define PATCH_SWITCH_LUA_RAND lua_rand
 	#define PATCH_SWITCH_LUA_RANDEX lua_randex
+	#define PATCH_SWITCH_LUA_SETANCHOR lua_setanchor
 	#define PATCH_SWITCH_LUA_PATH lua_path
 #endif // ifdef PATCH_SWITCH_LUA
 

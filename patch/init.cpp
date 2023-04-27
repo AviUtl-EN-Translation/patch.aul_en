@@ -554,6 +554,10 @@ BOOL __cdecl init_t::func_initWrap(AviUtl::FilterPlugin* fp) {
 		patch::lua_getvalueex.init();
 	#endif
 
+	#ifdef PATCH_SWITCH_LUA_SETANCHOR
+		patch::lua_setanchor.init();
+	#endif
+
 	#ifdef PATCH_SWITCH_WARNING_DUPLICATE_PLUGINS
 		// 本当はexeditが無くても動くようにするのが良さそうだけど面倒なのでここに
 		patch::WarningDuplicate.init();

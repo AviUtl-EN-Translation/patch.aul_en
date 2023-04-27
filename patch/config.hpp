@@ -297,6 +297,10 @@ public:
                 #ifdef PATCH_SWITCH_LUA_RANDEX
                     patch::lua_randex.switch_load(cr);
                 #endif
+
+                #ifdef PATCH_SWITCH_LUA_SETANCHOR
+                    patch::lua_setanchor.switch_load(cr);
+                #endif
             #endif
 
             #ifdef PATCH_SWITCH_FAST
@@ -751,6 +755,10 @@ public:
 
                 #ifdef PATCH_SWITCH_LUA_RANDEX
                     patch::lua_randex.switch_store(switch_);
+                #endif
+
+                #ifdef PATCH_SWITCH_LUA_SETANCHOR
+                    patch::lua_setanchor.switch_store(switch_);
                 #endif
             #endif
 

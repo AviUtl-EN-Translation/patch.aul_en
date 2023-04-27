@@ -31,6 +31,7 @@ namespace patch {
 	/* シーン切り替え時のバグを修正
 	　　・Shiftを押しながらシーン切り替えをすると範囲選択がされる（システムの設定＞フレーム移動時にSHIFTキーを押している時は範囲選択移動にする の影響）
 	  　・拡張編集のウィンドウキャプションが変わらない
+	    ・選択中のオブジェクトのIDが異常値になっている時にエラーとなるのを修正
 	*/
 	inline class change_disp_scene_t {
 		static int __cdecl set_frame_wrap(AviUtl::EditHandle* editp, int frame);
@@ -48,7 +49,8 @@ namespace patch {
 			enabled_i = enabled;
 
 			if (!enabled_i)return;
-			{
+			{ // Shiftを押しながらシーン切り替えをすると範囲選択がされる（システムの設定＞フレーム移動時にSHIFTキーを押している時は範囲選択移動にする の影響）
+			  // 拡張編集のウィンドウキャプションが変わらない
 				/*
 					1002be69 8b4e60             mov     ecx,dword ptr [esi+60]
 					1002be6c 52                 push    edx
@@ -68,6 +70,34 @@ namespace patch {
 				h.store_i32(0, '\x52\x57\x90\xe8');
 				h.replaceNearJmp(4, &set_frame_wrap);
 				
+			}
+			{ // 選択中のオブジェクトのIDが異常値になっている時にエラーとなるのを修正
+				/*
+					1002bddf 8b82707a1710       mov     eax,dword ptr [edx+10177a70]
+					↓
+					1002bddf 90                 nop
+					1002bde0 e8XxXxXxXx         call    cursor
+
+					10000000 8b82XxXxXxXx       mov     eax,dword ptr [edx+ee+177a70]
+					10000000 8b15XxXxXxXx       mov     edx,dword ptr [ee+1e0fa0]
+					10000000 3bc2               cmp     eax,edx
+					10000000 7c03               jnl     skip,03
+					10000000 83c8ff             or      eax,0xffffffff
+					10000000 c3                 ret
+
+				*/
+				auto& cursor = GLOBAL::executable_memory_cursor;
+
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x2bddf, 6);
+				h.store_i16(0, '\x90\xe8');
+				h.replaceNearJmp(2, cursor);
+
+				store_i16(cursor, '\x8b\x82'); cursor += 2;
+				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::SceneSetting + 0x20); cursor += 4;
+				store_i16(cursor, '\x8b\x15'); cursor += 2;
+				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::ObjectAllocNum); cursor += 4;
+				store_i32(cursor, '\x3b\xc2\x7c\x03'); cursor += 4;
+				store_i32(cursor, '\x83\xc8\xff\xc3'); cursor += 4;
 			}
 
 

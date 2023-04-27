@@ -116,5 +116,6 @@
 #include "patch_exclusion_font.hpp"
 #include "patch_wave_file_reader.hpp"
 #include "patch_tra_change_mode.hpp"
+#include "patch_lua_setanchor.hpp"
 
 
