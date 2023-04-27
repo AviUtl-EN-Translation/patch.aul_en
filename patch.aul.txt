@@ -296,6 +296,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "lua.getvalue" : boolean, ; getvalueで中心座標を取得できるように (既定値: true)
             "lua.rand" : boolean, ; rand関数で例外になるパターンを潰す (既定値: true)
             "lua.randex" : boolean, ; 正確な乱数を提供するrandexクラスの追加 (既定値: true)
+            "lua_setanchor" : boolean, ; setanchorを使っているスクリプトが正常に描画できないことがあるのを修正 (既定値: true)
         "fast" : boolean, ; fast.*配下のスイッチの主電源 (既定値: true)
             "fast.exeditwindow" : boolean, ; 拡張編集ウィンドウの描画の最適化 (既定値: true)
             "fast.settingdialog" : boolean, ; 設定ダイアログの描画の最適化 (既定値: true)
