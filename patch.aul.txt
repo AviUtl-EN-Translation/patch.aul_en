@@ -126,6 +126,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・移動無しから変更するときに右トラックバーの値を左と同じにする
     ・移動量指定から他に変えた時に中間点オブジェクトが正常に同じにならないのを修正
     ・obj.setanchorを使っているスクリプトが正常に描画できないことがあるのを修正（簡易変形や多角形など）
+    ・標準描画や拡張描画の非効率な計算を改善する
 
     追加
     ・コンソールの表示
@@ -300,7 +301,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "fast" : boolean, ; fast.*配下のスイッチの主電源 (既定値: true)
             "fast.exeditwindow" : boolean, ; 拡張編集ウィンドウの描画の最適化 (既定値: true)
             "fast.settingdialog" : boolean, ; 設定ダイアログの描画の最適化 (既定値: true)
-            "fast.drawfilter" : boolean, ; 標準描画や拡張描画の無駄な計算を減らす (既定値: true)
+            "fast.drawfilter" : boolean, ; 標準描画や拡張描画の非効率な計算を改善する (既定値: true)
             "fast.text" : boolean, ; テキストの軽量化 (既定値: true)
             "fast.textborder" : boolean, ; テキスト縁取り文字の軽量化 (既定値: true)
             "fast.create_figure" : boolean, ; 図形の高速化 (既定値: true)
