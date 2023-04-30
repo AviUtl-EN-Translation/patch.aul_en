@@ -312,6 +312,9 @@ public:
                 #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
                     patch::fast_setting_dialog.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_DRAWFILTER
+                    patch::fast::DrawFilter.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_TEXT
                     patch::fast::text.switch_load(cr);
                 #endif
@@ -770,6 +773,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
                     patch::fast_setting_dialog.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_DRAWFILTER
+                    patch::fast::DrawFilter.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_TEXT
                     patch::fast::text.switch_store(switch_);

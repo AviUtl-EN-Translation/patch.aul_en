@@ -371,11 +371,11 @@
     <ClInclude Include="patch_tra_change_mode.hpp">
       <Filter>feature</Filter>
     </ClInclude>
-    <ClInclude Include="patch_rgba_output.hpp">
-      <Filter>feature</Filter>
-    </ClInclude>
     <ClInclude Include="patch_lua_setanchor.hpp">
       <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_fast_drawfilter.hpp">
+      <Filter>feature\fast</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -327,7 +327,10 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_EXEDITWINDOW
 			patch::fast_exeditwindow.init();
 		#endif
-
+			
+		#ifdef PATCH_SWITCH_FAST_DRAWFILTER
+			patch::fast::DrawFilter.init();
+		#endif
 		#ifdef PATCH_SWITCH_FAST_TEXT
 			patch::fast::text.init();
 		#endif

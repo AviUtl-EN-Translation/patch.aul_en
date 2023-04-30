@@ -129,10 +129,10 @@ namespace patch {
                     100360cd 8911               mov     dword ptr [ecx],edx ; ObjectArrayPointer[midpt_idx].track_mode[track_id]=edx
                     100360cf 80e20f             and     dl,0f
                     100360d2 7428               jz      100360fc
-                    100360d4 240f               and     al,0f
-                    100360d6 7505               jnz     skip,05
-                    100360d8 80fa05             cmp     dl,05
-                    100360db 751f               jnz     100360fc
+                    100360d4 80fa05             cmp     dl,05
+                    100360d7 7408               jz      skip,08
+                    100360d9 240f               and     al,0f
+                    100360db 741f               jz      100360fc
                     100360dd 3c05               cmp     al,05
                     100360df 741b               jz      100360fc
                     100360e1 8b01               mov     eax,dword ptr [ecx]
@@ -157,16 +157,16 @@ namespace patch {
                     "\x8d\x8c\x01\x38\xfe\xff\xff"// mov     ecx,ecx+eax+fffffe38
                     "\x8b\x01"                    // mov     eax,dword ptr [ecx]
                     "\x89\x11"                    // mov     dword ptr [ecx],edx
-                    "\x80\xe2\x0f"                // and     dl,0f
-                    "\x74\x28"                    // jz      100360fc
-                    "\x24\x0f"                    // and     al,0f
-                    "\x75\x05"                    // jnz     skip,05
-                    "\x80\xfa\x05"                // cmp     dl,05
-                    "\x75\x1f"                    // jnz     100360fc
-                    "\x3c\x05"                    // cmp     al,05
-                    "\x74\x1b"                    // jz      100360fc
-                    "\x8b\x01"                    // mov     eax,dword ptr [ecx]
-                    "\xeb\x3c"                    // jmp     10036121
+                    "\x80\xe2\x0f"             // and     dl,0f
+                    "\x74\x28"                 // jz      100360fc
+                    "\x80\xfa\x05"             // cmp     dl,05
+                    "\x74\x08"                 // jz      skip,08
+                    "\x24\x0f"                 // and     al,0f
+                    "\x74\x1f"                 // jz      100360fc
+                    "\x3c\x05"                 // cmp     al,05
+                    "\x74\x1b"                 // jz      100360fc
+                    "\x8b\x01"                 // mov     eax,dword ptr [ecx]
+                    "\xeb\x3c"                 // jmp     10036121
                 };
                 memcpy(reinterpret_cast<void*>(h.address()), bin360b8, sizeof(bin360b8) - 1);
                 h.store_i8(0x360fc - vp_begin, '\xa1');

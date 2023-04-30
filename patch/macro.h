@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_19"
+#define PATCH_VERSION_STR "r43_ss_20"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -197,6 +197,7 @@
 	
 	#define PATCH_SWITCH_FAST_SETTINGDIALOG fast_settingdialog
 	#define PATCH_SWITCH_FAST_EXEDITWINDOW fast_exeditwindow
+	#define PATCH_SWITCH_FAST_DRAWFILTER draw_filter
 	#define PATCH_SWITCH_FAST_TEXT fast_text
 	#define PATCH_SWITCH_FAST_TEXTBORDER fast_text_border
 	#define PATCH_SWITCH_FAST_CREATE_FIGURE fast_create_figure
