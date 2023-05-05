@@ -57,11 +57,15 @@ namespace patch {
 
 		static void __cdecl set_undo_wrap_40e5c(unsigned int object_idx, unsigned int flag) {
 			// select_idx_list
-			set_undo(reinterpret_cast<int*>(GLOBAL::exedit_base + 0x179230)[object_idx], flag);
+			set_undo(reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray)[object_idx], flag);
 		}
 
-        static void __cdecl change_any_exdata_set_undo(unsigned int select_id) {
-            set_undo(reinterpret_cast<int*>(GLOBAL::exedit_base + 0x179230)[select_id], 0);
+        static int __cdecl change_any_exdata_set_undo(unsigned int select_id, void* dst, void* src, int size) {
+            if (memcmp(dst, src, size)) {
+                set_undo(reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray)[select_id], 0);
+                return size;
+            }
+            return 0;
         }
 
         inline constexpr static int FILTER_ID_MOVIE = 0; // track 0 check 0 exdata 268 = maxframe
@@ -156,45 +160,49 @@ namespace patch {
             // Ctrlで複数オブジェクトを選択しながら一部フィルタの色などを変更すると正常に戻らない
             {
                 /*
-                1004a92e 8d3417             lea     esi,dword ptr [edi+edx]
-                1004a931 8bd1               mov     edx,ecx
+                1004a933 03f8               add     edi,eax
+                1004a935 c1e902             shr     ecx,02
                 ↓
-                1004a92e e8XxXxXxXx         call    cursor
+                1004a933 e8XxXxXxXx         call    cursor
 
-                10000000 8d3417             lea     esi,dword ptr [edi+edx]
-                10000000 8b542414           mov     edx,dword ptr [esp+14]
-                10000000 51                 push    ecx
-                10000000 50                 push    eax
+                10000000 03f8               add     edi,eax
+                10000000 8b442414           mov     eax,dword ptr [esp+14] ; select_id
                 10000000 52                 push    edx
+                10000000 51                 push    ecx
+                10000000 56                 push    esi
+                10000000 57                 push    edi
+                10000000 50                 push    eax
                 10000000 e8XxXxXxXx         call    new func
-                10000000 83c404             add     esp,04
-                10000000 58                 pop     eax
-                10000000 59                 pop     ecx
-                10000000 8bd1               mov     edx,ecx
+                10000000 83c410             add     esp,10
+                10000000 5a                 pop     edx
+                10000000 8bc8               mov     ecx,eax
+                10000000 c1e902             shr     ecx,02
                 10000000 c3                 ret
                 */
                 auto& cursor = GLOBAL::executable_memory_cursor;
 
                 static const char code_put[] = {
-                    "\x8d\x34\x17"             // lea     esi,dword ptr [edi+edx]
-                    "\x8b\x54\x24\x14"         // mov     edx,dword ptr[esp+14] ; select_id
-                    "\x51"                     // push    ecx
-                    "\x50"                     // push    eax
+                    "\x03\xf8"                 // add     edi,eax
+                    "\x8b\x44\x24\x14"         // mov     eax,dword ptr [esp+14] ; select_id
                     "\x52"                     // push    edx
-                    "\xe8XXXX"                 // call    cursor
-                    "\x83\xc4\x04"             // add     esp,04
-                    "\x58"                     // pop     eax
-                    "\x59"                     // pop     ecx
-                    "\x8b\xd1"                 // mov     edx,ecx
+                    "\x51"                     // push    ecx
+                    "\x56"                     // push    esi
+                    "\x57"                     // push    edi
+                    "\x50"                     // push    eax
+                    "\xe8XXXX"                 // call    new func
+                    "\x83\xc4\x10"             // add     esp,10
+                    "\x5a"                     // pop     edx
+                    "\x8b\xc8"                 // mov     ecx,eax
+                    "\xc1\xe9\x02"             // shr     ecx,02
                     "\xc3"                     // ret
                 };
 
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x04a92e, 5);
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x04a933, 5);
                 h.store_i8(0, '\xe8');
                 h.replaceNearJmp(1, cursor);
 
                 memcpy(cursor, code_put, sizeof(code_put) - 1);
-                store_i32(cursor + 11, (int)&change_any_exdata_set_undo - ((int)cursor + 15));
+                store_i32(cursor + 12, (int)&change_any_exdata_set_undo - ((int)cursor + 16));
                 cursor += sizeof(code_put) - 1;
 
             }

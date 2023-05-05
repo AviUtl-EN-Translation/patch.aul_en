@@ -377,6 +377,9 @@
     <ClInclude Include="patch_fast_drawfilter.hpp">
       <Filter>feature\fast</Filter>
     </ClInclude>
+    <ClInclude Include="patch_any_obj.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -560,6 +563,9 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_obj_glow.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_any_obj.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

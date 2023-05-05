@@ -118,5 +118,7 @@
 #include "patch_tra_change_mode.hpp"
 #include "patch_lua_setanchor.hpp"
 #include "patch_fast_drawfilter.hpp"
+#include "patch_aup_load.hpp"
+#include "patch_any_obj.hpp"
 
 

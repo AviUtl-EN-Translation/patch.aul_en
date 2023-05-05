@@ -79,8 +79,7 @@ namespace patch {
 					1002bde0 e8XxXxXxXx         call    cursor
 
 					10000000 8b82XxXxXxXx       mov     eax,dword ptr [edx+ee+177a70]
-					10000000 8b15XxXxXxXx       mov     edx,dword ptr [ee+1e0fa0]
-					10000000 3bc2               cmp     eax,edx
+					10000000 3b05XxXxXxXx       cmp     eax,dword ptr [ee+1e0fa0]
 					10000000 7c03               jnl     skip,03
 					10000000 83c8ff             or      eax,0xffffffff
 					10000000 c3                 ret
@@ -94,9 +93,9 @@ namespace patch {
 
 				store_i16(cursor, '\x8b\x82'); cursor += 2;
 				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::SceneSetting + 0x20); cursor += 4;
-				store_i16(cursor, '\x8b\x15'); cursor += 2;
+				store_i16(cursor, '\x3b\x05'); cursor += 2;
 				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::ObjectAllocNum); cursor += 4;
-				store_i32(cursor, '\x3b\xc2\x7c\x03'); cursor += 4;
+				store_i16(cursor, '\x7c\x03'); cursor += 2;
 				store_i32(cursor, '\x83\xc8\xff\xc3'); cursor += 4;
 			}
 

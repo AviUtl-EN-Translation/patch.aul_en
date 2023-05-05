@@ -127,6 +127,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 
 
+#ifdef PATCH_SWITCH_AUP_LOAD
+	patch::aup_load.init();
+#endif
 #ifdef PATCH_SWITCH_AUP_LAYER_SETTING
 	patch::aup_layer_setting.init();
 #endif
@@ -300,6 +303,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_SYNC_PLAY_CURSOR
 	patch::sync_play_cursor.init();
+#endif
+#ifdef PATCH_SWITCH_ANY_OBJ
+	patch::any_obj.init();
 #endif
 #ifdef PATCH_SWITCH_EXCLUSION_FONT
 	patch::exclusion_font.init();

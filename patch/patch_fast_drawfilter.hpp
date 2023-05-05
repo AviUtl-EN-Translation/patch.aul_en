@@ -72,9 +72,24 @@ namespace patch::fast {
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x191f9, sizeof(code_put) - 1);
 				memcpy(reinterpret_cast<void*>(h.address()), code_put, sizeof(code_put) - 1);
 			}
+
+
+			static const char code_put_rot[] =
+				"\x8b\xc2"                 // mov     eax,edx
+				"\x85\xc0"                 // test    eax,eax
+				"\x74\x18"                 // jz      skip +18
+				"\xc1\xe0\x0b"             // shl     eax,0b
+				"\xb9\x6b\x29\x82\x74"     // mov     ecx,7482296b
+				"\xf7\xe9"                 // imul    ecx
+				"\xc1\xfa\x09"             // sar     edx,09
+				"\x8b\xc2"                 // mov     eax,edx
+				"\xc1\xe8\x1f"             // shr     eax,1f
+				"\x03\xc2"                 // add     eax,edx
+				"\x0f\x1f\x40"//\x00"      // nop
+			;
 			{
 				constexpr int vp_begin = 0x19426;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x1959c - vp_begin);
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x1959b - vp_begin);
 				{ // X,Y,Z
 					/*
 						x = track[xid];
@@ -116,19 +131,70 @@ namespace patch::fast {
 							track_rx = (track_rx << 11) / 1125;
 						}
 					*/
-					static const char code_put[] =
-						"\x8b\xc2"                 // mov     eax,edx
-						"\x85\xc0"                 // test    eax,eax
-						"\x74\x18"                 // jz      skip +18
-						"\xc1\xe0\x0b"             // shl     eax,0b
-						"\xb9\x65\x04\x00\x00"     // mov     ecx,00000465
-						"\x99"                     // cdq
-						"\xf7\xf9"                 // idiv    ecx
-						"\xeb\x0b"                 // jmp     skip +0b
-					;
 					for (int i = 0; i < 121; i += 60) { // 19506 19542 1957e
-						memcpy(reinterpret_cast<void*>(h.address(0x19506 - vp_begin + i)), code_put, sizeof(code_put) - 1);
+						memcpy(reinterpret_cast<void*>(h.address(0x19506 - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
 					}
+				}
+			}
+			{ // グループ制御処理 X
+				constexpr int vp_begin = 0x5a16f;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x5a461 - vp_begin);
+				{ // X
+					h.store_i32(0, '\x67\x66\x66\x66');
+					static const char code_put[] =
+						"\x85\xc0"                 // test    eax,eax
+						"\x74\x1a"                 // jz      1005a194
+						"\xc1\xe0\x0b"             // shl     eax,0b
+						"\xf7\xef"                 // imul    edi
+						"\xd1\xfa"                 // sar     edx,1
+						"\x8b\xc2"                 // mov     eax,edx
+						"\xc1\xe8\x1f"             // shr     eax,1f
+						"\x03\xc2"                 // add     eax,edx
+						"\xeb\x0a"                 // jmp     1005a194
+						;
+					memcpy(reinterpret_cast<void*>(h.address(0x5a176 - vp_begin)), code_put, sizeof(code_put) - 1);
+				}
+				{ // YZ
+					h.store_i16(0x5a1a9 - vp_begin, '\x89\x16');
+					static const char code_put[] =
+						"\x85\xc0"                 // test    eax,eax
+						"\x74\x15"                 // jz      1005a1c4
+						"\xc1\xe0\x0b"             // shl     eax,0b
+						"\xf7\xef"                 // imul    edi
+						"\xd1\xfa"                 // sar     edx,1
+						"\x8b\xc2"                 // mov     eax,edx
+						"\xc1\xe8\x1f"             // shr     eax,1f
+						"\x03\xc2"                 // add     eax,edx
+						"\x0f\x1f\x80\x00\x00\x00"//\x00"// nop
+						;
+					memcpy(reinterpret_cast<void*>(h.address(0x5a1ab - vp_begin)), code_put, sizeof(code_put) - 1);
+					memcpy(reinterpret_cast<void*>(h.address(0x5a1d3 - vp_begin)), code_put, sizeof(code_put) - 1);
+				}
+
+				{ // 回転、 入れ子 回転
+					for (int i = 0; i < 100; i += 47) { // 5a22f 5a25e 5a28d  5a3e6 5a415 5a444
+						memcpy(reinterpret_cast<void*>(h.address(0x5a22f - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
+						memcpy(reinterpret_cast<void*>(h.address(0x5a3e6 - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
+					}
+				}
+
+				{ // 入れ子 XYZ
+					h.store_i32(0x5a31f - vp_begin, '\x67\x66\x66\x66');
+					h.store_i16(0x5a34f - vp_begin, '\x89\x16');
+					static const char code_put[] =
+						"\x85\xc0"                 // test    eax,eax
+						"\x74\x19"                 // jz      1005a343
+						"\xc1\xe0\x0b"             // shl     eax,0b
+						"\xf7\xeb"                 // imul    ebx
+						"\xd1\xfa"                 // sar     edx,1
+						"\x8b\xc2"                 // mov     eax,edx
+						"\xc1\xe8\x1f"             // shr     eax,1f
+						"\x03\xc2"                 // add     eax,edx
+						"\xeb\x09"                 // jmp     1005a343
+						;
+					memcpy(reinterpret_cast<void*>(h.address(0x5a326 - vp_begin)), code_put, sizeof(code_put) - 1);
+					memcpy(reinterpret_cast<void*>(h.address(0x5a351 - vp_begin)), code_put, sizeof(code_put) - 1);
+					memcpy(reinterpret_cast<void*>(h.address(0x5a37d - vp_begin)), code_put, sizeof(code_put) - 1);
 				}
 			}
 		}

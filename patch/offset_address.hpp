@@ -176,6 +176,9 @@ namespace OFS {
 		constexpr i32 str_ONSEIFILE = 0x0ba698; // "音声ファイル"
 		constexpr i32 str_dot_exedit_backup = 0x0a5308;
 		constexpr i32 str_dot_aup = 0x0a5320;
+		constexpr i32 str_file = 0x09d7d0;
+		constexpr i32 str_type = 0x09d6c4;
+		constexpr i32 str_name = 0x09d6b4;
 
 
 
@@ -196,6 +199,7 @@ namespace OFS {
 		constexpr i32 get_scene_size = 0x02b980;
 		constexpr i32 scene_has_alpha = 0x02ba00;
 
+		constexpr i32 set_undo = 0x08d290;
 
 		constexpr i32 frame_cursor = 0x1a5304;
 		constexpr i32 frame_n = 0x14d3a0;
@@ -281,7 +285,12 @@ namespace OFS {
 
 		constexpr i32 ObjectAllocNum = 0x1e0fa0;
 		constexpr i32 ObjectArrayPointer = 0x1e0fa4;
+		constexpr i32 ExdataPointer = 0x1e0fa8;
 		constexpr i32 NextObjectIdxArray = 0x1592d8;
+
+		constexpr i32 SelectingObjectNum = 0x167d88;
+		constexpr i32 SelectingObjectIdxArray = 0x179230;
+		constexpr i32 deselect_object = 0x34eb0;
 
 		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
 		constexpr i32 get_last_filter_idx = 0x0335f0;

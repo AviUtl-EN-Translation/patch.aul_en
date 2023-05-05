@@ -77,6 +77,9 @@ public:
             #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_AUP_LOAD
+                patch::aup_load.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_AUP_LAYER_SETTING
                 patch::aup_layer_setting.switch_load(cr);
             #endif
@@ -259,6 +262,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SYNC_PLAY_CURSOR
                 patch::sync_play_cursor.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_ANY_OBJ
+                patch::any_obj.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_EXCLUSION_FONT
                 patch::exclusion_font.switch_load(cr);
@@ -539,6 +545,9 @@ public:
             #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_AUP_LOAD
+                patch::aup_load.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_AUP_LAYER_SETTING
                 patch::aup_layer_setting.switch_store(switch_);
             #endif
@@ -721,6 +730,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SYNC_PLAY_CURSOR
                 patch::sync_play_cursor.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_ANY_OBJ
+                patch::any_obj.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_EXCLUSION_FONT
                 patch::exclusion_font.switch_store(switch_);
