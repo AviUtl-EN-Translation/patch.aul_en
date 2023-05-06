@@ -33,8 +33,9 @@ namespace patch {
 	inline class any_obj_t {
 		static char* __cdecl disp_extension_image_file_wrap(ExEdit::Filter* efp, char* path);
 		static char* __cdecl disp_extension_movie_file_wrap(ExEdit::Filter* efp, char* path);
+		static char* __cdecl disp_extension_audio_file_wrap(ExEdit::Filter* efp, char* path);
 		static void __cdecl set_figure_type_text_wrap(ExEdit::Filter* efp, void* exdata);
-
+		static int __stdcall count_section_num_wrap(ExEdit::Filter* efp, ExEdit::ObjectFilterIndex ofi);
 		bool enabled = true;
 		bool enabled_i;
 
@@ -42,6 +43,8 @@ namespace patch {
 
 
 	public:
+
+		static void __cdecl update_any_range(ExEdit::Filter* efp);
 
 		void init() {
 			enabled_i = enabled;
@@ -52,11 +55,39 @@ namespace patch {
 				h.replaceNearJmp(0, &disp_extension_image_file_wrap);
 			}
 			{ // 動画ファイル・動画ファイル合成 の参照ファイル
-				{
-					OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x67fc, 4);
-					h.replaceNearJmp(0, &disp_extension_movie_file_wrap);
-				}
+				constexpr int vp_begin = 0x6744;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6800 - vp_begin);
 				{ //ignore_media_param_reset に近いものを実装。複数選択中には再生位置などを維持する
+					/*
+						10006744 ff5218             call    dword ptr [edx+18]
+						10006747 83c404             add     esp,+04
+						↓
+						10006744 56                 push    esi
+						10006745 e8XxXxXxXx         call    new_func
+					*/
+					h.store_i16(0, '\x56\xe8');
+					h.replaceNearJmp(2, &count_section_num_wrap);
+				}
+				{ // 本実装
+					h.replaceNearJmp(0x67fc - vp_begin, &disp_extension_movie_file_wrap);
+				}
+			}
+			{ // 音声ファイル の参照ファイル
+				constexpr int vp_begin = 0x9010d;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x9026d - vp_begin);
+				{ //ignore_media_param_reset に近いものを実装。複数選択中には再生位置などを維持する
+					/*
+						1009010d ff5218             call    dword ptr [edx+18]
+						10090110 83c404             add     esp,+04
+						↓
+						1009010d 56                 push    esi
+						1009010e e8XxXxXxXx         call    new_func
+					*/
+					h.store_i16(0x9010d - vp_begin, '\x56\xe8');
+					h.replaceNearJmp(0x9010f - vp_begin, &count_section_num_wrap);
+				}
+				{ // 本実装
+					h.replaceNearJmp(0x90196 - vp_begin, &disp_extension_audio_file_wrap);
 				}
 			}
 
@@ -67,6 +98,9 @@ namespace patch {
 				h.replaceNearJmp(0x7460d - vp_begin, &set_figure_type_text_wrap);
 			}
 
+			/* 時間制御・グループ制御・カメラ制御 の対象レイヤー数
+			    undo.cppの部分から呼び出す
+			*/
 
 		}
 		void switching(bool flag) {

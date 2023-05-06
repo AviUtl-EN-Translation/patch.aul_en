@@ -15,6 +15,11 @@
 
 #include "patch_undo.hpp"
 
+
+#ifdef PATCH_SWITCH_ANY_OBJ
+#include "patch_any_obj.hpp"
+#endif // ifdef PATCH_SWITCH_ANY_OBJ
+
 namespace patch {
 #ifdef PATCH_SWITCH_UNDO
 
@@ -171,6 +176,15 @@ namespace patch {
 
         if (new_layer_num != *exdata_layer_num) {
             efp->exfunc->set_undo(efp->processing, 0);
+
+            #ifdef PATCH_SWITCH_ANY_OBJ
+            {
+                int tmp = *exdata_layer_num;
+                *exdata_layer_num = new_layer_num;
+                any_obj.update_any_range(efp);
+                *exdata_layer_num = tmp;
+            }
+            #endif // ifdef PATCH_SWITCH_ANY_OBJ
         }
 
         return exdata_layer_num;

@@ -179,6 +179,7 @@ namespace OFS {
 		constexpr i32 str_file = 0x09d7d0;
 		constexpr i32 str_type = 0x09d6c4;
 		constexpr i32 str_name = 0x09d6b4;
+		constexpr i32 str_range = 0x0a3db4;
 
 
 

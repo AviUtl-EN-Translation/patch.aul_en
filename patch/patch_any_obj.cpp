@@ -18,7 +18,7 @@
 #ifdef PATCH_SWITCH_ANY_OBJ
 namespace patch {
 
-    void __cdecl update_any_exdata_and_rename_object(ExEdit::ObjectFilterIndex ofi, char* str, char* obj_name) {
+    void __cdecl update_any_exdata_and_rename_object(ExEdit::ObjectFilterIndex ofi, char* str, int flag, void* param) {
         if ((int)ofi == 0) return;
 
         int SettingDialog_ObjIdx = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx);
@@ -69,9 +69,21 @@ namespace patch {
                         void* dlg_exdata = (void*)(ExdataPointer + dlg_exdata_offset + dlg_filter_exdata_offset + 4 + exdata_offset);
                         if (memcmp(select_exdata, dlg_exdata, exdata_use->size)) {
                             reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 0);
+
+                            if (flag & 2) { // 音声ファイルの動画ファイルと連携を外したい
+                                reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 1);
+                                int idx = select_idx + 1;
+                                while (0 < idx) {
+                                    obj[idx-1].check_value[obj[idx-1].filter_param[leader_filter_idx].check_begin + 1] = 0;
+                                    idx = (int)efp->exfunc->x08((ExEdit::ObjectFilterIndex)(idx)); // get_next_obj
+                                }
+                            }
+
                             memcpy(select_exdata, dlg_exdata, exdata_use->size);
 
-                            efp->exfunc->rename_object((ExEdit::ObjectFilterIndex)(select_idx + 1), obj_name);
+                            if (flag & 1) {
+                                efp->exfunc->rename_object((ExEdit::ObjectFilterIndex)(select_idx + 1), (char*)param);
+                            }
                         }
                         break;
                     }
@@ -85,7 +97,7 @@ namespace patch {
         if ((int)efp->flag & 0x20) {
             reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
         } else {
-            update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), name);
+            update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), 1, name);
         }
         if (0 <= GetKeyState(VK_CONTROL)) {
             reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
@@ -93,13 +105,31 @@ namespace patch {
 
         return name;
 	}
+
+    int __stdcall any_obj_t::count_section_num_wrap(ExEdit::Filter* efp, ExEdit::ObjectFilterIndex ofi) {
+        if (0 < *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum)) {
+            return 0;
+        }
+        return efp->exfunc->count_section_num(ofi);
+    }
+
     char* __cdecl any_obj_t::disp_extension_movie_file_wrap(ExEdit::Filter* efp, char* path) {
         char* name = reinterpret_cast<char* (__cdecl*)(ExEdit::Filter*, char*)>(GLOBAL::exedit_base + 0x69d0)(efp, path);
         if ((int)efp->flag & 0x20) {
             reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
         } else {
-            update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), name);
+            update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), 1, name);
         }
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, 0);
+        if (0 <= GetKeyState(VK_CONTROL)) {
+            reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
+        }
+
+        return name;
+    }
+    char* __cdecl any_obj_t::disp_extension_audio_file_wrap(ExEdit::Filter* efp, char* path) {
+        char* name = reinterpret_cast<char* (__cdecl*)(ExEdit::Filter*, char*)>(GLOBAL::exedit_base + 0x8f960)(efp, path);
+        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), 3, name);
         reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, 0);
         if (0 <= GetKeyState(VK_CONTROL)) {
             reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
@@ -112,12 +142,21 @@ namespace patch {
         reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x74740)(efp, exdata);
         int idx = ((int)efp->processing & 0xffff) - 1;
         auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
-        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type), obj[idx].dispname);
-        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_name), obj[idx].dispname);
+        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type), 1, obj[idx].dispname);
+        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_name), 1, obj[idx].dispname);
         if (0 <= GetKeyState(VK_CONTROL)) {
             reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
         }
     }
+
+    void __cdecl any_obj_t::update_any_range(ExEdit::Filter* efp) { // undoの部分から呼び出す
+        if (!any_obj.is_enabled_i())return;
+
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_range));
+
+    }
+
+
 
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_ANY_OBJ
