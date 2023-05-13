@@ -192,12 +192,12 @@ namespace patch::fast {
                     __m256i xx256 = _mm256_add_epi32(_mm256_set1_epi32(xx), xa);
                     __m256 angle256 = _mm256_atan2_ps(_mm256_cvtepi32_ps(xx256), yf256);
                     angle256 = _mm256_mul_ps(_mm256_add_ps(angle256, pi256), rate256);
-                    __m256i pt256 = simd::_mm256_mod_epi32(_mm256_cvtps_epi32(angle256), type256);
+                    __m256i pt256 = _mm256_mod_epi32(_mm256_cvtps_epi32(angle256), type256);
                     __m256i xp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(xp, pt256, 4), xx256);
                     __m256i yp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(yp, pt256, 4), yy256);
                     __m256i dist256 = _mm256_sub_epi32(xp256, yp256);
                     dist256 = _mm256_add_epi32(_mm256_i32gather_epi32(xylen, pt256, 4), dist256);
-                    __m256i a256 = simd::_mm256_clamp_epi32(_mm256_srai_epi32(dist256, 6), min256, max256);
+                    __m256i a256 = _mm256_clamp_epi32(_mm256_srai_epi32(dist256, 6), min256, max256);
                     
                     for (int i = 0; i < 8; i++) {
                         int a = a256.m256i_i32[i];
