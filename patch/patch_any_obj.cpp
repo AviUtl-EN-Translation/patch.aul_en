@@ -18,7 +18,91 @@
 #ifdef PATCH_SWITCH_ANY_OBJ
 namespace patch {
 
-    void __cdecl update_any_exdata_and_rename_object(ExEdit::ObjectFilterIndex ofi, char* str, int flag, void* param) {
+    int get_same_filter_idx(int dst_idx, int src_idx, int filter_idx) {
+        if (src_idx == dst_idx) return -1;
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+
+        int filter_param_id = obj[src_idx].filter_param[filter_idx].id;
+        if (filter_param_id < 0) return -1;
+
+        if (0 <= obj[src_idx].index_midpt_leader) {
+            src_idx = obj[src_idx].index_midpt_leader;
+        }
+        if (0 <= obj[dst_idx].index_midpt_leader) {
+            dst_idx = obj[dst_idx].index_midpt_leader;
+        }
+        if (src_idx == dst_idx) return filter_idx;
+
+        auto LoadedFilterTable = (ExEdit::Filter**)(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterTable);
+        if (has_flag(LoadedFilterTable[filter_param_id]->flag, ExEdit::Filter::Flag::Output)) {
+            ExEdit::Object::FilterParam* filter_param = obj[dst_idx].filter_param;
+            int i;
+            for (i = 1; i < 12 && filter_param->id < 0; i++) {
+                filter_param++;
+            }
+            filter_idx = i - 1;
+        }
+        int id = obj[dst_idx].filter_param[filter_idx].id;
+        if (0 <= id && filter_param_id == id) return filter_idx;
+        return -1;
+    }
+
+    void __cdecl update_any_dispname(ExEdit::ObjectFilterIndex ofi) {
+        if ((int)ofi == 0) return;
+
+        int SettingDialog_ObjIdx = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx);
+        if (SettingDialog_ObjIdx < 0) return;
+
+        int SelectingObjectNum = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
+        if (SelectingObjectNum <= 0) return;
+
+        auto exfunc = (ExEdit::Exfunc*)(GLOBAL::exedit_base + OFS::ExEdit::exfunc);
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        int* SelectingObjectIdxArray = (int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
+
+        int filter_idx = (int)ofi >> 16;
+
+        if (0 <= obj[SettingDialog_ObjIdx].index_midpt_leader) {
+            SettingDialog_ObjIdx = obj[SettingDialog_ObjIdx].index_midpt_leader;
+        }
+
+        for (int i = 0; i < SelectingObjectNum; i++) {
+            int select_idx = SelectingObjectIdxArray[i];
+            int leader_filter_idx = reinterpret_cast<int(__cdecl*)(int, int, int)>(GLOBAL::exedit_base + OFS::ExEdit::get_same_filter_idx_if_leader)(select_idx, SettingDialog_ObjIdx, filter_idx);
+            if (0 <= leader_filter_idx) {
+                reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 0);
+                exfunc->rename_object((ExEdit::ObjectFilterIndex)(select_idx + 1), obj[SettingDialog_ObjIdx].dispname);
+            }
+        }
+    }
+
+    void __cdecl update_any_check(ExEdit::ObjectFilterIndex ofi, int check_id) {
+        if ((int)ofi == 0) return;
+        if (check_id < 0 && 48 <= check_id)return;
+
+        int SettingDialog_ObjIdx = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx);
+        if (SettingDialog_ObjIdx < 0) return;
+
+        int SelectingObjectNum = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
+        if (SelectingObjectNum <= 0) return;
+
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        int* SelectingObjectIdxArray = (int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
+
+        int filter_idx = (int)ofi >> 16;
+
+        for (int i = 0; i < SelectingObjectNum; i++) {
+            int select_idx = SelectingObjectIdxArray[i];
+            int leader_filter_idx = get_same_filter_idx(select_idx, SettingDialog_ObjIdx, filter_idx);
+            if (0 <= leader_filter_idx) {
+                reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 0);
+                obj[select_idx].check_value[obj[select_idx].filter_param[leader_filter_idx].check_begin + check_id] = obj[SettingDialog_ObjIdx].check_value[obj[SettingDialog_ObjIdx].filter_param[filter_idx].check_begin + check_id];
+            }
+        }
+    }
+
+    /*  // OFS::ExEdit::update_any_exdataをちょっと改造 不要になったけど解析データとして使うことがあれば
+    void __cdecl update_any_exdata_ex(ExEdit::ObjectFilterIndex ofi, char* str, int flag, void* param) {
         if ((int)ofi == 0) return;
 
         int SettingDialog_ObjIdx = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx);
@@ -46,7 +130,7 @@ namespace patch {
 
         for (int i = 0; i < SelectingObjectNum; i++) {
             int select_idx = SelectingObjectIdxArray[i];
-            int leader_filter_idx = reinterpret_cast<int(__cdecl*)(int, int, int)>(GLOBAL::exedit_base + 0x365b0)(select_idx, SettingDialog_ObjIdx, filter_idx);
+            int leader_filter_idx = reinterpret_cast<int(__cdecl*)(int, int, int)>(GLOBAL::exedit_base + OFS::ExEdit::get_same_filter_idx_if_leader)(select_idx, SettingDialog_ObjIdx, filter_idx);
             if (0 <= leader_filter_idx) {
                 if (0 <= obj[select_idx].index_midpt_leader) {
                     select_idx = obj[select_idx].index_midpt_leader;
@@ -91,13 +175,14 @@ namespace patch {
             }
         }
     }
+    */
 
 	char* __cdecl any_obj_t::disp_extension_image_file_wrap(ExEdit::Filter* efp, char* path) {
 		char* name = reinterpret_cast<char*(__cdecl*)(ExEdit::Filter*, char*)>(GLOBAL::exedit_base + 0xe220)(efp, path);
-        if ((int)efp->flag & 0x20) {
-            reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
-        } else {
-            update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), 1, name);
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
+        if (!has_flag(efp->flag, ExEdit::Filter::Flag::Effect)) {
+            efp->exfunc->rename_object(efp->processing, name);
+            update_any_dispname(efp->processing);
         }
         if (0 <= GetKeyState(VK_CONTROL)) {
             reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
@@ -113,37 +198,33 @@ namespace patch {
         return efp->exfunc->count_section_num(ofi);
     }
 
-    char* __cdecl any_obj_t::disp_extension_movie_file_wrap(ExEdit::Filter* efp, char* path) {
-        char* name = reinterpret_cast<char* (__cdecl*)(ExEdit::Filter*, char*)>(GLOBAL::exedit_base + 0x69d0)(efp, path);
-        if ((int)efp->flag & 0x20) {
-            reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
-        } else {
-            update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), 1, name);
-        }
+    void __cdecl any_obj_t::calc_milli_second_movie_file_wrap(ExEdit::Filter* efp, void* exdata) {
+        reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x6900)(efp, exdata);
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
         reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, 0);
+        if (!has_flag(efp->flag, ExEdit::Filter::Flag::Effect)) {
+            update_any_dispname(efp->processing);
+        }
         if (0 <= GetKeyState(VK_CONTROL)) {
             reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
         }
-
-        return name;
     }
-    char* __cdecl any_obj_t::disp_extension_audio_file_wrap(ExEdit::Filter* efp, char* path) {
-        char* name = reinterpret_cast<char* (__cdecl*)(ExEdit::Filter*, char*)>(GLOBAL::exedit_base + 0x8f960)(efp, path);
-        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file), 3, name);
+    void __cdecl any_obj_t::calc_milli_second_audio_file_wrap(ExEdit::Filter* efp, void* exdata) {
+        reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x902d0)(efp, exdata);
+        update_any_check(efp->processing, 1);
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
         reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, 0);
+        update_any_dispname(efp->processing);
         if (0 <= GetKeyState(VK_CONTROL)) {
             reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
         }
-
-        return name;
     }
 
     void __cdecl any_obj_t::set_figure_type_text_wrap(ExEdit::Filter* efp, void* exdata) {
         reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x74740)(efp, exdata);
-        int idx = ((int)efp->processing & 0xffff) - 1;
-        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
-        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type), 1, obj[idx].dispname);
-        update_any_exdata_and_rename_object(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_name), 1, obj[idx].dispname);
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type));
+        reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata)(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_name));
+        update_any_dispname(efp->processing);
         if (0 <= GetKeyState(VK_CONTROL)) {
             reinterpret_cast<void(__cdecl*)(void)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object)();
         }
@@ -156,7 +237,11 @@ namespace patch {
 
     }
 
-
+    void __cdecl any_obj_t::extractedge_update_obj_data_wrap(ExEdit::Filter* efp) {
+        efp->exfunc->x00(efp->processing);
+        update_any_check(efp->processing, 0);
+        update_any_check(efp->processing, 1);
+    }
 
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_ANY_OBJ

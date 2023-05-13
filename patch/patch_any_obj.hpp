@@ -32,10 +32,12 @@ namespace patch {
 	*/
 	inline class any_obj_t {
 		static char* __cdecl disp_extension_image_file_wrap(ExEdit::Filter* efp, char* path);
-		static char* __cdecl disp_extension_movie_file_wrap(ExEdit::Filter* efp, char* path);
-		static char* __cdecl disp_extension_audio_file_wrap(ExEdit::Filter* efp, char* path);
+		static void __cdecl calc_milli_second_movie_file_wrap(ExEdit::Filter* efp, void* exdata);
+		static void __cdecl calc_milli_second_audio_file_wrap(ExEdit::Filter* efp, void* exdata);
 		static void __cdecl set_figure_type_text_wrap(ExEdit::Filter* efp, void* exdata);
 		static int __stdcall count_section_num_wrap(ExEdit::Filter* efp, ExEdit::ObjectFilterIndex ofi);
+		static void __cdecl extractedge_update_obj_data_wrap(ExEdit::Filter* efp);
+
 		bool enabled = true;
 		bool enabled_i;
 
@@ -56,7 +58,7 @@ namespace patch {
 			}
 			{ // 動画ファイル・動画ファイル合成 の参照ファイル
 				constexpr int vp_begin = 0x6744;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6800 - vp_begin);
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x682e - vp_begin);
 				{ //ignore_media_param_reset に近いものを実装。複数選択中には再生位置などを維持する
 					/*
 						10006744 ff5218             call    dword ptr [edx+18]
@@ -69,12 +71,12 @@ namespace patch {
 					h.replaceNearJmp(2, &count_section_num_wrap);
 				}
 				{ // 本実装
-					h.replaceNearJmp(0x67fc - vp_begin, &disp_extension_movie_file_wrap);
+					h.replaceNearJmp(0x682a - vp_begin, &calc_milli_second_movie_file_wrap);
 				}
 			}
 			{ // 音声ファイル の参照ファイル
 				constexpr int vp_begin = 0x9010d;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x9026d - vp_begin);
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x901bb - vp_begin);
 				{ //ignore_media_param_reset に近いものを実装。複数選択中には再生位置などを維持する
 					/*
 						1009010d ff5218             call    dword ptr [edx+18]
@@ -87,7 +89,7 @@ namespace patch {
 					h.replaceNearJmp(0x9010f - vp_begin, &count_section_num_wrap);
 				}
 				{ // 本実装
-					h.replaceNearJmp(0x90196 - vp_begin, &disp_extension_audio_file_wrap);
+					h.replaceNearJmp(0x901b7 - vp_begin, &calc_milli_second_audio_file_wrap);
 				}
 			}
 
@@ -101,6 +103,35 @@ namespace patch {
 			/* 時間制御・グループ制御・カメラ制御 の対象レイヤー数
 			    undo.cppの部分から呼び出す
 			*/
+
+			{ // エッジ抽出のチェック切り替え
+				/*
+					10023b94 83780401           cmp     dword ptr [eax+04],+01
+					10023b98 7551               jnz     10023beb
+					↓
+					10023b94 660f1f440000       nop
+
+					10023ba7 8b4664             mov     eax,dword ptr [esi+64]
+					10023baa 51                 push    ecx
+					10023bab ff10               call    dword ptr [eax]
+					↓
+					10023ba7 56                 push    esi
+					10023ba8 e8XxXxXxXx         call    newfunc
+				*/
+				constexpr int vp_begin = 0x23b94;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x23bdf - vp_begin);
+				h.store_i32(0x23b94 - vp_begin, '\x66\x0f\x1f\x44');
+				h.store_i16(0x23b98 - vp_begin, '\x00\x00');
+
+				h.store_i16(0x23ba7 - vp_begin, '\x56\xe8');
+				h.replaceNearJmp(0x23ba9 - vp_begin, &extractedge_update_obj_data_wrap);
+
+				h.store_i32(0x23bc2 - vp_begin, '\x0f\x1f\x44\x00'); // 5byte-nop
+				h.store_i8(0x23bc6 - vp_begin, '\x00');
+
+				h.store_i16(0x23bd9 - vp_begin, '\x56\xe8');
+				h.replaceNearJmp(0x23bdb - vp_begin, &extractedge_update_obj_data_wrap);
+			}
 
 		}
 		void switching(bool flag) {

@@ -135,11 +135,12 @@ namespace patch {
             UndoData* undodata1 = UndoDataPtrArray[id1];
             UndoData* undodata2 = UndoDataPtrArray[id2];
 
-            if (undodata1->object_flag == 0) {
+
+            if (undodata1->data_size == 0x1c && undodata1->object_flag == 0) {
                 remove_UndoData(id2);
                 return;
             }
-            if (undodata2->object_flag == 0) {
+            if (undodata2->data_size == 0x1c && undodata2->object_flag == 0) {
                 remove_UndoData(id1);
                 return;
             }

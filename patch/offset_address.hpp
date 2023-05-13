@@ -180,7 +180,10 @@ namespace OFS {
 		constexpr i32 str_type = 0x09d6c4;
 		constexpr i32 str_name = 0x09d6b4;
 		constexpr i32 str_range = 0x0a3db4;
-
+		constexpr i32 str_color = 0x09d7c0;
+		constexpr i32 str_no_color = 0x0a5c80;
+		constexpr i32 str_RGB_d_d_d = 0x0a2d24;
+		constexpr i32 str_SHITEINASHI_MOTOGAZOUNOIRO = 0x0a5c8c;
 
 
 		constexpr i32 GetCache = 0x00cff0;
@@ -209,6 +212,7 @@ namespace OFS {
 
 		constexpr i32 exedit_edit_open = 0x03ac30;
 		constexpr i32 update_any_exdata = 0x04a7e0;
+		constexpr i32 get_same_filter_idx_if_leader = 0x0365b0;
 
 		constexpr i32 do_multi_thread_func = 0x06c650;
 
@@ -292,6 +296,8 @@ namespace OFS {
 		constexpr i32 SelectingObjectNum = 0x167d88;
 		constexpr i32 SelectingObjectIdxArray = 0x179230;
 		constexpr i32 deselect_object = 0x34eb0;
+
+		constexpr i32 object2idx = 0x02b0d0;
 
 		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
 		constexpr i32 get_last_filter_idx = 0x0335f0;

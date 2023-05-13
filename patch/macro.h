@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_21"
+#define PATCH_VERSION_STR "r43_ss_22"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -205,6 +205,7 @@
 	#define PATCH_SWITCH_FAST_CREATE_FIGURE fast_create_figure
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 	#define PATCH_SWITCH_FAST_BLUR fast_blur
+	#define PATCH_SWITCH_FAST_EXTRACTEDGE fast_extractedge
 	#define PATCH_SWITCH_FAST_GLOW fast_glow
 	#define PATCH_SWITCH_FAST_COLORKEY fast_colorkey
 	#define PATCH_SWITCH_FAST_CHROMAKEY fast_chromakey

@@ -54,6 +54,7 @@
     <ClInclude Include="patch_fast_chromakey.hpp" />
     <ClInclude Include="patch_fast_colorkey.hpp" />
     <ClInclude Include="patch_fast_drawfilter.hpp" />
+    <ClInclude Include="patch_fast_extractedge.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="patch_fast_blur.cpp" />
     <ClCompile Include="patch_fast_chromakey.cpp" />
     <ClCompile Include="patch_fast_colorkey.cpp" />
+    <ClCompile Include="patch_fast_extractedge.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />

@@ -244,6 +244,41 @@ namespace patch {
             }
 			// OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x08d50e, 4).store_i32(0, '\x0f\x1f\x40\x00'); // nop
 
+            // グループ化されたオブジェクトの中間点を分割した場合にグループ化IDを正しく戻せなくなるのを修正
+            {
+                auto& cursor = GLOBAL::executable_memory_cursor;
+                /*
+                    1003fc72 898abc040000       mov     dword ptr [edx+000004bc],ecx
+                    ↓
+                    1003fc72 90                 nop
+                    1003fc73 e8XxXxXxXx         call    cursor
+
+                    10000000 51                 push    ecx
+                    10000000 52                 push    edx ; obj_ofs
+                    10000000 e8XxXxXxXx         call    object2idx
+                    10000000 53                 push    ebx ; 0
+                    10000000 50                 push    eax
+                    10000000 e8XxXxXxXx         call    set_undo
+                    10000000 83c408             add     esp,+08
+                    10000000 5a                 pop     edx
+                    10000000 59                 pop     ecx
+                    10000000 898abc040000       mov     dword ptr [edx+000004bc],ecx
+                    10000000 c3                 ret
+                */
+
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x3fc72, 6);
+                h.store_i16(0, '\x90\xe8');
+                h.replaceNearJmp(2, cursor);
+                store_i32(cursor, '\x51\x52\xe8\x00'); cursor += 3;
+                store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::object2idx - (uint32_t)(cursor + 4)); cursor += 4;
+                store_i32(cursor, '\x53\x50\xe8\x00'); cursor += 3;
+                store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::set_undo - (uint32_t)(cursor + 4)); cursor += 4;
+                store_i32(cursor, '\x83\xc4\x08\x5a'); cursor += 4;
+                store_i32(cursor, '\x59\x89\x8a\xbc'); cursor += 4;
+                store_i32(cursor, '\x04\x00\x00\xc3'); cursor += 4;
+            }
+
+
             // 部分フィルタのマスクの種類を変更してもUndoデータが生成されない
             ReplaceNearJmp(GLOBAL::exedit_base + 0x06e2b5, &efDraw_func_WndProc_wrap_06e2b4);
 
@@ -436,6 +471,13 @@ namespace patch {
             ReplaceNearJmp(GLOBAL::exedit_base + 0x01b7b0, &add_track_value_wrap); // テンキー/回転-
             ReplaceNearJmp(GLOBAL::exedit_base + 0x01b7d4, &add_track_value_wrap); // テンキー*回転+
 
+            // エッジ抽出のチェックを切り替えた時に余計なUndoデータが生成される
+            {
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x023b79, 6);
+                h.store_i32(0, '\x66\x0f\x1f\x44'); // nop 4/6byte
+                h.store_i16(4, '\x00\x00'); // nop 6/6byte
+                
+            }
 
 		}
 

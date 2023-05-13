@@ -336,6 +336,9 @@ public:
                 #ifdef PATCH_SWITCH_FAST_BLUR
                     patch::fast::Blur.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_EXTRACTEDGE
+                    patch::fast::ExtractEdge.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_load(cr);
                 #endif
@@ -803,6 +806,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_BLUR
                     patch::fast::Blur.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_EXTRACTEDGE
+                    patch::fast::ExtractEdge.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_store(switch_);
