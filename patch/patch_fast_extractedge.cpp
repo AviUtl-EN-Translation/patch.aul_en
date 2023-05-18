@@ -160,7 +160,7 @@ namespace patch::fast {
                 }
                 dst = (short*)&((ExEdit::PixelYCA*)efpip->obj_temp + efpip->obj_w - 1 + offset)->a;
                 *dst = 0;
-                offset += abs(obj_line);
+                offset += efpip->obj_line;
             }
         } else {
             for (int y = y_end - y_begin; 0 < y; y--) {
@@ -200,12 +200,12 @@ namespace patch::fast {
                 }
                 dst -= (efpip->obj_w & 1) * 4;
                 *dst = 0;
-                offset += abs(obj_line);
+                offset += efpip->obj_line;
             }
         }
 
         if (y_end + 1 == efpip->obj_h) {
-            auto dst = (short*)&((ExEdit::PixelYCA*)efpip->obj_temp + y_end * obj_line)->a;
+            auto dst = (short*)&((ExEdit::PixelYCA*)efpip->obj_temp + y_end * efpip->obj_line)->a;
             for (int x = efpip->obj_w; 0 < x; x--) {
                 *dst = 0;
                 dst += 4;
@@ -348,7 +348,7 @@ namespace patch::fast {
                 }
                 dst = (short*)&((ExEdit::PixelYCA*)efpip->obj_temp + efpip->obj_w - 1 + offset)->a;
                 *dst = 0;
-                offset += abs(obj_line);
+                offset += efpip->obj_line;
             }
         } else {
             __m128i threshold128 = _mm_set1_epi32(edge->threshold);
@@ -399,12 +399,12 @@ namespace patch::fast {
                 }
                 dst = (short*)&((ExEdit::PixelYCA*)efpip->obj_temp + efpip->obj_w - 1 + offset)->a;
                 *dst = 0;
-                offset += abs(obj_line);
+                offset += efpip->obj_line;
             }
         }
         
         if (y_end + 1 == efpip->obj_h) {
-            auto dst = (short*)&((ExEdit::PixelYCA*)efpip->obj_temp + y_end * obj_line)->a;
+            auto dst = (short*)&((ExEdit::PixelYCA*)efpip->obj_temp + y_end * efpip->obj_line)->a;
             for (int x = efpip->obj_w; 0 < x; x--) {
                 *dst = 0;
                 dst += 4;
@@ -486,7 +486,7 @@ namespace patch::fast {
             }
             *dst = *(ExEdit::PixelYCA*)((int)src - 6);
             dst->a = 0;
-            offset += abs(obj_line) * sizeof(ExEdit::PixelYCA);
+            offset += efpip->obj_line * sizeof(ExEdit::PixelYCA);
         }
     }
 

@@ -163,6 +163,7 @@ namespace OFS {
 		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
 
+		constexpr i32 efWaveform = 0x0ba300;
 
 		constexpr i32 PixelYCA_ssss2fbbs = 0x070220;
 		constexpr i32 PixelYCA_fbbs2ssss = 0x0703f0;
@@ -292,6 +293,8 @@ namespace OFS {
 		constexpr i32 ObjectArrayPointer = 0x1e0fa4;
 		constexpr i32 ExdataPointer = 0x1e0fa8;
 		constexpr i32 NextObjectIdxArray = 0x1592d8;
+
+		constexpr i32 get_exdata_ptr = 0x047b40;
 
 		constexpr i32 SelectingObjectNum = 0x167d88;
 		constexpr i32 SelectingObjectIdxArray = 0x179230;
