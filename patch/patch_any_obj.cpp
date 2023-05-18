@@ -268,7 +268,7 @@ namespace patch {
         for (int i = 0; i < efp->track_n; i++) {
             update_any_track(efp->processing, i);
         }
-
+        update_any_dispname(efp->processing);
     }
 
 

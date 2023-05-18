@@ -177,7 +177,7 @@ namespace patch {
 					h.store_i32(0x8f193 - vp_begin, '\x66\x0f\x1f\x44'); // 6byte nop
 					h.store_i16(0x8f197 - vp_begin, '\x00\x00');
 				}
-				{
+				{ // Typeを切り替え 本実装
 					h.store_i8(0x8f1fb - vp_begin, '\xe8');
 					h.replaceNearJmp(0x8f1fc - vp_begin, &update_any_waveform_type);
 				}
