@@ -291,11 +291,9 @@ namespace patch {
         for (int i = 0; i < 4; i++) {
             update_any_exdata(efp->processing, (char*)exdata_use[i].name);
         }
-
         for (int i = 1; i < efp->check_n; i++) { // 0:反転 はそのまま
             update_any_check(efp->processing, i);
         }
-
         for (int i = 0; i < efp->track_n; i++) {
             update_any_track(efp->processing, i);
         }
