@@ -97,8 +97,12 @@ namespace OFS {
 		constexpr i32 rgb2yc = 0x06fed0;
 		constexpr i32 yc_conv_w_loop_count = 0x1e4300;
 
-		constexpr i32 exedit_YC_vram_w = 0x149840;
-		constexpr i32 exedit_YC_vram_h = 0x14ca4c;
+		constexpr i32 yc_vram_w = 0x149840;
+		constexpr i32 yc_vram_h = 0x14ca4c;
+		constexpr i32 yc_max_w = 0x178ec0;
+		constexpr i32 yc_max_h = 0x1790c8;
+		constexpr i32 yc_vram_linesize = 0x158d10;
+		
 
 		constexpr i32 exedit_buffer_size = 0x177a28;
 		constexpr i32 exedit_max_h_add8 = 0x135c64;
@@ -163,6 +167,7 @@ namespace OFS {
 		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
 
+		constexpr i32 efPortionFilter = 0x0a92c0;
 		constexpr i32 efWaveform = 0x0ba300;
 
 		constexpr i32 PixelYCA_ssss2fbbs = 0x070220;
@@ -180,9 +185,13 @@ namespace OFS {
 		constexpr i32 str_file = 0x09d7d0;
 		constexpr i32 str_type = 0x09d6c4;
 		constexpr i32 str_name = 0x09d6b4;
+		constexpr i32 str_mode = 0x09e04c;
+		constexpr i32 str_calc = 0x0a2818;
 		constexpr i32 str_range = 0x0a3db4;
 		constexpr i32 str_color = 0x09d7c0;
 		constexpr i32 str_no_color = 0x0a5c80;
+		constexpr i32 str_color_yc = 0x0a0fb0;
+		constexpr i32 str_status = 0x0a0fa8;
 		constexpr i32 str_RGB_d_d_d = 0x0a2d24;
 		constexpr i32 str_SHITEINASHI_MOTOGAZOUNOIRO = 0x0a5c8c;
 
@@ -216,16 +225,18 @@ namespace OFS {
 		constexpr i32 get_same_filter_idx_if_leader = 0x0365b0;
 
 		constexpr i32 do_multi_thread_func = 0x06c650;
+		constexpr i32 dlg_get_load_name = 0x020900;
 
 		constexpr i32 exfunc = 0x0a41e0;
-		constexpr i32 exfunc_10 = 0x04abe0;
 		constexpr i32 exfunc_08 = 0x04ab40;
+		constexpr i32 exfunc_10 = 0x04abe0;
+		constexpr i32 exfunc_1c = 0x04ade0;
 		constexpr i32 exfunc_44 = 0x081b40;
 		constexpr i32 exfunc_4c = 0x04a430;
-		constexpr i32 func_0x047ad0 = 0x047ad0;
 		constexpr i32 exfunc_64 = 0x04d040;
+		constexpr i32 exfunc_6c = 0x04d2a0;
+		constexpr i32 func_0x047ad0 = 0x047ad0;
 		constexpr i32 scenechange_progress_times4096 = 0x230c60;
-		constexpr i32 exfunc_1c = 0x04ade0;
 		constexpr i32 GetCurrentProcessing = 0x047ba0;
 		constexpr i32 LoadedFilterTable = 0x187c98;
 		constexpr i32 splitted_object_new_group_belong = 0x034f90;

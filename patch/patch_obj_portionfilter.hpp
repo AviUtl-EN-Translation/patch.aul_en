@@ -33,9 +33,11 @@ namespace patch {
     /* 小さいオブジェクトに効果が無いのを修正
         スレッド数より小さいオブジェクトに効果が乗らない
     */
-
+    // (ファイルから選択)にしている時にファイルパスが見えるようにする ※any_objによって変更後すぐ表示するようになる
 
     inline class obj_PortionFilter_t {
+
+        static BOOL __stdcall SetWindowTextA_wrap(ExEdit::Filter* efp, HWND hWnd, LPCSTR lpString);
 
         bool enabled = true;
         bool enabled_i;
@@ -58,6 +60,13 @@ namespace patch {
             }
 #endif // PATCH_SWITCH_SMALL_FILTER
 
+            { // (ファイルから選択)にしている時にファイルパスが見えるようにする
+                constexpr int vp_begin = 0x6e3fc;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6e402 - vp_begin);
+                h.store_i16(0x6e3fc - vp_begin, '\x55\xe8'); // push ebp, call
+                h.replaceNearJmp(0x6e3fe - vp_begin, &SetWindowTextA_wrap);
+            
+            }
         }
 
         void switching(bool flag) {

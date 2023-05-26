@@ -25,66 +25,51 @@
 #include "patch_fast_cl.hpp"
 #include "debug_log.hpp"
 
-//#define PATCH_STOPWATCH
-#include "stopwatch.hpp"
-static stopwatch_mem sw;
-
 namespace patch::fast {
     BOOL DisplacementMap_t::mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        if constexpr (true) {
-            if (256 < efpip->obj_w * efpip->obj_h) {
-                sw.start();
-                try {
-
-                    efDisplacementMap_var& dmap = *reinterpret_cast<efDisplacementMap_var*>(GLOBAL::exedit_base + OFS::ExEdit::efDisplacementMap_var_ptr);
-                    auto& ExEditMemory = *(void**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
-
-                    const auto buf_size = efpip->obj_line * efpip->obj_h * sizeof(ExEdit::PixelYCA);
-                    cl::Buffer clmem_src1(cl.context, CL_MEM_READ_ONLY, buf_size);
-                    cl.queue.enqueueWriteBuffer(clmem_src1, CL_TRUE, 0, buf_size, efpip->obj_edit);
-
-                    cl::Buffer clmem_src2(cl.context, CL_MEM_READ_ONLY, buf_size);
-                    cl.queue.enqueueWriteBuffer(clmem_src2, CL_TRUE, 0, buf_size, ExEditMemory);
-
-                    cl::Buffer clmem_dst(cl.context, CL_MEM_WRITE_ONLY, buf_size);
-
-                    int calc_id = ((ExEdit::Exdata::efDisplacementMap*)efp->exdata_ptr)->calc;
-                    if (calc_id < 0 && 2 < calc_id) {
-                        calc_id = 0;
-                    }
-
-                    auto kernel = cl.readyKernel(
-                        cl_func_name[calc_id],
-                        clmem_dst,
-                        clmem_src1,
-                        clmem_src2,
-                        efpip->obj_w,
-                        efpip->obj_h,
-                        efpip->obj_line,
-                        dmap.param0,
-                        dmap.param1,
-                        dmap.ox,
-                        dmap.oy
-                    );
-                    cl.queue.enqueueNDRangeKernel(kernel, { 0,0 }, { (size_t)efpip->obj_w ,(size_t)efpip->obj_h });
-
-                    cl.queue.enqueueReadBuffer(clmem_dst, CL_TRUE, 0, buf_size, efpip->obj_temp);
-                }
-                catch (const cl::Error& err) {
-                    debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
-                    return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
-                }
-                sw.stop();
-                return TRUE;
-            } else {
-                return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
-            }
-        } else {
-            sw.start();
-            const auto ret = efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
-            sw.stop();
-            return ret;
+        if (efpip->obj_w < 8 || efpip->obj_h < 8) {
+            return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
         }
+        try {
+            efDisplacementMap_var& dmap = *reinterpret_cast<efDisplacementMap_var*>(GLOBAL::exedit_base + OFS::ExEdit::efDisplacementMap_var_ptr);
+            auto& ExEditMemory = *(void**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
+
+            const auto buf_size = cl_t::calc_size(efpip->obj_w, efpip->obj_h, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_src1(cl.context, CL_MEM_READ_ONLY, buf_size);
+            cl.queue.enqueueWriteBuffer(clmem_src1, CL_TRUE, 0, buf_size, efpip->obj_edit);
+
+            // const auto map_size = cl_t::calc_size(efpip->obj_w + 1, efpip->obj_h + 1, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_src2(cl.context, CL_MEM_READ_ONLY, buf_size);
+            cl.queue.enqueueWriteBuffer(clmem_src2, CL_TRUE, 0, buf_size, ExEditMemory);
+
+            cl::Buffer clmem_dst(cl.context, CL_MEM_WRITE_ONLY, buf_size);
+
+            int calc_id = ((ExEdit::Exdata::efDisplacementMap*)efp->exdata_ptr)->calc;
+            if (calc_id < 0 && 2 < calc_id) {
+                calc_id = 0;
+            }
+
+            auto kernel = cl.readyKernel(
+                cl_func_name[calc_id],
+                clmem_dst,
+                clmem_src1,
+                clmem_src2,
+                efpip->obj_w,
+                efpip->obj_h,
+                efpip->obj_line,
+                dmap.param0,
+                dmap.param1,
+                dmap.ox,
+                dmap.oy
+            );
+            cl.queue.enqueueNDRangeKernel(kernel, { 0,0 }, { (size_t)efpip->obj_w ,(size_t)efpip->obj_h });
+
+            cl.queue.enqueueReadBuffer(clmem_dst, CL_TRUE, 0, buf_size, efpip->obj_temp);
+        } catch (const cl::Error& err) {
+            debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
+            return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
+        }
+        return TRUE;
     }
 }
 #endif // ifdef PATCH_SWITCH_FAST_DISPLACEMENTMAP

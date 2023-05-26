@@ -26,6 +26,88 @@ namespace patch::fast {
     static stopwatch_mem sw;
 
 
+    BOOL Flash_t::no_color_mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        if (efpip->obj_w < 8 || efpip->obj_h < 8) {
+            return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
+        }
+        try {
+            efFlash_var& flash = *(efFlash_var*)uintptr_t(reinterpret_cast<efFlash_var*>(GLOBAL::exedit_base + OFS::ExEdit::efFlash_var_ptr));
+
+            const auto src_size = cl_t::calc_size(efpip->obj_w, efpip->obj_h, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_src(cl.context, CL_MEM_READ_ONLY, src_size);
+            cl.queue.enqueueWriteBuffer(clmem_src, CL_TRUE, 0, src_size, efpip->obj_edit);
+
+            const auto dst_size = cl_t::calc_size(flash.temp_w - flash.temp_x, flash.temp_h - flash.temp_y, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_dst(cl.context, CL_MEM_WRITE_ONLY, dst_size);
+
+            cl::Kernel kernel = cl.readyKernel(
+                "Flash",
+                clmem_dst,
+                clmem_src,
+                efpip->obj_w,
+                efpip->obj_h,
+                efpip->obj_line,
+                flash.cx,
+                flash.cy,
+                flash.range,
+                flash.pixel_range,
+                flash.temp_x,
+                flash.temp_y,
+                flash.r_intensity
+            );
+            cl.queue.enqueueNDRangeKernel(kernel, { 0,0 }, { (size_t)(flash.temp_w - flash.temp_x), (size_t)(flash.temp_h - flash.temp_y) });
+
+            cl.queue.enqueueReadBuffer(clmem_dst, CL_TRUE, 0, dst_size, efpip->obj_temp);
+        } catch (const cl::Error& err) {
+            debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
+            return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
+        }
+        return TRUE;
+    }
+
+    BOOL Flash_t::color_mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        if (efpip->obj_w < 8 || efpip->obj_h < 8) {
+            return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
+        }
+        try {
+            efFlash_var& flash = *(efFlash_var*)uintptr_t(reinterpret_cast<efFlash_var*>(GLOBAL::exedit_base + OFS::ExEdit::efFlash_var_ptr));
+
+            const auto src_size = cl_t::calc_size(efpip->obj_w, efpip->obj_h, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_src(cl.context, CL_MEM_READ_ONLY, src_size);
+            cl.queue.enqueueWriteBuffer(clmem_src, CL_TRUE, 0, src_size, efpip->obj_edit);
+
+            const auto dst_size = cl_t::calc_size(flash.temp_w - flash.temp_x, flash.temp_h - flash.temp_y, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_dst(cl.context, CL_MEM_WRITE_ONLY, dst_size);
+
+            cl::Kernel kernel = cl.readyKernel(
+                "FlashColor",
+                clmem_dst,
+                clmem_src,
+                efpip->obj_w,
+                efpip->obj_h,
+                efpip->obj_line,
+                flash.cx,
+                flash.cy,
+                flash.range,
+                flash.pixel_range,
+                flash.temp_x,
+                flash.temp_y,
+                flash.r_intensity,
+                flash.color_y,
+                flash.color_cb,
+                flash.color_cr
+            );
+            cl.queue.enqueueNDRangeKernel(kernel, { 0,0 }, { (size_t)(flash.temp_w - flash.temp_x), (size_t)(flash.temp_h - flash.temp_y) });
+
+            cl.queue.enqueueReadBuffer(clmem_dst, CL_TRUE, 0, dst_size, efpip->obj_temp);
+        } catch (const cl::Error& err) {
+            debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
+            return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
+        }
+        return TRUE;
+    }
+
+    /*
     BOOL Flash_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         if constexpr (true) {
             sw.start();
@@ -255,6 +337,6 @@ namespace patch::fast {
             sw.stop();
             return ret;
         }
-    }
+    }*/
 } // namespace patch::fast
 #endif // ifdef PATCH_SWITCH_FAST_FLASH

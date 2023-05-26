@@ -25,6 +25,7 @@
 namespace patch::fast {
     // init at exedit load
     // 方向ブラーの高速化
+    // 必要以上に領域拡張されるのを修正
     inline class DirectionalBlur_t {
         static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
         static void __cdecl filter_mt_wrap00cae8(AviUtl::MultiThreadFunc func, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);

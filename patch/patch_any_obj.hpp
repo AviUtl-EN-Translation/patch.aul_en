@@ -29,20 +29,45 @@
 namespace patch {
 	// init at exedit load
 	/* 複数選択で変更しても変わらない部分を変わるようにする
+	   
+	   ・ついでの実装に関して
+	   選択状態で動画ファイルなどの参照を変えると再生位置などを維持するように変更（ignore_media_param_reset に近いもの）
+	   音声波形表示の参照を変える時に中間点があれば再生位置などを維持するように変更（音声波形以外で初めから実装されている機能）
+	   音声波形表示にて元と同じTypeへの切り替えを許可するように変更(複数切り替えのためと、Typeの役割はプリセットなので出来る方が良いはず)
+	   ファイル選択ダイアログの途中でCtrlを離してファイルを決定すると、選択状態が解除されないままなのを修正
 	*/
+
+	// Ctrlを押しながらトラック数値をクリックして動かした後に選択状態が解除されるのを修正
+	// 操作によっては選択状態が解除されないままになるので拡張編集ウィンドウをアクティブにした時に判定するように変更
+
 	inline class any_obj_t {
+		inline static void(__cdecl* update_any_exdata)(ExEdit::ObjectFilterIndex, char*);
+		inline static void(__cdecl* deselect_object)();
+
+		static void deselect_object_if();
 		static char* __cdecl disp_extension_image_file_wrap(ExEdit::Filter* efp, char* path);
 		static void __cdecl calc_milli_second_movie_file_wrap(ExEdit::Filter* efp, void* exdata);
 		static void __cdecl calc_milli_second_audio_file_wrap(ExEdit::Filter* efp, void* exdata);
 		static void __cdecl rename_object_audio_file_wrap(ExEdit::ObjectFilterIndex ofi, char* name);
 		static void __cdecl update_obj_data_waveform_wrap(ExEdit::ObjectFilterIndex ofi);
-		static BOOL __cdecl update_any_waveform_type();
-		static void __cdecl set_figure_type_text_wrap(ExEdit::Filter* efp, void* exdata);
+		static int __cdecl mov_eax_1_waveform_wrap();
+		static void __cdecl rename_object_figure_wrap(ExEdit::Filter* efp, void* exdata);
 		static int __stdcall count_section_num_wrap(ExEdit::Filter* efp, ExEdit::ObjectFilterIndex ofi);
 		static void __cdecl update_obj_data_extractedge_wrap(ExEdit::ObjectFilterIndex ofi);
 		static void __cdecl update_any_dlg_param_exdata();
-		static void __cdecl init_setting_dialog_file_script_wrap(ExEdit::Filter* efp, void* exdata, int upd_flag, int sw_flag, short type, char* name, int folder_flag);
+		static void __cdecl init_setting_dialog_script_wrap(ExEdit::Filter* efp, void* exdata, int upd_flag, int sw_flag, short type, char* name, int folder_flag);
+		static void __cdecl init_setting_dialog_scenechange_wrap(ExEdit::Filter* efp, void* exdata, LPARAM lparam, int sw_flag, short type);
+		static BOOL __cdecl disp_1st_dlg_script_wrap(HWND hwnd, ExEdit::Filter* efp, void* exdata, short type, char* name);
+		static BOOL __cdecl update_script_param_wrap(ExEdit::Filter* efp, char* name, char* valuestr);
+		static void __cdecl update_dlg_mask_wrap(ExEdit::Filter* efp, char* name, int sw_param);
+		static void __cdecl update_dlg_displacementmap_wrap(ExEdit::Filter* efp, void* exdata, char* name, int sw_param, int edi, int esi, int ebp, int ebx, tagRECT rect, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp);
+		static int __cdecl mov_eax_1_portion_filter_wrap();
+		static void __cdecl update_dlg_chromakey_wrap(ExEdit::Filter* efp, int* exdata);
+		static void __cdecl update_dlg_colorkey_wrap(ExEdit::Filter* efp, int* exdata);
+		static int __cdecl mov_eax_1_some_filter_cb_wrap(int esi, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
 
+
+		inline static BOOL script_dlg_ok_cancel;
 
 		bool enabled = true;
 		bool enabled_i;
@@ -58,6 +83,9 @@ namespace patch {
 			enabled_i = enabled;
 
 			if (!enabled_i)return;
+
+			update_any_exdata = reinterpret_cast<decltype(update_any_exdata)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata);
+			deselect_object = reinterpret_cast<decltype(deselect_object)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object);
 
 			auto& cursor = GLOBAL::executable_memory_cursor;
 
@@ -100,7 +128,7 @@ namespace patch {
 				{ // 参照ファイル変更 本実装
 					h.replaceNearJmp(0x901b7 - vp_begin, &calc_milli_second_audio_file_wrap);
 				}
-				{ // 動画ファイルと連動のチェックをいれた時にdispnameが更新されない
+				{ // 動画ファイルと連動のチェックをいれた時にdispnameが更新されないのを修正
 					/*
 						1009026d 8b5664             mov     edx,dword ptr [esi+64]
 						10090270 50                 push    eax
@@ -124,7 +152,7 @@ namespace patch {
 			{ // 音声波形表示 の参照ファイル、全体音声チェック、Type切り替え
 				constexpr int vp_begin = 0x8f096;
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8f200 - vp_begin);
-				{ // ignore_media_param_reset に近いものを実装。複数選択中には再生位置などを維持する
+				{ // 中間点があっても維持されないようになっているので、複数選択中には再生位置などを維持するのも含めて実装
 					/*
 						1008f096 8b96f4000000       mov     edx,dword ptr [esi+000000f4]
 						↓
@@ -166,7 +194,7 @@ namespace patch {
 					h.store_i16(0x8f101 - vp_begin, '\x51\xe8');
 					h.replaceNearJmp(0x8f103 - vp_begin, &update_obj_data_waveform_wrap);
 				}
-				{ // 編集全体の音声を元にするのチェックをいれた時にdispnameが更新されない
+				{ // 編集全体の音声を元にするのチェックをいれた時にdispnameが更新されないのを修正
 					// 音声ファイルのと同じ
 					h.store_i32(0x8f137 - vp_begin, '\x50\x8b\x86\xe4');
 					h.store_i32(0x8f13b - vp_begin, '\x00\x00\x00\x50');
@@ -179,15 +207,35 @@ namespace patch {
 				}
 				{ // Typeを切り替え 本実装
 					h.store_i8(0x8f1fb - vp_begin, '\xe8');
-					h.replaceNearJmp(0x8f1fc - vp_begin, &update_any_waveform_type);
+					h.replaceNearJmp(0x8f1fc - vp_begin, &mov_eax_1_waveform_wrap);
 				}
 			}
 
 			{ // 図形 の図形の種類
 				constexpr int vp_begin = 0x74562;
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x74611 - vp_begin);
-				h.replaceNearJmp(0, &set_figure_type_text_wrap);
-				h.replaceNearJmp(0x7460d - vp_begin, &set_figure_type_text_wrap);
+				h.replaceNearJmp(0x74562 - vp_begin, &rename_object_figure_wrap);
+
+				h.store_i8(0x745f8 - vp_begin, '\xe9');
+				h.replaceNearJmp(0x745f9 - vp_begin, cursor); // ファイル選択ダイアログのキャンセルの挙動を追加
+				/*
+					10000000 e8XxXxXxXx         call    ee+20900
+					10000000 85c0               test    eax,eax
+					10000000 0f85XxXxXxXx       jnz     ee+745fd
+					10000000 83c40c             add     esp,+0c
+					10000000 e8XxXxxxXx         call    deselect_object_if
+					10000000 e9XxXxXxXx         jmp     ee+74614
+				*/
+				store_i8(cursor, '\xe8'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::dlg_get_load_name - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x85\xc0\x0f\x85'); cursor += 4;
+				store_i32(cursor, GLOBAL::exedit_base + 0x745fd - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x83\xc4\x0c\xe8'); cursor += 4;
+				store_i32(cursor, (int)&deselect_object_if - (int)cursor - 4); cursor += 4;
+				store_i8(cursor, '\xe9'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + 0x74614 - (int)cursor - 4); cursor += 4;
+
+				h.replaceNearJmp(0x7460d - vp_begin, &rename_object_figure_wrap);
 			}
 
 			/* 時間制御・グループ制御・カメラ制御 の対象レイヤー数
@@ -248,11 +296,250 @@ namespace patch {
 			}
 
 			{ // アニメーション効果・カスタムオブジェクト・カメラ効果 のスクリプト変更
-				constexpr int vp_begin = 0x3e0b;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x3f12 - vp_begin);
-				h.replaceNearJmp(0x3e0c - vp_begin, &init_setting_dialog_file_script_wrap);
-				h.replaceNearJmp(0x3f0e - vp_begin, &init_setting_dialog_file_script_wrap);
+				{ // アニメーション効果・カスタムオブジェクト・カメラ効果
+					constexpr int vp_begin = 0x3e0b;
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x3f12 - vp_begin);
+					h.replaceNearJmp(0x3e0c - vp_begin, &init_setting_dialog_script_wrap);
+					h.replaceNearJmp(0x3f0e - vp_begin, &init_setting_dialog_script_wrap);
+				}
+				{ // シーンチェンジ
+					constexpr int vp_begin = 0x870f7;
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x870fb - vp_begin);
+					h.replaceNearJmp(0x870f7 - vp_begin, &init_setting_dialog_scenechange_wrap);
+				}
+			}
+			{ // スクリプト系の設定・色・参照
+
+				/* ダイアログのOK CANCELを取得
+					10000000 e8XxXxXxXx         call    originalfunc
+					↓
+					10000000 e9XxXxXxXx         jmp     cursor
+
+					10000000 e8XxXxXxXx         call    originalfunc
+					10000000 a3XxXxXxXx         mov     dword ptr [script_dlg_ok_cancel],eax
+					10000000 e9XxXxXxXx         jmp     ret
+				*/
 				
+				{ // アニメーション効果・カスタムオブジェクト・カメラ効果・シーンチェンジ の1st_dlg（設定・色・参照）を変更
+					{ // アニメーション効果・カスタムオブジェクト・カメラ効果
+						constexpr int vp_begin = 0x3f56;
+						OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x3f5a - vp_begin);
+						h.replaceNearJmp(0x3f56 - vp_begin, &disp_1st_dlg_script_wrap);
+					}
+					{ // シーンチェンジ
+						constexpr int vp_begin = 0x87140;
+						OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x87144 - vp_begin);
+						h.replaceNearJmp(0x87140 - vp_begin, &disp_1st_dlg_script_wrap);
+					}
+						
+					{ // パラメータ設定
+						{
+							/* ダイアログのOK CANCELを取得
+								; OK=1 CANCEL=2
+								10000000 e8XxXxXxXx         call    originalfunc
+								10000000 f7d8               neg     eax
+								10000000 83c002             add     eax,+02
+								10000000 a3XxXxXxXx         mov     dword ptr [script_dlg_ok_cancel],eax
+								10000000 e9XxXxXxXx         jmp     ret
+							*/
+							constexpr int vp_begin = 0x3476;
+							OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x347b - vp_begin);
+							h.store_i8(0x3476 - vp_begin, '\xe9');
+							h.replaceNearJmp(0x3477 - vp_begin, cursor);
+							store_i8(cursor, '\xe8'); cursor++;
+							store_i32(cursor, GLOBAL::exedit_base + 0x20800 - (int)cursor - 4); cursor += 4;
+							store_i16(cursor, '\xf7\xd8'); cursor += 2;
+							store_i32(cursor, '\x83\xc0\x02\xa3'); cursor += 4;
+							store_i32(cursor, (int)&script_dlg_ok_cancel); cursor += 4;
+							store_i8(cursor, '\xe9'); cursor++;
+							store_i32(cursor, GLOBAL::exedit_base + 0x347b - (int)cursor - 4); cursor += 4;
+						}
+					}
+					{ // 色の選択
+						constexpr int vp_begin = 0x3188;
+						OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x318d - vp_begin);
+						h.store_i8(0x3188 - vp_begin, '\xe9');
+						h.replaceNearJmp(0x3189 - vp_begin, cursor);
+						store_i8(cursor, '\xe8'); cursor++;
+						store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::exfunc_6c - (int)cursor - 4); cursor += 4;
+						store_i8(cursor, '\xa3'); cursor++;
+						store_i32(cursor, (int)&script_dlg_ok_cancel); cursor += 4;
+						store_i8(cursor, '\xe9'); cursor++;
+						store_i32(cursor, GLOBAL::exedit_base + 0x318d - (int)cursor - 4); cursor += 4;
+					}
+					{ // 参照
+						constexpr int vp_begin = 0x325e;
+						OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x3263 - vp_begin);
+						h.store_i8(0x325e - vp_begin, '\xe9');
+						h.replaceNearJmp(0x325f - vp_begin, cursor);
+						store_i8(cursor, '\xe8'); cursor++;
+						store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::dlg_get_load_name - (int)cursor - 4); cursor += 4;
+						store_i8(cursor, '\xa3'); cursor++;
+						store_i32(cursor, (int)&script_dlg_ok_cancel); cursor += 4;
+						store_i8(cursor, '\xe9'); cursor++;
+						store_i32(cursor, GLOBAL::exedit_base + 0x3263 - (int)cursor - 4); cursor += 4;
+					}
+				}
+				{ // アニメーション効果・カスタムオブジェクト・カメラ効果・シーンチェンジ の2nd_dlg（設定ボタンありの時の色）を変更
+					constexpr int vp_begin = 0x1fa0;
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x1ff2 - vp_begin);
+					h.store_i8(0x1fa0 - vp_begin, '\xe9');
+					h.replaceNearJmp(0x1fa1 - vp_begin, cursor);
+					store_i8(cursor, '\xe8'); cursor++;
+					store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::exfunc_6c - (int)cursor - 4); cursor += 4;
+					store_i8(cursor, '\xa3'); cursor++;
+					store_i32(cursor, (int)&script_dlg_ok_cancel); cursor += 4;
+					store_i8(cursor, '\xe9'); cursor++;
+					store_i32(cursor, GLOBAL::exedit_base + 0x1fa5 - (int)cursor - 4); cursor += 4;
+
+					h.replaceNearJmp(0x1fee - vp_begin, &update_script_param_wrap);
+				}
+			}
+
+			{ // マスク のマスクの種類
+				constexpr int vp_begin = 0x69e7a;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x69eff - vp_begin);
+
+				h.store_i8(0x69e7a - vp_begin, '\xe9');
+				h.replaceNearJmp(0x69e7b - vp_begin, cursor); // ファイル選択ダイアログのキャンセルの挙動を追加
+				/*
+					10000000 e8XxXxXxXx         call    ee+20900
+					10000000 85c0               test    eax,eax
+					10000000 0f85XxXxXxXx       jnz     ee+69ef3
+					10000000 e8XxXxxxXx         call    deselect_object_if
+					10000000 e9XxXxXxXx         jmp     ee+69eff
+				*/
+				store_i8(cursor, '\xe8'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::dlg_get_load_name - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x85\xc0\x0f\x85'); cursor += 4;
+				store_i32(cursor, GLOBAL::exedit_base + 0x69ef3 - (int)cursor - 4); cursor += 4;
+				store_i8(cursor, '\xe8'); cursor++;
+				store_i32(cursor, (int)&deselect_object_if - (int)cursor - 4); cursor += 4;
+				store_i8(cursor, '\xe9'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + 0x69eff - (int)cursor - 4); cursor += 4;
+
+				h.replaceNearJmp(0x69efb - vp_begin, &update_dlg_mask_wrap);
+			}
+			{ // 部分フィルタ のマスクの種類
+				constexpr int vp_begin = 0x6e2e3;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6e35b - vp_begin);
+				h.store_i8(0x6e2e3 - vp_begin, '\xe8');
+				h.replaceNearJmp(0x6e2e4 - vp_begin, &mov_eax_1_portion_filter_wrap);
+				h.store_i8(0x6e31c - vp_begin, '\xe8');
+				h.replaceNearJmp(0x6e31d - vp_begin, &mov_eax_1_portion_filter_wrap);
+				h.store_i8(0x6e356 - vp_begin, '\xe8');
+				h.replaceNearJmp(0x6e357 - vp_begin, &mov_eax_1_portion_filter_wrap);
+
+				h.store_i8(0x6e30e - vp_begin, '\xe9');
+				h.replaceNearJmp(0x6e30f - vp_begin, cursor); // ファイル選択ダイアログのキャンセルの挙動を追加
+				/*
+					10000000 e8XxXxXxXx         call    ee+20900
+					10000000 85c0               test    eax,eax
+					10000000 0f85XxXxXxXx       jnz     ee+6e313
+					10000000 83c40c             add     esp,+0c
+					10000000 e8XxXxxxXx         call    deselect_object_if
+					10000000 e9XxXxXxXx         jmp     ee+6e2e0
+				*/
+				store_i8(cursor, '\xe8'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::dlg_get_load_name - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x85\xc0\x0f\x85'); cursor += 4;
+				store_i32(cursor, GLOBAL::exedit_base + 0x6e313 - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x83\xc4\x0c\xe8'); cursor += 4;
+				store_i32(cursor, (int)&deselect_object_if - (int)cursor - 4); cursor += 4;
+				store_i8(cursor, '\xe9'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + 0x6e2e0 - (int)cursor - 4); cursor += 4;
+			}
+
+			{ // ディスプレイスメントマップ のマップの種類
+				constexpr int vp_begin = 0x200f0;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x201b1 - vp_begin);
+
+				h.store_i8(0x2012c - vp_begin, '\xe9');
+				h.replaceNearJmp(0x2012d - vp_begin, cursor); // ファイル選択ダイアログのキャンセルの挙動を追加
+				/*
+					10000000 e8XxXxXxXx         call    ee+20900
+					10000000 85c0               test    eax,eax
+					10000000 0f85XxXxXxXx       jnz     ee+201a1
+					10000000 83c40c             add     esp,+0c
+					10000000 e8XxXxxxXx         call    deselect_object_if
+					10000000 e9XxXxXxXx         jmp     ee+201b4
+				*/
+				store_i8(cursor, '\xe8'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + OFS::ExEdit::dlg_get_load_name - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x85\xc0\x0f\x85'); cursor += 4;
+				store_i32(cursor, GLOBAL::exedit_base + 0x201a1 - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x83\xc4\x0c\xe8'); cursor += 4;
+				store_i32(cursor, (int)&deselect_object_if - (int)cursor - 4); cursor += 4;
+				store_i8(cursor, '\xe9'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + 0x201b4 - (int)cursor - 4); cursor += 4;
+
+				h.replaceNearJmp(0x200f0 - vp_begin, &update_dlg_displacementmap_wrap);
+				h.replaceNearJmp(0x201ad - vp_begin, &update_dlg_displacementmap_wrap);
+			}
+
+			{ // クロマキー のキー色の取得
+				constexpr int vp_begin = 0x14429;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x144a1 - vp_begin);
+				h.replaceNearJmp(0x14429 - vp_begin, &update_dlg_chromakey_wrap);
+				h.replaceNearJmp(0x14442 - vp_begin, &update_dlg_chromakey_wrap);
+				h.replaceNearJmp(0x1449d - vp_begin, &update_dlg_chromakey_wrap);
+			}
+			{ // カラーキー のキー色の取得
+				constexpr int vp_begin = 0x168a9;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x16921 - vp_begin);
+				h.replaceNearJmp(0x168a9 - vp_begin, &update_dlg_colorkey_wrap);
+				h.replaceNearJmp(0x168c2 - vp_begin, &update_dlg_colorkey_wrap);
+				h.replaceNearJmp(0x1691d - vp_begin, &update_dlg_colorkey_wrap);
+			}
+
+			{ // 色ずれ・インターレース解除・ルミナンスキー・ミラー のコンボボックス変更
+				constexpr int vp_begin = 0x180b8;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 5);
+				h.store_i8(0x180b8 - vp_begin, '\xe8');
+				h.replaceNearJmp(0x180b9 - vp_begin, &mov_eax_1_some_filter_cb_wrap);
+			}
+
+
+
+			{ // トラックの数値の場所をクリックして動かしたときに選択が解除されないようにする
+				{ // Ctrlの状態にかかわらず解除されるようになっていたので変更
+					OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x3bcbe, 4).replaceNearJmp(0, &deselect_object_if);
+				}
+				{ // 上記変更により解除がされなくなってしまうため
+					/* WM_KEYUPのみで判定しているところにWM_SYSKEYUPも加える
+						1002cfbe 2d01010000         sub     eax, 00000101
+						↓
+						1002cfbe e8XxXxXxXx         call    cursor
+
+						10000000 2d01010000         sub     eax, 00000101
+						10000000 7403               jz      skip,3
+						10000000 83f804             cmp     eax,+04
+						10000000 c3                 ret
+					*/
+
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x2cfbe, 5);
+					h.store_i8(0, '\xe8');
+					h.replaceNearJmp(1, cursor);
+					store_i32(cursor, '\x2d\x01\x01\x00'); cursor += 4;
+					store_i32(cursor, '\x00\x74\x03\x83'); cursor += 3;
+					store_i32(cursor, '\x83\xf8\x04\xc3'); cursor += 4;
+				}
+			}
+			{ // 操作によっては選択状態が解除されないままになるので拡張編集ウィンドウをアクティブにした時に判定する
+				/*
+				    1003b7f8 0f854e830000       jnz     10043b4c
+					↓
+					1003b7f8 0f85XxXxXxXx       call    cursor
+
+					10000000 e8XxXxxxXx         call    deselect_object_if
+					10000000 e9XxXxXxXx         jmp     ee+43b4c
+				*/
+				OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x3b7fa, 4).replaceNearJmp(0, cursor); 
+
+				store_i8(cursor, '\xe8'); cursor++;
+				store_i32(cursor, (int)&deselect_object_if - (int)cursor - 4); cursor += 4;
+				store_i8(cursor, '\xe9'); cursor++;
+				store_i32(cursor, GLOBAL::exedit_base + 0x43b4c - (int)cursor - 4); cursor += 4;
 			}
 
 		}

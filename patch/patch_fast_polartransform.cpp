@@ -25,49 +25,43 @@
 #include "patch_fast_cl.hpp"
 #include "debug_log.hpp"
 
-//#define PATCH_STOPWATCH
-#include "stopwatch.hpp"
-static stopwatch_mem sw;
 
 namespace patch::fast {
     BOOL PolarTransform_t::mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        if (256 < efpip->obj_w * efpip->obj_h) {
-            sw.start();
-            try {
-                efPolarTransform_var& polar = *reinterpret_cast<efPolarTransform_var*>(GLOBAL::exedit_base + OFS::ExEdit::efPolarTransform_var_ptr);
-
-                const auto src_size = efpip->obj_line * polar.src_h * sizeof(ExEdit::PixelYCA);
-                cl::Buffer clmem_src(cl.context, CL_MEM_READ_ONLY, src_size);
-                cl.queue.enqueueWriteBuffer(clmem_src, CL_TRUE, 0, src_size, efpip->obj_edit);
-
-                const auto dst_size = efpip->obj_line * polar.output_size * 8;
-                cl::Buffer clmem_dst(cl.context, CL_MEM_WRITE_ONLY, dst_size);
-
-                auto kernel = cl.readyKernel(
-                    "PolarTransform",
-                    clmem_dst,
-                    clmem_src,
-                    polar.src_w,
-                    polar.src_h,
-                    efpip->obj_line,
-                    polar.center_length,
-                    polar.radius,
-                    static_cast<float>(polar.angle),
-                    static_cast<float>(polar.uzu),
-                    static_cast<float>(polar.uzu_a)
-                );
-                cl.queue.enqueueNDRangeKernel(kernel, { 0,0 }, { (size_t)polar.output_size ,(size_t)polar.output_size });
-
-                cl.queue.enqueueReadBuffer(clmem_dst, CL_TRUE, 0, dst_size, efpip->obj_temp);
-            } catch (const cl::Error& err) {
-                debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
-                return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
-            }
-            sw.stop();
-            return TRUE;
-        } else {
+        if (efpip->obj_w < 8 || efpip->obj_h < 8) {
             return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
         }
+        try {
+            efPolarTransform_var& polar = *reinterpret_cast<efPolarTransform_var*>(GLOBAL::exedit_base + OFS::ExEdit::efPolarTransform_var_ptr);
+
+            const auto src_size = cl_t::calc_size(polar.src_w, polar.src_h, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_src(cl.context, CL_MEM_READ_ONLY, src_size);
+            cl.queue.enqueueWriteBuffer(clmem_src, CL_TRUE, 0, src_size, efpip->obj_edit);
+
+            const auto dst_size = cl_t::calc_size(polar.output_size, polar.output_size, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
+            cl::Buffer clmem_dst(cl.context, CL_MEM_WRITE_ONLY, dst_size);
+
+            auto kernel = cl.readyKernel(
+                "PolarTransform",
+                clmem_dst,
+                clmem_src,
+                polar.src_w,
+                polar.src_h,
+                efpip->obj_line,
+                polar.center_length,
+                polar.radius,
+                static_cast<float>(polar.angle),
+                static_cast<float>(polar.uzu),
+                static_cast<float>(polar.uzu_a)
+            );
+            cl.queue.enqueueNDRangeKernel(kernel, { 0,0 }, { (size_t)polar.output_size ,(size_t)polar.output_size });
+
+            cl.queue.enqueueReadBuffer(clmem_dst, CL_TRUE, 0, dst_size, efpip->obj_temp);
+        } catch (const cl::Error& err) {
+            debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
+            return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
+        }
+        return TRUE;
     }
 }
 #endif // ifdef PATCH_SWITCH_FAST_POLARTRANSFORM

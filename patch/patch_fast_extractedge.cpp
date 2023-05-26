@@ -115,6 +115,9 @@ namespace patch::fast {
             }
         }
         if (y_end == efpip->obj_h) {
+            if (y_end == 0) {
+                return;
+            }
             y_end--;
         }
         int offset = obj_line * y_begin;
@@ -297,6 +300,9 @@ namespace patch::fast {
             }
         }
         if (y_end == efpip->obj_h) {
+            if (y_end == 0) {
+                return;
+            }
             y_end--;
         }
         int offset = obj_line * y_begin;
@@ -442,6 +448,9 @@ namespace patch::fast {
             }
         }
         if (y_end == efpip->obj_h) {
+            if (y_end == 0) {
+                return;
+            }
             y_end--;
             auto dst = (ExEdit::PixelYCA*)efpip->obj_temp + y_end * obj_line;
             auto src = (ExEdit::PixelYCA*)efpip->obj_edit + y_end * obj_line;

@@ -28,6 +28,8 @@ namespace patch::fast {
     BOOL __cdecl DirectionalBlur_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         efDirectionalBlur_var& dblur = *(efDirectionalBlur_var*)uintptr_t(reinterpret_cast<efDirectionalBlur_var*>(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_var_ptr));
 
+        if (efpip->obj_w <= 0 || efpip->obj_h <= 0) return TRUE;
+
         int range = efp->track[0];
         if (range == 0) {
             return TRUE;
@@ -90,11 +92,11 @@ namespace patch::fast {
 
 
             try {
-                const auto src_size = efpip->obj_line * efpip->obj_h * sizeof(ExEdit::PixelYCA);
+                const auto src_size = cl_t::calc_size(efpip->obj_w, efpip->obj_h, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
                 cl::Buffer clmem_src(cl.context, CL_MEM_READ_ONLY, src_size);
                 cl.queue.enqueueWriteBuffer(clmem_src, CL_TRUE, 0, src_size, efpip->obj_edit);
 
-                const auto dst_size = efpip->obj_line * (dblur.y_end - dblur.y_begin) * sizeof(ExEdit::PixelYCA);
+                const auto dst_size = cl_t::calc_size(dblur.x_end - dblur.x_begin, dblur.y_end - dblur.y_begin, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
                 cl::Buffer clmem_dst(cl.context, CL_MEM_WRITE_ONLY, dst_size);
 
                 cl::Kernel kernel;
@@ -137,7 +139,7 @@ namespace patch::fast {
             dblur.y_end = efpip->obj_h;
 
             try {
-                const auto src_size = efpip->obj_line * efpip->obj_h * sizeof(ExEdit::PixelYCA);
+                const auto src_size = cl_t::calc_size(efpip->obj_w, efpip->obj_h, efpip->obj_line) * sizeof(ExEdit::PixelYCA);
                 cl::Buffer clmem_src(cl.context, CL_MEM_READ_ONLY, src_size);
                 cl.queue.enqueueWriteBuffer(clmem_src, CL_TRUE, 0, src_size, efpip->obj_edit);
 
@@ -178,7 +180,7 @@ namespace patch::fast {
         efDirectionalBlur_var& dblur = *(efDirectionalBlur_var*)uintptr_t(reinterpret_cast<efDirectionalBlur_var*>(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_var_ptr));
 
         try {
-            const auto src_size = efpip->scene_line * efpip->scene_h * sizeof(ExEdit::PixelYC);
+            const auto src_size = cl_t::calc_size(efpip->scene_w, efpip->scene_h, efpip->scene_line) * sizeof(ExEdit::PixelYC);
             cl::Buffer clmem_src(cl.context, CL_MEM_READ_ONLY, src_size);
             cl.queue.enqueueWriteBuffer(clmem_src, CL_TRUE, 0, src_size, efpip->frame_edit);
 

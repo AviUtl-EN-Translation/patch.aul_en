@@ -157,7 +157,7 @@ kernel void PolarTransform(global short* dst, global short* src, int obj_w, int 
 		dst[2] = (short)round((float)sum_cr * a_float);
 		dst[3] = (short)((sum_a << 8) / range);
 	} else {
-		dst[0] = dst[1] = dst[2] = dst[3] = 0;
+		vstore4((short4)(0, 0, 0, 0), 0, dst);
 	}
 }
 )" R"(
@@ -165,12 +165,20 @@ kernel void DisplacementMap_move(global short* dst, global short* src, global sh
 	int obj_w, int obj_h, int obj_line, int param0, int param1, int ox, int oy) {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
+	int ofs = (x + y * obj_line) * 4;
+	dst += ofs;
+	mem += ofs;
 
-	dst += (x + y * obj_line) * 4;
-	mem += (x + y * obj_line) * 4;
+	int right = 0, under = 0;
+	if (x < obj_w - 1){
+		right = 4;
+	}
+	if (y < obj_h - 1){
+		under = obj_line * 4;
+	}
 
-	int p0 = min(mem[0], mem[obj_line * 4]);
-	int p1 = max(mem[4], mem[obj_line * 4 + 4]);
+	int p0 = min(mem[0], mem[under]);
+	int p1 = max(mem[right], mem[right + under]);
 	p0 = (p0 - 0x800) * param0 / 5;
 	p1 = (p1 - 0x800) * param0 / 5 + 0x1000;
 	if (p1 < p0) {
@@ -182,8 +190,8 @@ kernel void DisplacementMap_move(global short* dst, global short* src, global sh
 	int u_begin = p0 + (x << 12);
 	int u_end = u_range + u_begin;
 
-	p0 = min(mem[1], mem[5]);
-	p1 = max(mem[obj_line * 4 + 1], mem[obj_line * 4 + 5]);
+	p0 = min(mem[1], mem[1 + right]);
+	p1 = max(mem[1 + under], mem[1 + right + under]);
 	p0 = (p0 - 0x800) * param1 / 5;
 	p1 = (p1 - 0x800) * param1 / 5 + 0x1000;
 	if (p1 < p0) {
@@ -266,16 +274,24 @@ kernel void DisplacementMap_move(global short* dst, global short* src, global sh
 		dst[2] = (short)round(dsum_cr * inv_a);
 		dst[3] = (short)round(1048576.0f / (float)v_range / (float)u_range * dsum_a);
 	} else {
-		dst[0] = dst[1] = dst[2] = dst[3] = 0;
+		vstore4((short4)(0, 0, 0, 0), 0, dst);
 	}
 }
 kernel void DisplacementMap_zoom(global short* dst, global short* src, global short* mem,
 	int obj_w, int obj_h, int obj_line, int param0, int param1, int ox, int oy){
 	int x = get_global_id(0);
 	int y = get_global_id(1);
+	int ofs = (x + y * obj_line) * 4;
+	dst += ofs;
+	mem += ofs;
 
-	dst += (x + y * obj_line) * 4;
-	mem += (x + y * obj_line) * 4;
+	int right = 0, under = 0;
+	if (x < obj_w - 1){
+		right = 4;
+	}
+	if (y < obj_h - 1){
+		under = obj_line * 4;
+	}
 
 	int u_min, u_max, v_min, v_max;
 	int u_temp, v_temp;
@@ -290,16 +306,16 @@ kernel void DisplacementMap_zoom(global short* dst, global short* src, global sh
 	float temp = ud * zoom;
 	u_min = u_max = x * 0x1000 + (int)((float)(mem[0] - 0x800) * temp);
 
-	u_temp = x * 0x1000 + (int)((float)(mem[obj_line * 4] - 0x800) * temp);
+	u_temp = x * 0x1000 + (int)((float)(mem[under] - 0x800) * temp);
 	u_min = min(u_min, u_temp);
 	u_max = max(u_max, u_temp);
 
 	temp = (ud + 4096.0f) * zoom;
-	u_temp = (x + 1) * 0x1000 + (int)((float)(mem[4] - 0x800) * temp);
+	u_temp = (x + 1) * 0x1000 + (int)((float)(mem[right] - 0x800) * temp);
 	u_min = min(u_min, u_temp);
 	u_max = max(u_max, u_temp);
 
-	u_temp = (x + 1) * 0x1000 + (int)((float)(mem[(obj_line + 1) * 4] - 0x800) * temp);
+	u_temp = (x + 1) * 0x1000 + (int)((float)(mem[right + under] - 0x800) * temp);
 	int u_begin = min(u_min, u_temp);
 	int u_end = max(u_max, u_temp);
 
@@ -313,16 +329,16 @@ kernel void DisplacementMap_zoom(global short* dst, global short* src, global sh
 	temp = vd * zoom;
 	v_min = v_max = y * 0x1000 + (int)((float)(mem[1] - 0x800) * temp);
 
-	v_temp = y * 0x1000 + (int)((float)(mem[5] - 0x800) * temp);
+	v_temp = y * 0x1000 + (int)((float)(mem[1 + right] - 0x800) * temp);
 	v_min = min(v_min, v_temp);
 	v_max = max(v_max, v_temp);
 
 	temp = (vd + 4096.0f) * zoom;
-	v_temp = (y + 1) * 0x1000 + (int)((float)(mem[obj_line * 4 + 1] - 0x800) * temp);
+	v_temp = (y + 1) * 0x1000 + (int)((float)(mem[1 + under] - 0x800) * temp);
 	v_min = min(v_min, v_temp);
 	v_max = max(v_max, v_temp);
 
-	v_temp = (y + 1) * 0x1000 + (int)((float)(mem[obj_line * 4 + 5] - 0x800) * temp);
+	v_temp = (y + 1) * 0x1000 + (int)((float)(mem[1 + right + under] - 0x800) * temp);
 	int v_begin = min(v_min, v_temp);
 	int v_end = max(v_max, v_temp);
 
@@ -400,16 +416,24 @@ kernel void DisplacementMap_zoom(global short* dst, global short* src, global sh
 		dst[2] = (short)round(dsum_cr * inv_a);
 		dst[3] = (short)round(1048576.0f / (float)v_range / (float)u_range * dsum_a);
 	} else {
-		dst[0] = dst[1] = dst[2] = dst[3] = 0;
+		vstore4((short4)(0, 0, 0, 0), 0, dst);
 	}
 }
 kernel void DisplacementMap_rot(global short* dst, global short* src, global short* mem,
 	int obj_w, int obj_h, int obj_line, int param0, int param1, int ox, int oy){
 	int x = get_global_id(0);
 	int y = get_global_id(1);
+	int ofs = (x + y * obj_line) * 4;
+	dst += ofs;
+	mem += ofs;
 
-	dst += (x + y * obj_line) * 4;
-	mem += (x + y * obj_line) * 4;
+	int right = 0, under = 0;
+	if (x < obj_w - 1){
+		right = 4;
+	}
+	if (y < obj_h - 1){
+		under = obj_line * 4;
+	}
 
 	int u_min, u_max, v_min, v_max;
 	int u_temp, v_temp;
@@ -426,7 +450,7 @@ kernel void DisplacementMap_rot(global short* dst, global short* src, global sho
 	u_min = u_max = (int)(ud * cosv - vd * sinv);
 	v_min = v_max = (int)(ud * sinv + vd * cosv);
 
-	rad = (float)(mem[4] - 0x800) * paramrad;
+	rad = (float)(mem[right] - 0x800) * paramrad;
 	sinv = sin(rad);
 	cosv = cos(rad);
 	u_temp = (int)(ud_next * cosv - vd * sinv);
@@ -436,7 +460,7 @@ kernel void DisplacementMap_rot(global short* dst, global short* src, global sho
 	v_min = min(v_min, v_temp);
 	v_max = max(v_max, v_temp);
 
-	rad = (float)(mem[obj_line * 4] - 0x800) * paramrad;
+	rad = (float)(mem[under] - 0x800) * paramrad;
 	sinv = sin(rad);
 	cosv = cos(rad);
 	u_temp = (int)(ud * cosv - vd_next * sinv);
@@ -446,7 +470,7 @@ kernel void DisplacementMap_rot(global short* dst, global short* src, global sho
 	v_min = min(v_min, v_temp);
 	v_max = max(v_max, v_temp);
 
-	rad = (float)(mem[(obj_line + 1) * 4] - 0x800) * paramrad;
+	rad = (float)(mem[right + under] - 0x800) * paramrad;
 	sinv = sin(rad);
 	cosv = cos(rad);
 	u_temp = (int)(ud_next * cosv - vd_next * sinv);
@@ -534,10 +558,8 @@ kernel void DisplacementMap_rot(global short* dst, global short* src, global sho
 	}
 }
 )" R"(
-kernel void RadiationalBlur_Media(
-	global short* dst, global short* src, int src_w, int src_h, int buffer_line,
+kernel void RadiationalBlur_Media(global short* dst, global short* src, int src_w, int src_h, int buffer_line,
 	int rb_blur_cx, int rb_blur_cy, int rb_obj_cx, int rb_obj_cy, int rb_range, int rb_pixel_range) {
-
 	int x = get_global_id(0);
 	int y = get_global_id(1);
 	int pixel_itr = x + y * buffer_line;
@@ -598,17 +620,14 @@ kernel void RadiationalBlur_Media(
 		} else {
 			dst[pixel_itr * 4 + 3] = 0;
 		}
+	} else if (x < 0 || y < 0 || src_w <= x || src_h <= y) {
+		vstore4((short4)(0, 0, 0, 0), pixel_itr, dst);
 	} else {
-		if (x < 0 || y < 0 || src_w <= x || src_h <= y) {
-			vstore4((short4)(0, 0, 0, 0), pixel_itr, dst);
-		} else {
-			vstore4(vload4(x + y * buffer_line, src), pixel_itr, dst);
-		}
+		vstore4(vload4(x + y * buffer_line, src), pixel_itr, dst);
 	}
 }
 
-kernel void RadiationalBlur_Filter(
-	global short* dst, global short* src, int buffer_line,
+kernel void RadiationalBlur_Filter(global short* dst, global short* src, int buffer_line,
 	int rb_blur_cx, int rb_blur_cy, int rb_range, int rb_pixel_range) {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
@@ -654,11 +673,9 @@ kernel void RadiationalBlur_Filter(
 		dst[offset + 2] = src[offset + 2];
 	}
 }
-kernel void RadiationalBlur_Filter_Far(
-	global short* dst, global short* src, int scene_w, int scene_h, int buffer_line,
+kernel void RadiationalBlur_Filter_Far(	global short* dst, global short* src, int scene_w, int scene_h, int buffer_line,
 	int rb_blur_cx, int rb_blur_cy, int rb_range, int rb_pixel_range) {
-	int x = get_global_id(0);
-	int y = get_global_id(1);
+	int x = get_global_id(0), y = get_global_id(1);
 
 	int cx = rb_blur_cx - x;
 	int cy = rb_blur_cy - y;
@@ -704,16 +721,8 @@ kernel void RadiationalBlur_Filter_Far(
 	}
 }
 )" R"(
-kernel void Flash(global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
-	int g_cx,
-	int g_cy,
-	int g_range,
-	int g_pixel_range,
-	int g_temp_x,
-	int g_temp_y,
-	int g_r_intensity
-) {
-
+kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
+	int g_cx, int g_cy, int g_range, int g_pixel_range, int g_temp_x, int g_temp_y, int g_r_intensity) {
 	int xi = get_global_id(0);
 	int yi = get_global_id(1);
 
@@ -787,19 +796,9 @@ kernel void Flash(global short* dst, global short* src, int src_w, int src_h, in
 		dst[2] = sum_cr * 4096 / ya;
 	}
 }
-kernel void FlashColor(global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
-	int g_cx,
-	int g_cy,
-	int g_range,
-	int g_pixel_range,
-	int g_temp_x,
-	int g_temp_y,
-	int g_r_intensity,
-	short g_color_y,
-	short g_color_cb,
-	short g_color_cr
-) {
-
+kernel void FlashColor(	global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
+	int g_cx, int g_cy, int g_range, int g_pixel_range, int g_temp_x, int g_temp_y,
+	int g_r_intensity, short g_color_y, short g_color_cb, short g_color_cr) {
 	int xi = get_global_id(0);
 	int yi = get_global_id(1);
 
@@ -982,7 +981,6 @@ kernel void DirectionalBlur_Filter(global short* dst, global short* src, int sce
 )" R"(
 kernel void LensBlur_Media(global char* dst, global char* src, int obj_w, int obj_h, int obj_line,
 	int range, int rangep05_sqr, int range_t3m1, int rangem1_sqr) {
-
 	int x = get_global_id(0);
 	int y = get_global_id(1);
 
@@ -1038,7 +1036,6 @@ kernel void LensBlur_Media(global char* dst, global char* src, int obj_w, int ob
 
 kernel void LensBlur_Filter(global char* dst, global char* src, int scene_w, int scene_h, int scene_line,
 	int range, int rangep05_sqr, int range_t3m1, int rangem1_sqr) {
-
 	int x = get_global_id(0);
 	int y = get_global_id(1);
 
@@ -1107,6 +1104,11 @@ bool enabled_i;
 inline static const char key[] = "fast.cl";
 
 public:
+
+	static int calc_size(int w, int h, int line) {
+		return h * line - (line - w);
+	}
+
 	cl::Platform platform;
 	std::vector<cl::Device> devices;
 	cl::Context context;

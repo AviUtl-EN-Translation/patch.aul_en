@@ -140,22 +140,22 @@ namespace patch {
 	}
 	void __cdecl obj_LensBlur_t::lbResize_filter_interpolation_y(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 72390 相当
-		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_YC_vram_w);
+		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yc_vram_w);
 		lbResize_filter(thread_id, thread_num, lbresize->resize_h, si_vram_w, lbresize->resize_w, 1, 0);
 	}
 	void __cdecl obj_LensBlur_t::lbResize_filter_interpolation_x(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 72720 相当
-		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_YC_vram_w);
+		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yc_vram_w);
 		lbResize_filter(thread_id, thread_num, lbresize->resize_w, 1, lbresize->resize_h, si_vram_w, 0);
 	}
 	void __cdecl obj_LensBlur_t::lbResize_filter_interpolation_y_fbb(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 72c20 相当
-		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_YC_vram_w);
+		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yc_vram_w);
 		lbResize_filter(thread_id, thread_num, lbresize->resize_h, si_vram_w, lbresize->resize_w, 1, 1);
 	}
 	void __cdecl obj_LensBlur_t::lbResize_filter_interpolation_x_fbb(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 72f90 相当
-		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_YC_vram_w);
+		int si_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yc_vram_w);
 		lbResize_filter(thread_id, thread_num, lbresize->resize_w, 1, lbresize->resize_h, si_vram_w, 1);
 	}
 

@@ -26,7 +26,8 @@ namespace patch::fast {
     // init at exedit load
     // 閃光の高速化
     inline class Flash_t {
-        static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+        static BOOL no_color_mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+        static BOOL color_mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
         bool enabled = true;
         bool enabled_i;
@@ -56,7 +57,14 @@ namespace patch::fast {
 
             if (!enabled_i)return;
 
-            store_i32(GLOBAL::exedit_base + OFS::ExEdit::efFlash_func_proc_ptr, &func_proc);
+            {
+                constexpr int vp_begin = 0x4e8c0;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x4e8d6 - vp_begin);
+                h.store_i16(0x4e8c0 - vp_begin, '\x90\xe8'); // nop; call (rel32)
+                h.replaceNearJmp(0x4e8c2 - vp_begin, &no_color_mt_func);
+                h.store_i16(0x4e8d0 - vp_begin, '\x90\xe8'); // nop; call (rel32)
+                h.replaceNearJmp(0x4e8d2 - vp_begin, &color_mt_func);
+            }
         }
 
         void switch_load(ConfigReader& cr) {

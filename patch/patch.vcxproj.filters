@@ -383,6 +383,9 @@
     <ClInclude Include="patch_fast_extractedge.hpp">
       <Filter>feature\fast</Filter>
     </ClInclude>
+    <ClInclude Include="patch_sat_rgb_space.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -573,6 +576,12 @@
     </ClCompile>
     <ClCompile Include="patch_fast_extractedge.cpp">
       <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_sat_rgb_space.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_obj_portionfilter.cpp">
+      <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
