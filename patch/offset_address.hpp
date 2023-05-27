@@ -192,6 +192,7 @@ namespace OFS {
 		constexpr i32 str_no_color = 0x0a5c80;
 		constexpr i32 str_color_yc = 0x0a0fb0;
 		constexpr i32 str_status = 0x0a0fa8;
+		constexpr i32 str_blend = 0x0a30e8;
 		constexpr i32 str_RGB_d_d_d = 0x0a2d24;
 		constexpr i32 str_SHITEINASHI_MOTOGAZOUNOIRO = 0x0a5c8c;
 
@@ -316,6 +317,7 @@ namespace OFS {
 		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
 		constexpr i32 get_last_filter_idx = 0x0335f0;
 		constexpr i32 get_filterp = 0x047b00;
+		constexpr i32 delete_filter_effect = 0x033d20;
 
 		constexpr i32 TrackModeInfoArray = 0x14d3b0;
 		constexpr i32 TrackLeftInfoArray = 0x14d4c8;

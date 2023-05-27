@@ -22,6 +22,9 @@ namespace patch {
             deselect_object();
         }
     }
+    void any_obj_t::post_deselect_object_if() {
+        PostMessageA(*(HWND*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd), PATCH_EXEDIT_EXCOMMAND, PATCH_EXEDIT_EXCOMMAND_DESELECT_OBJECT_IF, 0);
+    }
 
     int get_same_filter_idx(int dst_idx, int src_idx, int filter_idx) {
         if (src_idx == dst_idx) return -1;
@@ -394,16 +397,64 @@ namespace patch {
         }
         deselect_object_if();
     }
+    void __cdecl any_obj_t::update_dlg_shadow_wrap(ExEdit::Filter* efp, void* exdata) {
+        reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x88f40)(efp, exdata);
+        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
+        deselect_object_if();
+    }
+    void __cdecl any_obj_t::update_dlg_border_wrap(ExEdit::Filter* efp, void* exdata) {
+        reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x52200)(efp, exdata);
+        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_file));
+        deselect_object_if();
+    }
 
-    int __cdecl any_obj_t::mov_eax_1_some_filter_cb_wrap(int esi, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+    int __cdecl any_obj_t::mov_eax_1_type_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
         update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type));
         return 1;
     }
+    
+    int __cdecl any_obj_t::mov_eax_1_blend_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_blend));
+        return 1;
+    }
+    int __cdecl any_obj_t::mov_eax_1_mode_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_mode));
+        return 1;
+    }
+    int __cdecl any_obj_t::mov_eax_1_mode_2_wrap(int e1, int e2, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_mode));
+        return 1;
+    }
 
+    int __cdecl any_obj_t::mov_eax_1_type_name_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type));
+        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_name));
+        return 1;
+    }
 
+    void __cdecl any_obj_t::delete_filter_effect_wrap(int object_idx, int filter_idx) {
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        if (0 <= obj[object_idx].index_midpt_leader) {
+            object_idx = obj[object_idx].index_midpt_leader;
+        }
+        int filter_param_id = obj[object_idx].filter_param[filter_idx].id;
 
+        reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::delete_filter_effect)(object_idx, filter_idx);
 
-
+        int SelectingObjectNum = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
+        int* SelectingObjectIdxArray = (int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
+        for (int i = 0; i < SelectingObjectNum; i++) {
+            int select_idx = SelectingObjectIdxArray[i];
+            if (select_idx != object_idx) {
+                if (obj[select_idx].index_midpt_leader < 0 || obj[select_idx].index_midpt_leader == select_idx) {
+                    if (obj[select_idx].filter_param[filter_idx].id == filter_param_id) {
+                        reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 1);
+                        reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::delete_filter_effect)(select_idx, filter_idx);
+                    }
+                }
+            }
+        }
+    }
 
 
 

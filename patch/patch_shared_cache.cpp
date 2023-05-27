@@ -19,7 +19,7 @@
 namespace patch {
 
     int calc_cache_size(int w, int h, int bitcount) {
-        return ((((w * bitcount + 7) >> 3) + 3) & 0xfffffffc) * h + 16;
+        return ((w * bitcount + 31) >> 5 << 2) * h + 16;
     }
 
     void* __cdecl SharedCache_t::GetOrCreateSharedCache(ExEdit::ObjectFilterIndex ofi, int w, int h, int bitcount, int v_func_id, int* old_cache_exists) {
