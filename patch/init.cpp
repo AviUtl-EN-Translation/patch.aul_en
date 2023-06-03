@@ -542,12 +542,15 @@ BOOL __cdecl init_t::func_WndProcWrap(HWND hwnd, UINT message, WPARAM wparam, LP
 			break;
 		case PATCH_EXEDIT_EXCOMMAND:
 			switch (wparam) {
+			case PATCH_EXEDIT_EXCOMMAND_ONE_DELAY:
+				PostMessageA(hwnd, PATCH_EXEDIT_EXCOMMAND, lparam, 0);
+				return FALSE;
 			#ifdef PATCH_SWITCH_ANY_OBJ
 			case PATCH_EXEDIT_EXCOMMAND_DESELECT_OBJECT_IF:
 				patch::any_obj_t::deselect_object_if();
-				return TRUE;
-			}
+				return FALSE;
 			#endif
+			}
 			break;
 	}
 	return original_func_WndProc(hwnd, message, wparam, lparam, editp, fp);

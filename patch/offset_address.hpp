@@ -177,6 +177,7 @@ namespace OFS {
 
 		constexpr i32 ScriptProcessingFilter = 0x1b2b10;
 
+		constexpr i32 extract_extension = 0x04e1d0;
 		constexpr i32 ini_extension_buf = 0x14cb58;
 		constexpr i32 str_DOUGAFILE= 0x09df6c; // "動画ファイル"
 		constexpr i32 str_ONSEIFILE = 0x0ba698; // "音声ファイル"
@@ -221,7 +222,7 @@ namespace OFS {
 		constexpr i32 double_framerate = 0x0a4068;
 		constexpr i32 double_framerate_scale = 0x0a4060;
 
-		constexpr i32 exedit_edit_open = 0x03ac30;
+		constexpr i32 edit_open = 0x03ac30;
 		constexpr i32 update_any_exdata = 0x04a7e0;
 		constexpr i32 get_same_filter_idx_if_leader = 0x0365b0;
 

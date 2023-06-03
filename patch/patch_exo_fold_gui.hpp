@@ -96,14 +96,13 @@ namespace patch {
                 */
 
                 static const char code_put_read[] =
-                    "\x8b\x54\x24\x14"         // mov     edx,dword ptr [esp+14]
-                    "\x52"                     // push    edx
+                    "\xff\x74\x24\x14"         // push    dword ptr [esp+14]
                     "\x68XXXX"                 // push    "_fold_gui"
                     "\xff\xd6"                 // call    esi
                     "\x85\xc0"                 // test    eax,eax
                     "\x75\x1f"                 // jnz     skip,1f
                     "\x53"                     // push    ebx
-                    "\xe8XXXX"                 // call    100918ab
+                    "\xe8XXXX"                 // call    exedit + 0x918ab
                     "\x83\xc4\x04"             // add     esp,04
                     "\x85\xc0"                 // test    eax,eax
                     "\x74\x12"                 // jz      skip,12
@@ -113,14 +112,13 @@ namespace patch {
                     "\x03\xcd"                 // add     ecx,ebp
                     "\x83\xc1\x72"             // add     ecx,+72
                     "\x30\x41\x72"             // xor     byte ptr [ecx+72],al
-                    "\x8b\x54\x24\x14"         // mov     edx,dword ptr [esp+14]
-                    "\x52"                     // push    edx
+                    "\xff\x74\x24\x14"         // push    dword ptr [esp+14]
                     "\xe9"// & XXXX            // jmp     exedit + 0x29b26
                     ;
 
                 memcpy(cursor, code_put_read, sizeof(code_put_read) - 1);
-                store_i32(cursor + 6, &fold_gui_read);
-                store_i32(cursor + 18, GLOBAL::exedit_base + 0x0918ab - ((int)cursor + 22));
+                store_i32(cursor + 5, &fold_gui_read);
+                store_i32(cursor + 17, GLOBAL::exedit_base + 0x0918ab - ((int)cursor + 21));
                 cursor += sizeof(code_put_read) - 1 + 4;
                 store_i32(cursor - 4, GLOBAL::exedit_base + 0x029b26 - (int)cursor);
             }

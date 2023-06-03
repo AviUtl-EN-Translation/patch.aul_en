@@ -27,6 +27,7 @@
 namespace patch {
     // init at exedit load
     // プロジェクト作成時、サイズの変更＞なし　フレームレートの変更＞なし　クリッピング＆リサイズOFF にする
+    // フレームレート値の最適化
 
     inline class setting_new_project_t {
 

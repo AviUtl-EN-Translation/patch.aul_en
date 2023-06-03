@@ -145,6 +145,7 @@ namespace patch {
             NormalizeExeditTimelineY = reinterpret_cast<decltype(NormalizeExeditTimelineY)>(GLOBAL::exedit_base + 0x032c10);
             add_track_value = reinterpret_cast<decltype(add_track_value)>(GLOBAL::exedit_base + 0x01c0f0);
 
+            auto& cursor = GLOBAL::executable_memory_cursor;
 
 			// レイヤー削除→元に戻すで他シーンのオブジェクトが消える
 			{
@@ -166,12 +167,11 @@ namespace patch {
                 1004a933 e8XxXxXxXx         call    cursor
 
                 10000000 03f8               add     edi,eax
-                10000000 8b442414           mov     eax,dword ptr [esp+14] ; select_id
                 10000000 52                 push    edx
                 10000000 51                 push    ecx
                 10000000 56                 push    esi
                 10000000 57                 push    edi
-                10000000 50                 push    eax
+                10000000 ff742424           push    dword ptr [esp+24] ; select_id
                 10000000 e8XxXxXxXx         call    new func
                 10000000 83c410             add     esp,10
                 10000000 5a                 pop     edx
@@ -179,16 +179,14 @@ namespace patch {
                 10000000 c1e902             shr     ecx,02
                 10000000 c3                 ret
                 */
-                auto& cursor = GLOBAL::executable_memory_cursor;
 
                 static const char code_put[] = {
                     "\x03\xf8"                 // add     edi,eax
-                    "\x8b\x44\x24\x14"         // mov     eax,dword ptr [esp+14] ; select_id
                     "\x52"                     // push    edx
                     "\x51"                     // push    ecx
                     "\x56"                     // push    esi
                     "\x57"                     // push    edi
-                    "\x50"                     // push    eax
+                    "\xff\x74\x24\x24"         // push    dword ptr [esp+24] ; select_id
                     "\xe8XXXX"                 // call    new func
                     "\x83\xc4\x10"             // add     esp,10
                     "\x5a"                     // pop     edx
@@ -202,7 +200,7 @@ namespace patch {
                 h.replaceNearJmp(1, cursor);
 
                 memcpy(cursor, code_put, sizeof(code_put) - 1);
-                store_i32(cursor + 12, (int)&change_any_exdata_set_undo - ((int)cursor + 16));
+                store_i32(cursor + 11, (int)&change_any_exdata_set_undo - ((int)cursor + 15));
                 cursor += sizeof(code_put) - 1;
 
             }
@@ -246,7 +244,6 @@ namespace patch {
 
             // グループ化されたオブジェクトの中間点を分割した場合にグループ化IDを正しく戻せなくなるのを修正
             {
-                auto& cursor = GLOBAL::executable_memory_cursor;
                 /*
                     1003fc72 898abc040000       mov     dword ptr [edx+000004bc],ecx
                     ↓
@@ -278,6 +275,43 @@ namespace patch {
                 store_i32(cursor, '\x04\x00\x00\xc3'); cursor += 4;
             }
 
+            // 動画ファイル合成のコンボボックスを変更してもUndoデータが生成されない
+            {
+                /*
+                    1000687c 0f840af9ffff       jz      1000618c
+                    ↓
+                    1000687c 90                 nop
+                    1000687d e9XxXxXxXx         jmp     cursor
+
+                    10000000 0f84XxXxXxXx       jz      ee+618c
+                    10000000 50                 push    eax
+                    10000000 8b5664             mov     edx,dword ptr [esi+64]
+                    10000000 6a00               push    +00
+                    10000000 ffb6e4000000       push    dword ptr [esi+000000e4]
+                    10000000 ff9280000000       call    dword ptr [edx+00000080]
+                    10000000 83c408             add     esp,+08
+                    10000000 58                 pop     eax
+                    10000000 e9XxXxXxXx         jmp     ee+6882
+                */
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x687c, 6);
+                h.store_i16(0, '\x90\xe9'); // nop; jmp;
+                h.replaceNearJmp(2, cursor);
+
+                store_i16(cursor, '\x0f\x84'); cursor += 2; // jz
+                store_i32(cursor, GLOBAL::exedit_base + 0x618c - (uint32_t)(cursor + 4)); cursor += 4;
+                static const char code_put[] = {
+                    "\x50"                     // push    eax
+                    "\x8b\x56\x64"             // mov     edx,dword ptr [esi+64]
+                    "\x6a\x00"                 // push    +00
+                    "\xff\xb6\xe4\x00\x00\x00" // push    dword ptr [esi+000000e4]
+                    "\xff\x92\x80\x00\x00\x00" // call    dword ptr [edx+00000080]
+                    "\x83\xc4\x08"             // add     esp,+08
+                    "\x58"                     // pop     eax
+                    "\xe9"                     // jmp     ee+6882
+                };
+                memcpy(cursor, code_put, sizeof(code_put) - 1); cursor += sizeof(code_put) - 1;
+                store_i32(cursor, GLOBAL::exedit_base + 0x6882 - (uint32_t)(cursor + 4)); cursor += 4;
+            }
 
             // 部分フィルタのマスクの種類を変更してもUndoデータが生成されない
             ReplaceNearJmp(GLOBAL::exedit_base + 0x06e2b5, &efDraw_func_WndProc_wrap_06e2b4);

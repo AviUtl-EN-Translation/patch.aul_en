@@ -38,6 +38,8 @@ namespace patch {
         inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした。\nファイル名やフォルダ名に使用できない文字が含まれている可能性があります";
         static int __stdcall MessageBoxA_1(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_2(LPCSTR path, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+        static int __stdcall MessageBoxA_exo(HWND hWnd, LPCSTR lpText, LPCSTR path);
+        static int __cdecl MessageBoxA_exa(LPCSTR path);
 
         bool enabled = true;
         bool enabled_i;
@@ -47,6 +49,8 @@ namespace patch {
             enabled_i = enabled;
 
             if (!enabled_i)return;
+
+            auto& cursor = GLOBAL::executable_memory_cursor;
 
             { // audio & movie
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x00522b, 6);
@@ -71,6 +75,49 @@ namespace patch {
                 h.store_i32(0, '\x8d\x44\x24\x24'); // lea  eax,dword ptr [esp+24]
                 h.store_i32(4, '\x50\x90\xe8\x00'); // push eax, nop, call (rel32)
                 h.replaceNearJmp(7, &MessageBoxA_2);
+            }
+
+            { // exo
+                /*
+                    10029238 6830200400         push    0x42030
+                    1002923d 68e0d80910         push    "拡張編集"
+                    10029242 68bc460a10         push    "ファイルの読み込みに失敗しました"
+                    10029247 53                 push    ebx ; 0
+                    10029248 ff1520a30910       call    dword ptr [USER32.MessageBoxA]
+                    ↓
+                    10029238 ffb42494000000     push    dword ptr [esp+00000094] ; path
+                    1002923f 0f1f00             nop
+                    10029242 68bc460a10         push    "ファイルの読み込みに失敗しました"
+                    10029247 53                 push    ebx ; 0
+                    10029248 90                 nop
+                    10029249 e8XxXxXxXx         call    newfunc
+                */
+                constexpr int vp_begin = 0x29238;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x2924e - vp_begin);
+                h.store_i32(0x29238 - vp_begin, '\xff\xb4\x24\x94');
+                h.store_i16(0x2923c - vp_begin, '\x00\x00');
+                h.store_i32(0x2923e - vp_begin, '\x00\x0f\x1f\x00');
+                h.store_i16(0x29248 - vp_begin, '\x90\xe8');
+                h.replaceNearJmp(0x2924a - vp_begin, &MessageBoxA_exo);
+            }
+            { // exa
+                /*
+                    1004dbb3 0f8ce2000000       jl      1004dc9b
+
+                    1004dc9b 33c0               xor     eax,eax
+                    1004dc9d 5e                 pop     esi
+                    1004dc9e c3                 ret
+
+                    ↓
+                    1004dbb3 0f8cXxXxXxXx       jl      cursor
+
+                    10000000 5e                 pop     esi
+                    10000000 e9XxXxXxXx         jmp     newfunc
+                */
+                OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x4dbb5, 4).replaceNearJmp(0, cursor);
+                store_i16(cursor, '\x5e\xe9'); cursor += 2;
+                store_i32(cursor, (int)&MessageBoxA_exa - (int)cursor - 4); cursor += 4;
+            
             }
         }
 

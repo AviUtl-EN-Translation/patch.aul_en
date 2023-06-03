@@ -30,11 +30,18 @@ namespace patch {
 		}
 		return ret;
 	}
-	int __stdcall failed_file_drop_t::MessageBoxA_wrap(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType) {
+	void __stdcall failed_file_drop_t::MessageBoxA_drop(char* path) {
+		if (flag) return;
+
+		LPCSTR lpCaption = reinterpret_cast<char*(__cdecl*)(char*)>(GLOBAL::exedit_base + OFS::ExEdit::extract_extension)(path);
+		LPCSTR lpText;
 		if (!lstrcmpA(lpCaption, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_dot_aup)) || !lstrcmpA(lpCaption, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_dot_exedit_backup))) {
 			lpText = (LPCSTR)str_failed_pfdrop_msg;
+		} else {
+			lpText = (LPCSTR)str_failed_drop_msg;
 		}
-		return MessageBoxA(hWnd, lpText, lpCaption, uType);
+		HWND hWnd = *(HWND*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd);
+		MessageBoxA(hWnd, lpText, lpCaption, MB_TOPMOST | MB_ICONWARNING | MB_TASKMODAL);
 	}
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_FAILED_FILE_DROP

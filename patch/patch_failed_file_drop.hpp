@@ -36,7 +36,7 @@ namespace patch {
         static char __stdcall init_flag();
         inline static int flag;
         static int __stdcall lstrcmpiA_wrap3c235(LPCSTR lpString1, LPCSTR lpString2);
-        static int __stdcall MessageBoxA_wrap(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+        static void __stdcall MessageBoxA_drop(char* path);
 
         bool enabled = true;
         bool enabled_i;
@@ -78,34 +78,22 @@ namespace patch {
                      ↓
                      1003c452 0f84XxXxXxXx        jz      executable_memory_cursor
                 */
-
+                /*
                 static const char code_put[] =
-                    "\x8b\x0dXXXX"                //  mov     ecx, [this::flag]
-                    "\x85\xc9"                    //  test    ecx, ecx
-                    "\x75\x26"                    //  jnz     skip +26
                     "\x8d\x8c\x24\xd0\x00\x00\x00"//  lea     ecx,dword ptr [esp+000000d0]
                     "\x51"                        //  push    ecx
-                    "\xe8XXXX"                    //  call    1004e1d0 ; ExtractExtension
-                    "\x83\xc4\x04"                //  add     esp,+04
-                    "\x68\x30\x20\x04\x00"        //  push    0x42030
-                    "\x50"                        //  push    eax
-                    "\x68XXXX"                    //  push    &str_failed_drop_msg
-                    "\xa1XXXX"                    //  mov     eax,[exedit+exedit_hwnd]
-                    "\x50"                        //  push    eax
-                    "\xe8XXXX"                    //  call    dword ptr [MessageBoxA_wrap]
+                    "\xe8XXXX"                    //  call    MessageBoxA_drop
                     "\xe9"                        //  jmp     10043b4c
                     ;
+                */
 
-                memcpy(cursor, code_put, sizeof(code_put) - 1);
-                store_i32(cursor + 2, &flag);
-                store_i32(cursor + 19, GLOBAL::exedit_base + 0x04e1d0 - (int)cursor - 23);
-                store_i32(cursor + 33, &str_failed_drop_msg);
-                store_i32(cursor + 38, GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd);
-                store_i32(cursor + 44, (int)&MessageBoxA_wrap - (int)cursor - 48);
-                cursor += sizeof(code_put) - 1 + 4;
-                store_i32(cursor - 4, GLOBAL::exedit_base + 0x043b4c - (int)cursor);
+                store_i32(cursor, '\x8d\x8c\x24\xd0'); cursor += 4;
+                store_i32(cursor, '\x00\x00\x00\x51'); cursor += 4;
+                store_i8(cursor, '\xe8'); cursor++;
+                store_i32(cursor, (int)&MessageBoxA_drop - (int)cursor - 4); cursor += 4;
+                store_i8(cursor, '\xe9'); cursor++;
+                store_i32(cursor, GLOBAL::exedit_base + 0x043b4c - (int)cursor - 4); cursor += 4;
 
-                // lstrcmpA 0x9a1c0
             }
         }
 
