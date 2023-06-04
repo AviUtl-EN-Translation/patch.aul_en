@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_26
+patch.aul r43_ss_27
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -142,9 +142,11 @@ https://scrapbox.io/nazosauna/patch.aul
         ・エッジ抽出のチェックボックス切り替え
         ・クロマキー・カラーキー・特定色域変換の色の取得
         ・フィルタ効果の削除（右クリックメニュー）
+        ・上のオブジェクトでクリッピング・カメラ制御の対象にする（右クリックメニュー・ボタン）の切り替え
     ・Ctrlを押しながらトラック数値をクリックして動かした後に選択状態が解除されるのを修正
     ・操作によっては選択状態が解除されないままになるので拡張編集ウィンドウをアクティブにした時に判定するように変更
     ・新規プロジェクト作成時に小数点有りのフレームレート値を最適化する（フレームレートによってテキストが表示されなくなるのを修正）
+    ・違うバージョンのバックアップファイルを開くのを試みることができるように変更
 
 
     追加
@@ -253,6 +255,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "aup_load" : boolean, ; 設定ダイアログ表示中のオブジェクトIDが異常値のaupを読み込むとエラーとなるのを対策 (既定値: true)
         "aup_scene_setting" : boolean, ; プロジェクトの保存/読み込み時にシーン設定の一部情報（グリッド設定など）が欠けるのを修正 (既定値: true)
         "aup_layer_setting" : boolean, ; プロジェクトの保存時、レイヤー情報を保存する基準を変える (既定値: true)
+        "load_exedit_backup" : boolean, ; 違うバージョンのバックアップファイルを開くのを試みることができるように変更 (既定値: true)
         "exo_aviutl_filter" : boolean, ; 拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある (既定値: true)
         "exo_sceneidx" : boolean, ; オブジェクトファイルの入出力で、シーン番号を正しく扱えない (既定値: true)
         "exo_trackparam" : boolean, ; オブジェクトファイルの入力で、トラックバー変化方法スクリプトの名前にASCII以外の文字が含まれているとパラメータを読み込めない (既定値: true)
@@ -345,7 +348,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_26" のような文字列が格納されている
+        例として "patch.aul r43_ss_27" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
