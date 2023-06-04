@@ -172,7 +172,7 @@ namespace patch {
             if (obj[select_idx].index_midpt_leader < 0 || obj[select_idx].index_midpt_leader == select_idx) {
                 if (((int)obj[select_idx].flag & 0x30000) == 0x10000) {
                     if (((int)obj[object_idx].flag & flag) != ((int)obj[select_idx].flag & flag)) {
-                        reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 0);
+                        reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 1);
                         *(int*)&obj[select_idx].flag ^= flag;
                         reinterpret_cast<void(__cdecl*)(int)>(GLOBAL::exedit_base + 0x36020)(select_idx);
                         reinterpret_cast<void(__cdecl*)(int)>(GLOBAL::exedit_base + 0x39490)(select_idx);
