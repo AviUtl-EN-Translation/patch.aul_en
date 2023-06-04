@@ -103,6 +103,7 @@ namespace OFS {
 		constexpr i32 yc_max_h = 0x1790c8;
 		constexpr i32 yc_vram_linesize = 0x158d10;
 		
+		constexpr i32 timeline_obj_click_mode = 0x177a24;
 
 		constexpr i32 exedit_buffer_size = 0x177a28;
 		constexpr i32 exedit_max_h_add8 = 0x135c64;

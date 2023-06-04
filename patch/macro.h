@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_26"
+#define PATCH_VERSION_STR "r43_ss_27"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -111,6 +111,7 @@
 #define PATCH_SWITCH_AUP_LOAD aup_load
 #define PATCH_SWITCH_AUP_LAYER_SETTING aup_layer_setting
 #define PATCH_SWITCH_AUP_SCENE_SETTING aup_scene_setting
+#define PATCH_SWITCH_LOAD_EXEDIT_BACKUP load_exedit_backup
 #define PATCH_SWITCH_EXO_AVIUTL_FILTER exo_aviutl_filter
 // #define PATCH_SWITCH_EXO_TRACK_MINUSVAL exo_track_minusval // str_minusval実装により不要に
 #define PATCH_SWITCH_EXO_SCENEIDX exo_sceneidx

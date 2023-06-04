@@ -136,6 +136,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_AUP_SCENE_SETTING
 	patch::aup_scene_setting.init();
 #endif
+#ifdef PATCH_SWITCH_LOAD_EXEDIT_BACKUP
+	patch::load_exedit_backup.init();
+#endif
 #ifdef PATCH_SWITCH_EXO_AVIUTL_FILTER
 	patch::exo_aviutlfilter.init();
 #endif
@@ -546,8 +549,8 @@ BOOL __cdecl init_t::func_WndProcWrap(HWND hwnd, UINT message, WPARAM wparam, LP
 				PostMessageA(hwnd, PATCH_EXEDIT_EXCOMMAND, lparam, 0);
 				return FALSE;
 			#ifdef PATCH_SWITCH_ANY_OBJ
-			case PATCH_EXEDIT_EXCOMMAND_DESELECT_OBJECT_IF:
-				patch::any_obj_t::deselect_object_if();
+			case PATCH_EXEDIT_EXCOMMAND_DESELECT_OBJECT_TL_ACTIVATE:
+				patch::any_obj_t::deselect_object_tl_activate();
 				return FALSE;
 			#endif
 			}

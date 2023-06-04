@@ -59,6 +59,7 @@
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
     <ClInclude Include="patch_keyconfig.hpp" />
+    <ClInclude Include="patch_load_exedit_backup.hpp" />
     <ClInclude Include="patch_lua_setanchor.hpp" />
     <ClInclude Include="patch_obj_blur.hpp" />
     <ClInclude Include="patch_obj_create_figure.hpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
+    <ClCompile Include="patch_load_exedit_backup.cpp" />
     <ClCompile Include="patch_obj_glow.cpp" />
     <ClCompile Include="patch_obj_portionfilter.cpp" />
     <ClCompile Include="patch_obj_text.cpp" />

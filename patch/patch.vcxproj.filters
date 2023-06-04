@@ -386,6 +386,9 @@
     <ClInclude Include="patch_sat_rgb_space.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_load_exedit_backup.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -581,6 +584,9 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_obj_portionfilter.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_load_exedit_backup.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

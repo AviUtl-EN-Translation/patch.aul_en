@@ -43,7 +43,7 @@ namespace patch {
 		inline static void(__cdecl* update_any_exdata)(ExEdit::ObjectFilterIndex, char*);
 		inline static void(__cdecl* deselect_object)();
 
-		static void post_deselect_object_if();
+		static void post_deselect_object_tl_activate();
 		static void __cdecl update_any_exdata_use_idx(ExEdit::Filter* efp, int idx);
 		static char* __cdecl disp_extension_image_file_wrap(ExEdit::Filter* efp, char* path);
 		static void __cdecl calc_milli_second_movie_file_wrap(ExEdit::Filter* efp, void* exdata);
@@ -91,6 +91,8 @@ namespace patch {
 		static void __stdcall mov_status2_0_specialcolorconv(ExEdit::Filter* efp);
 		static void __stdcall mov_status_1_specialcolorconv(ExEdit::Filter* efp);
 		static void __stdcall mov_status2_1_specialcolorconv(ExEdit::Filter* efp);
+		static void __cdecl update_obj_data_before_clipping_wrap(int object_idx);
+		static void __cdecl update_obj_data_camera_target_wrap(int object_idx);
 		static void __cdecl delete_filter_effect_wrap(int object_idx, int filter_idx);
 
 		inline static BOOL script_dlg_ok_cancel;
@@ -103,6 +105,7 @@ namespace patch {
 
 	public:
 		static void deselect_object_if();
+		static void deselect_object_tl_activate();
 		static void __cdecl update_any_range(ExEdit::Filter* efp);
 
 		void init() {
@@ -686,14 +689,19 @@ namespace patch {
 				h.replaceNearJmp(0xe1ec - vp_begin, &mov_eax_1_use0_e0_wrap);
 			}
 
-
+			{ // カメラ制御の対象・上のオブジェクトでクリッピング の切り替え
+				constexpr int vp_begin = 0x43562;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x435c7 - vp_begin);
+				h.replaceNearJmp(0x43562 - vp_begin, &update_obj_data_camera_target_wrap);
+				h.replaceNearJmp(0x435c3 - vp_begin, &update_obj_data_before_clipping_wrap);
+			}
 			{ // フィルタ効果の削除
-				OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x41b44, 4).replaceNearJmp(0, &delete_filter_effect_wrap);
+				ReplaceNearJmp(GLOBAL::exedit_base + 0x41b44, &delete_filter_effect_wrap);
 			}
 
 			{ // トラックの数値の場所をクリックして動かしたときに選択が解除されないようにする
 				{ // Ctrlの状態にかかわらず解除されるようになっていたので変更
-					OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x3bcbe, 4).replaceNearJmp(0, &deselect_object_if);
+					ReplaceNearJmp(GLOBAL::exedit_base + 0x3bcbe, &deselect_object_if);
 				}
 				{ // 上記変更により解除がされなくなってしまうため
 					/* WM_KEYUPのみで判定しているところにWM_SYSKEYUPも加える
@@ -727,7 +735,7 @@ namespace patch {
 				OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x3b7fa, 4).replaceNearJmp(0, cursor);
 
 				store_i8(cursor, '\xe8'); cursor++;
-				store_i32(cursor, (int)&post_deselect_object_if - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, (int)&post_deselect_object_tl_activate - (int)cursor - 4); cursor += 4;
 				store_i8(cursor, '\xe9'); cursor++;
 				store_i32(cursor, GLOBAL::exedit_base + 0x43b4c - (int)cursor - 4); cursor += 4;
 				

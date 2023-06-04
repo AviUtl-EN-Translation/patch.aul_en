@@ -22,8 +22,16 @@ namespace patch {
             deselect_object();
         }
     }
-    void any_obj_t::post_deselect_object_if() {
-        PostMessageA(*(HWND*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd), PATCH_EXEDIT_EXCOMMAND, PATCH_EXEDIT_EXCOMMAND_ONE_DELAY, PATCH_EXEDIT_EXCOMMAND_DESELECT_OBJECT_IF);
+
+    void any_obj_t::deselect_object_tl_activate() {
+        int timeline_obj_click_mode = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::timeline_obj_click_mode);
+        HWND menuhwnd = FindWindowA("#32768", NULL);
+        if (timeline_obj_click_mode == 0 && (!menuhwnd || !IsWindowVisible(menuhwnd))) {
+            deselect_object_if();
+        }
+    }
+    void any_obj_t::post_deselect_object_tl_activate() {
+        PostMessageA(*(HWND*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_hwnd), PATCH_EXEDIT_EXCOMMAND, PATCH_EXEDIT_EXCOMMAND_ONE_DELAY, PATCH_EXEDIT_EXCOMMAND_DESELECT_OBJECT_TL_ACTIVATE);
     }
 
     void __cdecl any_obj_t::update_any_exdata_use_idx(ExEdit::Filter* efp, int idx) {
@@ -35,7 +43,6 @@ namespace patch {
         } *exdata_use = (exdata_use_fix*)efp->exdata_use;
         update_any_exdata(efp->processing, (char*)exdata_use[idx].name);
     }
-    
 
     int get_same_filter_idx(int dst_idx, int src_idx, int filter_idx) {
         if (src_idx == dst_idx) return -1;
@@ -144,6 +151,33 @@ namespace patch {
             if (0 <= leader_filter_idx) {
                 reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 0);
                 obj[select_idx].check_value[obj[select_idx].filter_param[leader_filter_idx].check_begin + check_id] = obj[SettingDialog_ObjIdx].check_value[obj[SettingDialog_ObjIdx].filter_param[filter_idx].check_begin + check_id];
+            }
+        }
+    }
+
+    void __cdecl update_any_object_flag(int object_idx, int flag) {
+        if (object_idx < 0) return;
+
+        int SelectingObjectNum = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
+        if (SelectingObjectNum <= 0) return;
+
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        if (0 <= obj[object_idx].index_midpt_leader) {
+            object_idx = obj[object_idx].index_midpt_leader;
+        }
+        int* SelectingObjectIdxArray = (int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
+
+        for (int i = 0; i < SelectingObjectNum; i++) {
+            int select_idx = SelectingObjectIdxArray[i];
+            if (obj[select_idx].index_midpt_leader < 0 || obj[select_idx].index_midpt_leader == select_idx) {
+                if (((int)obj[select_idx].flag & 0x30000) == 0x10000) {
+                    if (((int)obj[object_idx].flag & flag) != ((int)obj[select_idx].flag & flag)) {
+                        reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 0);
+                        *(int*)&obj[select_idx].flag ^= flag;
+                        reinterpret_cast<void(__cdecl*)(int)>(GLOBAL::exedit_base + 0x36020)(select_idx);
+                        reinterpret_cast<void(__cdecl*)(int)>(GLOBAL::exedit_base + 0x39490)(select_idx);
+                    }
+                }
             }
         }
     }
@@ -499,6 +533,19 @@ namespace patch {
         return 1;
     }
     */
+
+    void __cdecl  any_obj_t::update_obj_data_before_clipping_wrap(int object_idx) {
+        reinterpret_cast<void(__cdecl*)(int)>(GLOBAL::exedit_base + 0x36020)(object_idx);
+        if (GetKeyState(VK_CONTROL) < 0) { // グループ化オブジェクト単体で行えなくなるのがつらいため
+            update_any_object_flag(object_idx, 0x100);
+        }
+    }
+    void __cdecl  any_obj_t::update_obj_data_camera_target_wrap(int object_idx) {
+        reinterpret_cast<void(__cdecl*)(int)>(GLOBAL::exedit_base + 0x36020)(object_idx);
+        if (GetKeyState(VK_CONTROL) < 0) { // グループ化オブジェクト単体で行えなくなるのがつらいため
+            update_any_object_flag(object_idx, 0x200);
+        }
+    }
 
     void __cdecl any_obj_t::delete_filter_effect_wrap(int object_idx, int filter_idx) {
         auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);

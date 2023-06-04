@@ -133,7 +133,7 @@ namespace patch {
             NextObjectIdxArray = reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::NextObjectIdxArray);
             layer_setting_ofsptr_ptr = reinterpret_cast<decltype(layer_setting_ofsptr_ptr)>(GLOBAL::exedit_base + 0x0a4058);
             exdata_buffer_ptr = reinterpret_cast<void**>(GLOBAL::exedit_base + 0x1e0fa8);
-            timeline_obj_click_mode_ptr = reinterpret_cast<int*>(GLOBAL::exedit_base + 0x177a24);
+            timeline_obj_click_mode_ptr = reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::timeline_obj_click_mode);
             ObjDlg_ObjectIndex_ptr = reinterpret_cast<int*>(GLOBAL::exedit_base + 0x177a10);
             timeline_edit_both_adjacent_ptr = reinterpret_cast<int*>(GLOBAL::exedit_base + 0x14ea00);
             scene_setting = reinterpret_cast<decltype(scene_setting)>(GLOBAL::exedit_base + 0x177a50);
