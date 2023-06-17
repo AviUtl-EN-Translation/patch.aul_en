@@ -492,20 +492,24 @@ namespace patch::fast {
 			font->border = size;
 			int range = 0;
 			int* circle_w = font->circle_w;
-			for (int i = -size; i <= size; i++) {
-				int cw = (int)(sqrt((double)(size * size - i * i)) + 0.5);
-				*circle_w = cw;
-				range += cw;
+			int* circle_we = circle_w + size * 2;
+			int cw;
+			for (int i = size; 0 <= i; i--) {
+				cw = (int)(sqrt((double)(size * size - i * i)) + 0.5);
+				*circle_we = *circle_w = cw;
+				range += cw * 2;
 				circle_w++;
+				circle_we--;
 			}
-			double border_size;
-			if (type & 1) {
-				border_size = (double)range * 0.1;
-			} else {
-				border_size = (double)range * 0.25;
-			}
-			font->alpha_rate = (int)((4096.0 / (border_size + 1.0)) * (double)size * 0.4);
+			range -= cw;
+			pre_range = range;
 		}
+		double range = pre_range;
+		if ((type & 1) == 0) {
+			range *= 2.5;
+		}
+		font->alpha_rate = (int)(16384 / (range + 10) * (double)size);
+
 		font->src = src;
 		font->dst = dst;
 		font->dst_ox = ofsx;
@@ -518,28 +522,28 @@ namespace patch::fast {
 
 		if (flag & 0x20000) {
 			font->src_line = gmBlackBoxX;
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_create_mask1, flag);
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_create_mask2, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_create_mask1, mtflag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_create_mask2, mtflag);
 
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 			if (4 < type) {
-				do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_only, flag);
+				do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border_only, mtflag);
 				return;
 			}
 #endif
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&short_font_border, mtflag);
 		} else {
 			font->src_line = gmBlackBoxX + 3U & 0xfffc;
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_create_mask1, flag);
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_create_mask2, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_create_mask1, mtflag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_create_mask2, mtflag);
 
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 			if (4 < type) {
-				do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_only, flag);
+				do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border_only, mtflag);
 				return;
 			}
 #endif
-			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border, flag);
+			do_multi_thread_func((AviUtl::MultiThreadFunc*)&byte_font_border, mtflag);
 		}
 
 

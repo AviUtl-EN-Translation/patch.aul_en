@@ -167,6 +167,10 @@ namespace OFS {
 		constexpr i32 efLensBlur_var_ptr = 0x11ec5c;
 		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
+		constexpr i32 efAnimationEffect_ptr = 0x09d2b8;
+		constexpr i32 efCustomObject_ptr = 0x09d3e0;
+		constexpr i32 efCameraEffect_ptr = 0x09d508;
+		constexpr i32 efSceneChange_ptr = 0x0b7f80;
 
 		constexpr i32 efPortionFilter = 0x0a92c0;
 		constexpr i32 efWaveform = 0x0ba300;

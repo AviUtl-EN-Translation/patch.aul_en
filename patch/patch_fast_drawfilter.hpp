@@ -30,7 +30,8 @@ namespace patch::fast {
 	// 標準描画や拡張描画の無駄を減らす
 	// flag の移植部分
 	// X,Y,Z のトラック計算部分
-	// RX,RY,RZ のトラック計算部分
+	// 回転X,回転Y,回転Z のトラック計算部分
+	// 拡大率 のトラック計算部分
 	inline class DrawFilter_t {
 
 		bool enabled = true;
@@ -87,9 +88,16 @@ namespace patch::fast {
 				"\x03\xc2"                 // add     eax,edx
 				"\x0f\x1f\x40"//\x00"      // nop
 			;
+			static const char code_put_zoom[] =
+				"\xb9\xad\x8b\xdb\x68"     // mov     ecx,68db8bad
+				"\xc1\xe0\x0c"             // shl     eax,0c
+				"\xf7\xe9"                 // imul    ecx
+				"\xc1\xfa\x08"             // sar     edx,08
+				"\x8b\xc2"                 // mov     eax,edx
+			;
 			{
 				constexpr int vp_begin = 0x19426;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x1959b - vp_begin);
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x195d3 - vp_begin);
 				{ // X,Y,Z
 					/*
 						x = track[xid];
@@ -106,9 +114,8 @@ namespace patch::fast {
 					*/
 					static const char code_put[] =
 						"\x85\xc0"                    // test    eax,eax
-						"\x75\x07"                    // jnz     skip,07
-						"\xeb\x2a"                    // jmp     10019456
-						"\x90\x90\x90\x90\x90"        // nop
+						"\x74\x2c"                    // jz      10019456
+						"\x0f\x1f\x80\x00\x00\x00\x00"// nop
 						"\x89\x94\x24\x94\x00\x00\x00"// mov     dword ptr [esp+00000094],edx
 						"\x89\x44\x24\x40"            // mov     dword ptr [esp+40],eax
 					;
@@ -135,8 +142,70 @@ namespace patch::fast {
 						memcpy(reinterpret_cast<void*>(h.address(0x19506 - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
 					}
 				}
+				{ // 拡大率
+					/*
+						zoom = (int)((double)track_zoom * 6.5536);
+						↓
+						zoom = (track_zoom << 12) / 625;
+					*/
+					memcpy(reinterpret_cast<void*>(h.address(0x195c4 - vp_begin)), code_put_zoom, sizeof(code_put_zoom) - 1);
+				}
 			}
-			{ // グループ制御処理 X
+			{ // get_geometry_track_data(0x18640)
+				constexpr int vp_begin = 0x186bb;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x18826 - vp_begin);
+				{ // X,Y,Z
+					static const char code_put[] =
+						"\x85\xc0"                    // test    eax,eax
+						"\x74\x22"                    // jz      skip,22
+						"\x0f\x1f\x80\x00\x00\x00\x00"// nop
+						"\x89\x44\x24\x10"            // mov     dword ptr [esp+10],eax
+						"\x89\x4c\x24\x14"            // mov     dword ptr [esp+14],ecx
+						;
+					for (int i = 0; i < 123; i += 61) { // 186bb 186f8 18735
+						memcpy(reinterpret_cast<void*>(h.address(i)), code_put, sizeof(code_put) - 1);
+					}
+					h.store_i8(0x186d1 - vp_begin, '\x10');
+					h.store_i8(0x186db - vp_begin, '\x14');
+				}
+				{ // 回転
+					for (int i = 0; i < 105; i += 52) { // 18771 187a5 187d9
+						memcpy(reinterpret_cast<void*>(h.address(0x18771 - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
+					}
+				}
+				{ // 拡大率
+					memcpy(reinterpret_cast<void*>(h.address(0x18817 - vp_begin)), code_put_zoom, sizeof(code_put_zoom) - 1);
+				}
+			}
+			{ // ModifyTrackToLua(0x188d0)
+				constexpr int vp_begin = 0x18959;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x18ac3 - vp_begin);
+				{ // X,Y,Z
+					static const char code_put[] =
+						"\x85\xc0"                    // test    eax,eax
+						"\x74\x22"                    // jz      skip,22
+						"\x0f\x1f\x80\x00\x00\x00\x00"// nop
+						"\x89\x4c\x24\x10"            // mov     dword ptr [esp+10],ecx
+						"\x89\x44\x24\x0c"            // mov     dword ptr [esp+0c],eax
+						;
+					h.store_i8(0x1896f - vp_begin, '\x0c');
+					h.store_i8(0x18979 - vp_begin, '\x10');
+					memcpy(reinterpret_cast<void*>(h.address(0x18959 - vp_begin)), code_put, sizeof(code_put) - 1);
+					memcpy(reinterpret_cast<void*>(h.address(0x18995 - vp_begin)), code_put, sizeof(code_put) - 1);
+					memcpy(reinterpret_cast<void*>(h.address(0x189d2 - vp_begin)), code_put, sizeof(code_put) - 1);
+				}
+				{ // 回転
+					for (int i = 0; i < 105; i += 52) { // 18a0e 18a42 18a76
+						memcpy(reinterpret_cast<void*>(h.address(0x18a0e - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
+					}
+				}
+				{ // 拡大率
+					memcpy(reinterpret_cast<void*>(h.address(0x18ab4 - vp_begin)), code_put_zoom, sizeof(code_put_zoom) - 1);
+				}
+
+			}
+
+			{ // グループ制御処理
 				constexpr int vp_begin = 0x5a16f;
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x5a461 - vp_begin);
 				{ // X
@@ -170,12 +239,15 @@ namespace patch::fast {
 					memcpy(reinterpret_cast<void*>(h.address(0x5a1ab - vp_begin)), code_put, sizeof(code_put) - 1);
 					memcpy(reinterpret_cast<void*>(h.address(0x5a1d3 - vp_begin)), code_put, sizeof(code_put) - 1);
 				}
-
 				{ // 回転、 入れ子 回転
 					for (int i = 0; i < 100; i += 47) { // 5a22f 5a25e 5a28d  5a3e6 5a415 5a444
 						memcpy(reinterpret_cast<void*>(h.address(0x5a22f - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
 						memcpy(reinterpret_cast<void*>(h.address(0x5a3e6 - vp_begin + i)), code_put_rot, sizeof(code_put_rot) - 1);
 					}
+				}
+				{ // 拡大率、 入れ子 拡大率
+					memcpy(reinterpret_cast<void*>(h.address(0x5a209 - vp_begin)), code_put_zoom, sizeof(code_put_zoom) - 1);
+					memcpy(reinterpret_cast<void*>(h.address(0x5a3ba - vp_begin)), code_put_zoom, sizeof(code_put_zoom) - 1);
 				}
 
 				{ // 入れ子 XYZ

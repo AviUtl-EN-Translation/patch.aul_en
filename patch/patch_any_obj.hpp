@@ -35,7 +35,7 @@ namespace patch {
 	   音声波形表示の参照を変える時に中間点があれば再生位置などを維持するように変更（音声波形以外で初めから実装されている機能）
 	   音声波形表示にて元と同じTypeへの切り替えを許可するように変更(複数切り替えのためと、Typeの役割はプリセットなので出来る方が良いはず)
 	*/
-
+	// スクリプト系のトラックバー・チェックを切り替えた時に同スクリプトでなければまとめて変更しないようにする
 	// Ctrlを押しながらトラック数値をクリックして動かした後に選択状態が解除されるのを修正
 	// 操作によっては選択状態が解除されないままになるので拡張編集ウィンドウをアクティブにした時に判定するように変更
 
@@ -63,6 +63,8 @@ namespace patch {
 		static BOOL __cdecl disp_1st_dlg_script_wrap(HWND hwnd, ExEdit::Filter* efp, void* exdata, short type, char* name);
 		static BOOL __cdecl update_script_param_wrap(ExEdit::Filter* efp, char* name, char* valuestr);
 		static void __cdecl update_dlg_mask_wrap(ExEdit::Filter* efp, char* name, int sw_param);
+		static int __cdecl get_same_track_id_wrap(int dst_idx, int src_idx, int track_idx);
+		static int __cdecl get_same_check_id_wrap(int dst_idx, int src_idx, int check_idx);
 		static void __cdecl update_dlg_displacementmap_wrap(ExEdit::Filter* efp, void* exdata, char* name, int sw_param, int edi, int esi, int ebp, int ebx, tagRECT rect, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp);
 		static int __cdecl mov_eax_1_portion_filter_wrap();
 		static void __cdecl update_dlg_chromakey_wrap(ExEdit::Filter* efp, int* exdata);
@@ -373,7 +375,7 @@ namespace patch {
 				h.store_i16(0x22d5e - vp_begin, '\x00\xc3');
 			}
 
-			{ // アニメーション効果・カスタムオブジェクト・カメラ効果 のスクリプト変更
+			{ // アニメーション効果・カスタムオブジェクト・カメラ効果・シーンチェンジ のスクリプト変更
 				{ // アニメーション効果・カスタムオブジェクト・カメラ効果
 					constexpr int vp_begin = 0x3e0b;
 					OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x3f12 - vp_begin);
@@ -472,6 +474,14 @@ namespace patch {
 
 					h.replaceNearJmp(0x1fee - vp_begin, &update_script_param_wrap);
 				}
+			}
+			{ // アニメーション効果・カスタムオブジェクト・カメラ効果・シーンチェンジ のトラックバー・チェックを切り替えた時に同スクリプトでなければ除外されるように変更
+				constexpr int vp_begin = 0x40ea4;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x4111a - vp_begin);
+				h.replaceNearJmp(0x40ea4 - vp_begin, &get_same_track_id_wrap);
+				h.replaceNearJmp(0x40f22 - vp_begin, &get_same_track_id_wrap);
+				h.replaceNearJmp(0x40fa8 - vp_begin, &get_same_track_id_wrap);
+				h.replaceNearJmp(0x41116 - vp_begin, &get_same_check_id_wrap);
 			}
 
 			{ // マスク のマスクの種類
@@ -695,6 +705,7 @@ namespace patch {
 				h.replaceNearJmp(0x43562 - vp_begin, &update_obj_data_camera_target_wrap);
 				h.replaceNearJmp(0x435c3 - vp_begin, &update_obj_data_before_clipping_wrap);
 			}
+
 			{ // フィルタ効果の削除
 				ReplaceNearJmp(GLOBAL::exedit_base + 0x41b44, &delete_filter_effect_wrap);
 			}

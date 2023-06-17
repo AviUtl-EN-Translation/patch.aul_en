@@ -61,12 +61,7 @@ namespace patch {
 
         auto LoadedFilterTable = (ExEdit::Filter**)(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterTable);
         if (has_flag(LoadedFilterTable[filter_param_id]->flag, ExEdit::Filter::Flag::Output)) {
-            ExEdit::Object::FilterParam* filter_param = obj[dst_idx].filter_param;
-            int i;
-            for (i = 1; i < 12 && filter_param->id < 0; i++) {
-                filter_param++;
-            }
-            filter_idx = i - 1;
+            filter_idx = reinterpret_cast<int(__cdecl*)(int)>(GLOBAL::exedit_base + OFS::ExEdit::get_last_filter_idx)(dst_idx);
         }
         int id = obj[dst_idx].filter_param[filter_idx].id;
         if (0 <= id && filter_param_id == id) return filter_idx;
@@ -429,6 +424,91 @@ namespace patch {
         script_dlg_ok_cancel = FALSE;
         return TRUE;
     }
+    
+    int __cdecl any_obj_t::get_same_track_id_wrap(int dst_idx, int src_idx, int track_idx) {
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        auto LoadedFilterTable = (ExEdit::Filter**)(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterTable);
+
+        auto filter_param = obj[src_idx].filter_param;
+        int src_filter_idx;
+        for (src_filter_idx = 0; src_filter_idx < 12; src_filter_idx++) {
+            if (filter_param->id < 0) return -1;
+            if (track_idx < LoadedFilterTable[filter_param->id]->track_n) break;
+            track_idx -= LoadedFilterTable[filter_param->id]->track_n;
+            filter_param++;
+        }
+        if (12 <= src_filter_idx) return -1;
+        
+        int dst_filter_idx;
+        if (has_flag(LoadedFilterTable[obj[src_idx].filter_param[src_filter_idx].id]->flag, ExEdit::Filter::Flag::Output)) {
+            dst_filter_idx = reinterpret_cast<int(__cdecl*)(int)>(GLOBAL::exedit_base +OFS::ExEdit::get_last_filter_idx)(dst_idx);
+        } else {
+            dst_filter_idx = src_filter_idx;
+        }
+        int filter_id = obj[dst_idx].filter_param[dst_filter_idx].id;
+        if (filter_id < 0) return -1;
+        if (LoadedFilterTable[filter_id]->track_n < track_idx) return -1;
+        // if (((int)LoadedFilterTable[obj[dst_idx].filter_param[dst_filter_idx].id]->flag ^ (int)LoadedFilterTable[obj[src_idx].filter_param[src_filter_idx].id]->flag) & 0x38) return -1;
+        // if (lstrcmpA(LoadedFilterTable[obj[dst_idx].filter_param[dst_filter_idx].id]->name, LoadedFilterTable[obj[src_idx].filter_param[src_filter_idx].id]->name)) return -1;
+        
+        if (filter_id != obj[src_idx].filter_param[src_filter_idx].id) return -1;
+
+        switch ((int)LoadedFilterTable[filter_id] - GLOBAL::exedit_base) {
+        case OFS::ExEdit::efAnimationEffect_ptr:
+        case OFS::ExEdit::efCustomObject_ptr:
+        case OFS::ExEdit::efCameraEffect_ptr:
+        case OFS::ExEdit::efSceneChange_ptr:
+            auto dst_exdata = reinterpret_cast<ExEdit::Exdata::efAnimationEffect*(__cdecl*)(ExEdit::ObjectFilterIndex)>(GLOBAL::exedit_base + OFS::ExEdit::get_exdata_ptr)((ExEdit::ObjectFilterIndex)((dst_filter_idx << 16) | dst_idx + 1));
+            auto src_exdata = reinterpret_cast<ExEdit::Exdata::efAnimationEffect*(__cdecl*)(ExEdit::ObjectFilterIndex)>(GLOBAL::exedit_base + OFS::ExEdit::get_exdata_ptr)((ExEdit::ObjectFilterIndex)((src_filter_idx << 16) | src_idx + 1));
+            if (dst_exdata->type != src_exdata->type || lstrcmpA(dst_exdata->name, src_exdata->name)) return -1;
+        }
+
+        return obj[dst_idx].filter_param[dst_filter_idx].track_begin + track_idx;
+    }
+    int __cdecl any_obj_t::get_same_check_id_wrap(int dst_idx, int src_idx, int check_idx) {
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        auto LoadedFilterTable = (ExEdit::Filter**)(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterTable);
+
+        auto filter_param = obj[src_idx].filter_param;
+        int src_filter_idx;
+        for (src_filter_idx = 0; src_filter_idx < 12; src_filter_idx++) {
+            if (filter_param->id < 0) return -1;
+            if (check_idx < LoadedFilterTable[filter_param->id]->check_n) break;
+            check_idx -= LoadedFilterTable[filter_param->id]->check_n;
+            filter_param++;
+        }
+        if (12 <= src_filter_idx) return -1;
+
+        int dst_filter_idx;
+        if (has_flag(LoadedFilterTable[obj[src_idx].filter_param[src_filter_idx].id]->flag, ExEdit::Filter::Flag::Output)) {
+            dst_filter_idx = reinterpret_cast<int(__cdecl*)(int)>(GLOBAL::exedit_base + OFS::ExEdit::get_last_filter_idx)(dst_idx);
+        } else {
+            dst_filter_idx = src_filter_idx;
+        }
+        int filter_id = obj[dst_idx].filter_param[dst_filter_idx].id;
+        if (filter_id < 0) return -1;
+        if (LoadedFilterTable[filter_id]->check_n < check_idx) return -1;
+        // if (((int)LoadedFilterTable[obj[dst_idx].filter_param[dst_filter_idx].id]->flag ^ (int)LoadedFilterTable[obj[src_idx].filter_param[src_filter_idx].id]->flag) & 0x38) return -1;
+        // if (lstrcmpA(LoadedFilterTable[obj[dst_idx].filter_param[dst_filter_idx].id]->name, LoadedFilterTable[obj[src_idx].filter_param[src_filter_idx].id]->name)) return -1;
+
+        if (filter_id != obj[src_idx].filter_param[src_filter_idx].id) return -1;
+
+        switch ((int)LoadedFilterTable[filter_id] - GLOBAL::exedit_base) {
+        case OFS::ExEdit::efSceneChange_ptr:
+            if (check_idx == 0) break; // シーンチェンジの"反転"は別スクリプトでも有効にしておく
+            [[fallthrough]];
+        case OFS::ExEdit::efAnimationEffect_ptr:
+        case OFS::ExEdit::efCustomObject_ptr:
+        case OFS::ExEdit::efCameraEffect_ptr:
+            auto dst_exdata = reinterpret_cast<ExEdit::Exdata::efAnimationEffect*(__cdecl*)(ExEdit::ObjectFilterIndex)>(GLOBAL::exedit_base + OFS::ExEdit::get_exdata_ptr)((ExEdit::ObjectFilterIndex)((dst_filter_idx << 16) | dst_idx + 1));
+            auto src_exdata = reinterpret_cast<ExEdit::Exdata::efAnimationEffect*(__cdecl*)(ExEdit::ObjectFilterIndex)>(GLOBAL::exedit_base + OFS::ExEdit::get_exdata_ptr)((ExEdit::ObjectFilterIndex)((src_filter_idx << 16) | src_idx + 1));
+            if (dst_exdata->type != src_exdata->type || lstrcmpA(dst_exdata->name, src_exdata->name)) return -1;
+            break;
+        }
+
+        return obj[dst_idx].filter_param[dst_filter_idx].check_begin + check_idx;
+    }
+    
 
     void __cdecl any_obj_t::update_dlg_mask_wrap(ExEdit::Filter* efp, char* name, int sw_param) {
         reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, char*, int)>(GLOBAL::exedit_base + 0x69f20)(efp, name, sw_param);

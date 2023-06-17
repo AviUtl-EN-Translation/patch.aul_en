@@ -32,6 +32,8 @@ namespace patch::fast {
 		bool enabled_i;
 		inline static const char key[] = "fast.textborder";
 
+		inline static int pre_range = 0;
+
 	public:
 		static void __cdecl create_font_border(ExEdit::PixelYCA*, int, int, void*, int, int, int, int, int, int, int, int, int);
 
