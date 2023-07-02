@@ -389,6 +389,12 @@
     <ClInclude Include="patch_load_exedit_backup.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_read_audio.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_playback_pos.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -587,6 +593,12 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_load_exedit_backup.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_read_audio.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_playback_pos.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_28"
+#define PATCH_VERSION_STR "r43_ss_29"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -103,6 +103,7 @@
 #define PATCH_SWITCH_KEYCONFIG key_config
 #define PATCH_SWITCH_COLORPALETTE_CACHE colorpalette_cache
 #define PATCH_SWITCH_FILEINFO file_info
+//#define PATCH_SWITCH_READ_AUDIO read_audio
 #define PATCH_SWITCH_WAVE_FILE_READER wave_file_reader
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
 #define PATCH_SWITCH_TRA_CHANGE_DRAWFILTER tra_change_drawfilter
@@ -157,6 +158,7 @@
 #define PATCH_SWITCH_DIALOG_NEW_FILE dlg_newfile
 #define PATCH_SWITCH_SCENE_CACHE scenecache
 #define PATCH_SWITCH_PLAYBACK_SPEED pb_speed
+//#define PATCH_SWITCH_PLAYBACK_POS pb_pos
 #define PATCH_SWITCH_SETTING_NEW_PROJECT setting_newproject
 #define PATCH_SWITCH_SHARED_CACHE shared_cache
 #define PATCH_SWITCH_RENDERING rendering

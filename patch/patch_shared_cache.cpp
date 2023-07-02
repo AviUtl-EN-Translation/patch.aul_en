@@ -15,81 +15,70 @@
 
 #include "patch_shared_cache.hpp"
 
+static constexpr int calc_cache_size(int w, int h, int bitcount) {
+    return ((w * bitcount + 31) >> 5 << 2) * h + 16;
+}
+
 #ifdef PATCH_SWITCH_SHARED_CACHE
 namespace patch {
 
-    int calc_cache_size(int w, int h, int bitcount) {
-        return ((w * bitcount + 31) >> 5 << 2) * h + 16;
+    void* __cdecl SharedCache_t::GetOrCreateSharedCache_BeforeClipping(ExEdit::ObjectFilterIndex ofi, int w, int h, int bitcount, int v_func_id, int* old_cache_exists) {
+        auto a_exfunc = reinterpret_cast<AviUtl::ExFunc*>(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
+
+        int size = calc_cache_size(w, h, bitcount);
+        if (void* smem = a_exfunc->get_shared_mem(std::bit_cast<int32_t>(&GetOrCreateSharedCache_BeforeClipping) + v_func_id, size, NULL); smem != NULL) {
+            *old_cache_exists = 1;
+            return smem;
+        }
+        *old_cache_exists = 0;
+        return a_exfunc->create_shared_mem(std::bit_cast<int32_t>(&GetOrCreateSharedCache_BeforeClipping) + v_func_id, size, size, NULL);
     }
 
     void* __cdecl SharedCache_t::GetOrCreateSharedCache(ExEdit::ObjectFilterIndex ofi, int w, int h, int bitcount, int v_func_id, int* old_cache_exists) {
-        auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
-        auto e_exfunc = (ExEdit::Exfunc*)(GLOBAL::exedit_base + OFS::ExEdit::exfunc);
 
-        if (0 <= (int)ofi) {
+        if (0 <= static_cast<int>(ofi)) {
+            auto e_exfunc = reinterpret_cast<ExEdit::Exfunc*>(GLOBAL::exedit_base + OFS::ExEdit::exfunc);
             ofi = e_exfunc->get_start_idx(ofi);
         }
 
-        unsigned int key1 = (int)ofi ^ (v_func_id << 14) ^ (bitcount << 25);
-        unsigned int key2 = (w - 1) ^ ((h - 1) << 16);
+        CHAR name[64];
+        wsprintfA(name, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_cachename_format), ofi, v_func_id, w, h, bitcount);
 
-        void* smem = a_exfunc->get_shared_mem(key1, key2, NULL);
-        if (smem != NULL) {
-            if (old_cache_exists != NULL) {
-                *old_cache_exists = 1;
+        int dummy;
+        void* cacheptr = GetSharedCache(name, &dummy, &dummy, &dummy);
+        if (cacheptr == nullptr) {
+            cacheptr = CreateSharedCache(w, h, bitcount, name);
+            if (old_cache_exists != nullptr) {
+                *old_cache_exists = 0;
             }
-            return smem;
         }
-        if (old_cache_exists != NULL) {
-            *old_cache_exists = 0;
+        else if (old_cache_exists != nullptr) {
+            *old_cache_exists = 1;
         }
-        return a_exfunc->create_shared_mem(key1, key2, calc_cache_size(w, h, bitcount), NULL);
-    }
-
-
-    SharedCache_t::SharedCacheInfo* SharedCache_t::InitSharedCacheInfo() {
-        auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
-        cache_count = 0;
-        priority_count = 1;
-        for (int i = 0; i < SHARECACHEINFO_N; i++) {
-            shared_mem_info[i] = NULL;
-        }
-        return (SharedCacheInfo*)a_exfunc->create_shared_mem((int)&cache_count, (int)&cache_count, SHARECACHEINFO_SIZE, NULL);
-    }
-    SharedCache_t::SharedCacheInfo* SharedCache_t::GetOrCreateSharedCacheInfo() {
-        auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
-        auto sci = (SharedCacheInfo*)a_exfunc->get_shared_mem((int)&cache_count, (int)&cache_count, NULL);
-        if (sci == NULL) {
-            return InitSharedCacheInfo();
-        }
-        return sci;
+        return cacheptr;
     }
 
     void* __cdecl SharedCache_t::GetSharedCache(char* name, int* w, int* h, int* bitcount) {
-        auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
+        auto a_exfunc = reinterpret_cast<AviUtl::ExFunc*>(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
         SharedCacheInfo* sci = GetOrCreateSharedCacheInfo();
         for (int i = 0; i < cache_count; i++) {
             if (sci[i].name[0] != '\0' && lstrcmpiA(name, sci[i].name) == 0) {
-                if (shared_mem_info[i] == NULL) { // 1.10側で破棄されている状態
+                if (shared_mem_info[i] == nullptr) { // 1.10側で破棄されている状態
                     sci[i].name[0] = '\0';
-                    sci[i].priority = 0;
                     return get_cache(name, w, h, bitcount);
                 }
-                sci[i].priority = priority_count++;
                 *w = sci[i].w;
                 *h = sci[i].h;
                 *bitcount = sci[i].bitcount;
-                void* ptr = a_exfunc->get_shared_mem((int)&shared_mem_info[i], 0, shared_mem_info[i]);
-                if (ptr != NULL) {
-                    return ptr;
-                }
+                
+                if (void* ptr = a_exfunc->get_shared_mem(std::bit_cast<int32_t>(&shared_mem_info[i]), 0, shared_mem_info[i])) return ptr;
+
                 *w = 0;
                 *h = 0;
                 *bitcount = 0;
                 sci = GetOrCreateSharedCacheInfo();
-                if (sci != NULL) {
+                if (sci != nullptr) {
                     sci[i].name[0] = '\0';
-                    sci[i].priority = 0;
                 }
                 return get_cache(name, w, h, bitcount);
             }
@@ -97,11 +86,10 @@ namespace patch {
         return get_cache(name, w, h, bitcount);
     }
 
-
     void* __cdecl SharedCache_t::CreateSharedCache(int w, int h, int bitcount, char* name) {
-        auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
+        auto a_exfunc = reinterpret_cast<AviUtl::ExFunc*>(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
         SharedCacheInfo* sci = GetOrCreateSharedCacheInfo();
-        if (sci == NULL) {
+        if (sci == nullptr) {
             return create_cache(w, h, bitcount, name);
         }
 
@@ -116,8 +104,8 @@ namespace patch {
                 if (shared_mem_info[i] == NULL) {
                     priority_min = 0;
                     new_id = i;
-                } else if (sci[i].priority < priority_min) {
-                    priority_min = sci[i].priority;
+                } else if (shared_mem_info[i]->id < priority_min) {
+                    priority_min = shared_mem_info[i]->id;
                     new_id = i;
                 }
             }
@@ -131,24 +119,21 @@ namespace patch {
         sci[new_id].w = w;
         sci[new_id].h = h;
         sci[new_id].bitcount = bitcount;
-        sci[new_id].priority = priority_count++;
         if (shared_mem_info[new_id] != NULL) {
-            a_exfunc->delete_shared_mem((int)&shared_mem_info[new_id], shared_mem_info[new_id]);
+            a_exfunc->delete_shared_mem(std::bit_cast<int32_t>(&shared_mem_info[new_id]), shared_mem_info[new_id]);
         }
 
-        void* ptr = a_exfunc->create_shared_mem((int)&shared_mem_info[new_id], 0, calc_cache_size(w, h, bitcount), &shared_mem_info[new_id]);
-        if (ptr != NULL) {
+        void* ptr = a_exfunc->create_shared_mem(std::bit_cast<int32_t>(&shared_mem_info[new_id]), 0, calc_cache_size(w, h, bitcount), &shared_mem_info[new_id]);
+        if (ptr != nullptr) {
             return ptr;
         }
 
         sci = GetOrCreateSharedCacheInfo();
-        if (sci != NULL) {
+        if (sci != nullptr) {
             sci[new_id].name[0] = '\0';
-            sci[new_id].priority = 0;
         }
         return create_cache(w, h, bitcount, name);
     }
-
 
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_SHARED_CACHE

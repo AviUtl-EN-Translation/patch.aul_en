@@ -208,6 +208,7 @@ namespace OFS {
 		constexpr i32 GetOrCreateCache = 0x04d7d0;
 		constexpr i32 CacheInfo = 0x0d7710;
 		constexpr i32 CachePriorityCount = 0x11eb1c;
+		constexpr i32 str_cachename_format = 0x0a5650;
 
 		constexpr i32 video_func_main = 0x048830;
 		constexpr i32 video_func_idx = 0x1a5384;

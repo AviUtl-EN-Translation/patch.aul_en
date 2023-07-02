@@ -100,6 +100,10 @@ void init_t::InitAtPatchLoaded() {
 	patch::fileinfo.init();
 #endif
 
+#ifdef PATCH_SWITCH_READ_AUDIO
+	patch::read_audio.init();
+#endif
+
 #ifdef PATCH_SWITCH_WAVE_FILE_READER
 	patch::wave_file_reader.init();
 #endif
@@ -279,6 +283,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_PLAYBACK_SPEED
 	patch::playback_speed.init();
+#endif
+#ifdef PATCH_SWITCH_PLAYBACK_POS
+	patch::playback_pos.init();
 #endif
 #ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
 	patch::setting_new_project.init();

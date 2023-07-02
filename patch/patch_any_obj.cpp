@@ -25,9 +25,11 @@ namespace patch {
 
     void any_obj_t::deselect_object_tl_activate() {
         int timeline_obj_click_mode = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::timeline_obj_click_mode);
-        HWND menuhwnd = FindWindowA("#32768", NULL);
-        if (timeline_obj_click_mode == 0 && (!menuhwnd || !IsWindowVisible(menuhwnd))) {
-            deselect_object_if();
+        if (timeline_obj_click_mode == 0) {
+            HWND menuhwnd = FindWindowA("#32768", NULL);
+            if (!menuhwnd || !IsWindowVisible(menuhwnd)) {
+                deselect_object_if();
+            }
         }
     }
     void any_obj_t::post_deselect_object_tl_activate() {

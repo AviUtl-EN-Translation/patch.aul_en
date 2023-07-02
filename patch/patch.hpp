@@ -122,5 +122,7 @@
 #include "patch_any_obj.hpp"
 #include "patch_fast_extractedge.hpp"
 #include "patch_load_exedit_backup.hpp"
+#include "patch_read_audio.hpp"
+#include "patch_playback_pos.hpp"
 
 

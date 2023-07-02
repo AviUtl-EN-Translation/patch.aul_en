@@ -19,7 +19,6 @@
 namespace patch {
 
 	int __cdecl add_extension_t::wsprintfA_wrap2701a(void* ebp, LPSTR dst, LPCSTR src) {
-
 		int* flag = (int*)((int)ebp - 1308); // 1:VideoFile 2:AudioFile
 		int* new_ext_num = (int*)((int)ebp - 1288); // new_ext_bufに追加された拡張子の数（最初の時点では0）
 		char* new_ext_buf = (char*)((int)ebp - 1284); // ".mp4\0.acb\0.xyz\0"のように'\0'区切りで書いていく .aviのみ別枠として確定で追加されるのでここには追加しないこと

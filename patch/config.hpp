@@ -68,6 +68,9 @@ public:
             #ifdef PATCH_SWITCH_FILEINFO
                 patch::fileinfo.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_READ_AUDIO
+                patch::read_audio.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_WAVE_FILE_READER
                 patch::wave_file_reader.switch_load(cr);
             #endif
@@ -235,6 +238,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_PLAYBACK_POS
+                patch::playback_pos.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
                 patch::setting_new_project.switch_load(cr);
@@ -542,6 +548,9 @@ public:
             #ifdef PATCH_SWITCH_FILEINFO
                 patch::fileinfo.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_READ_AUDIO
+                patch::read_audio.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_WAVE_FILE_READER
                 patch::wave_file_reader.switch_store(switch_);
             #endif
@@ -709,6 +718,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_PLAYBACK_POS
+                patch::playback_pos.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_SETTING_NEW_PROJECT
                 patch::setting_new_project.switch_store(switch_);

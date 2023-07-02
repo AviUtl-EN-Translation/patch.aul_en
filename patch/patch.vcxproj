@@ -69,6 +69,8 @@
     <ClInclude Include="patch_obj_rotation.hpp" />
     <ClInclude Include="patch_obj_sharp.hpp" />
     <ClInclude Include="patch_obj_text.hpp" />
+    <ClInclude Include="patch_playback_pos.hpp" />
+    <ClInclude Include="patch_read_audio.hpp" />
     <ClInclude Include="patch_rendering.hpp" />
     <ClInclude Include="patch_right_trackbar.hpp" />
     <ClInclude Include="patch_sat_rgb_space.hpp" />
@@ -182,6 +184,8 @@
     <ClCompile Include="patch_obj_glow.cpp" />
     <ClCompile Include="patch_obj_portionfilter.cpp" />
     <ClCompile Include="patch_obj_text.cpp" />
+    <ClCompile Include="patch_playback_pos.cpp" />
+    <ClCompile Include="patch_read_audio.cpp" />
     <ClCompile Include="patch_rendering.cpp" />
     <ClCompile Include="patch_sat_rgb_space.cpp" />
     <ClCompile Include="patch_setting_dialog_chromakey.cpp" />

@@ -20,7 +20,13 @@ namespace patch {
 
 	int __cdecl rclickmenu_split_t::filter_sendmessage_wrap3fd46(int object_idx, int wparam, int flag) {
 		if (last_id < 0) {
-			last_id = object_idx;
+			int dlg_idx = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx);
+			if (0 <= dlg_idx) {
+				auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+				if (obj[dlg_idx].layer_set == obj[object_idx].layer_set) {
+					last_id = object_idx;
+				}
+			}
 		}
 		return reinterpret_cast<int(__cdecl*)(int,int,int)>(GLOBAL::exedit_base + OFS::ExEdit::filter_sendmessage)(object_idx, wparam, flag);
 	}

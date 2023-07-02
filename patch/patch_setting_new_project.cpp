@@ -70,12 +70,11 @@ namespace patch {
 
 		if (reinterpret_cast<BOOL(__cdecl*)(int, int, int, int, int, HWND, AviUtl::EditHandle*, AviUtl::FilterPlugin*)>(GLOBAL::exedit_base + OFS::ExEdit::edit_open)(w, h, video_rate, video_scale, audio_rate, hwnd, editp, fp)) {
 			HWND* aviutl_hwnd = (HWND*)(GLOBAL::exedit_base + OFS::ExEdit::aviutl_hwnd);
-
 			auto clipping_and_resize_fp = (AviUtl::FilterPlugin*)(GLOBAL::aviutl_base + OFS::AviUtl::filter_clipping_and_resize_ptr);
-			if (*(int8_t*)&clipping_and_resize_fp->flag & (int8_t)AviUtl::FilterPlugin::Flag::Active) { // クリッピング&リサイズが有効
-				SendMessageA(*aviutl_hwnd, WM_COMMAND, 10008, 0); // フィルタ>クリッピング&リサイズ
+			
+			if (clipping_and_resize_fp->exfunc->is_filter_active(clipping_and_resize_fp)) {
+				SendMessageA(*aviutl_hwnd, WM_COMMAND, 10001 + clipping_and_resize_fp->menu_index, 0); // フィルタ>クリッピング&リサイズ
 			}
-
 			/*
 			以下2つに関して参考として
 			track_array[0] : 選択されているもの
