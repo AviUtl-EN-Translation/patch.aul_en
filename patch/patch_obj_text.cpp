@@ -30,11 +30,13 @@ namespace patch {
 		}
 	}
 	void __cdecl obj_Text_t::yc_buffer_fill_wrap(void* ptr, int ox, int oy, int w, int h, short y, short cb, short cr, short a, int flag) {
+		auto exfunc = reinterpret_cast<ExEdit::Exfunc*>(GLOBAL::exedit_base + OFS::ExEdit::exfunc);
+		exfunc->fill(ptr, ox, oy, w + 128, h + 128, y, cb, cr, a, flag);
 		//auto t0 = GetTickCount();
 			//reinterpret_cast<void(__cdecl*)(void*, int, int, int, int, short, short, short, short, int)>(GLOBAL::exedit_base + 0x81f90)(ptr, ox, oy, w, h, y, cb, cr, a, flag);
-			int max_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_max_w);
+			/*int max_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_max_w);
 			int max_h = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_max_h);
-			memset(ptr, 0, max_w * max_h * 8);
+			memset(ptr, 0, max_w * max_h * 8);*/
 		//printf("%d\n", GetTickCount() - t0);
 	}
 

@@ -63,7 +63,35 @@ namespace patch {
             OverWriteOnProtectHelper(GLOBAL::aviutl_base + 0x2d0fe, 4).store_i32(0, &exfunc_avi_file_read_audio_sample_wrap);
 
             OverWriteOnProtectHelper(GLOBAL::aviutl_base + 0x23119, 4).replaceNearJmp(0, &update_waveformat_wrap);
-            //OverWriteOnProtectHelper(GLOBAL::aviutl_base + 0x231b2, 1).store_i8(0, 0x10);
+
+            { // aviutl.exe + 0x0004101d の対策
+                auto& cursor = GLOBAL::executable_memory_cursor;
+                /*
+                    00440ffd 03d0               add     edx,eax
+                    00440fff 56                 push    esi
+                    00441000 c1fa03             sar     edx,03
+                    ↓
+                    00440ffd 56                 push    esi
+                    00440ffe e9XxXxXxXx         jmp     cursor
+
+                    00000000 03d0               add     edx,eax
+                    00000000 c1fa03             sar     edx,03
+                    00000000 85d2               test    edx,edx
+                    00000000 0f8fXxXxXxXx       jg      aviutl+41003
+                    00000000 e9XxXxXxXx         jmp     aviutl+4105b
+                */
+                constexpr int vp_begin = 0x40ffd;
+                OverWriteOnProtectHelper h(GLOBAL::aviutl_base + vp_begin, 0x41003 - vp_begin);
+                h.store_i16(0x40ffd - vp_begin, '\x56\xe9');
+                h.replaceNearJmp(0x40fff - vp_begin, cursor);
+
+                store_i32(cursor, '\x03\xd0\xc1\xfa'); cursor += 4;
+                store_i8(cursor, '\x03'); cursor++;
+                store_i32(cursor, '\x85\xd2\x0f\x8f'); cursor += 4;
+                store_i32(cursor, GLOBAL::aviutl_base + 0x41003 - (int)cursor - 4); cursor += 4;
+                store_i8(cursor, '\xe9'); cursor++;
+                store_i32(cursor, GLOBAL::aviutl_base + 0x4105b - (int)cursor - 4); cursor += 4;
+            }
         }
 
         void switching(bool flag) {

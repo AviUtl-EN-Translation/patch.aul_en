@@ -18,21 +18,25 @@
 #ifdef PATCH_SWITCH_READ_AUDIO
 namespace patch {
 
-#define AUDIO_SMEM_SHL 20
+#define AUDIO_SMEM_SHL 19
 #define AUDIO_SMEM_SIZE (1 << AUDIO_SMEM_SHL)
 #define AUDIO_SMEM_HIGH(ofs) ((-1 << AUDIO_SMEM_SHL)&ofs)
 #define AUDIO_SMEM_LOW(ofs) ((AUDIO_SMEM_SIZE - 1)&ofs)
+
+#define AUDIO_SMEM_PART_SHL 10
+#define AUDIO_SMEM_PART_SIZE (1 << AUDIO_SMEM_PART_SHL)
 
 #define AVI_FILE_HANDLE_WAVEFORMATEX 0x38
 #define AVI_FILE_HANDLE_INPUT_INFO 0x4c
 #define AVI_FILE_HANDLE_AUDIO_N 0xc3b8
 #define AVI_FILE_HANDLE_AUDIO_CURRENT_POS 0xc3c0
+#define AVI_FILE_HANDLE_WAVEFORMATEX2 8624
 
 	int __fastcall read_audio_t::update_waveformat_wrap(AviUtl::AviFileHandle* afh, WAVEFORMATEX* wfe) {
 		if (memcmp((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX), wfe, 16)) {
 			*(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_CURRENT_POS) = -1;
 		}
-		return  reinterpret_cast<int(__fastcall*)(AviUtl::AviFileHandle*, WAVEFORMATEX*)>(GLOBAL::aviutl_base + 0x2550)(afh, wfe);
+		return reinterpret_cast<int(__fastcall*)(AviUtl::AviFileHandle*, WAVEFORMATEX*)>(GLOBAL::aviutl_base + 0x2550)(afh, wfe);
 	}
 
 
@@ -75,77 +79,179 @@ namespace patch {
 		min_priority_aci->audio_rate = wfe->nSamplesPerSec;
 		min_priority_aci->audio_ch = wfe->nChannels;
 		min_priority_aci->n = n;
-		return exfunc->create_shared_mem((int)min_priority_aci->input_handle_info, ~n, (256 + AUDIO_SMEM_SIZE) * wfe->nBlockAlign, &min_priority_aci->smi); // key2の0～は動画に使われるためマイナスにして-1
+		return exfunc->create_shared_mem((int)min_priority_aci->input_handle_info, ~n, AUDIO_SMEM_SIZE * wfe->nBlockAlign, &min_priority_aci->smi); // key2の0～は動画に使われるためマイナスにして-1
 	}
 
 
-
+	
 	int __cdecl read_audio_t::exfunc_avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, int length, short* buf) {
 		if (afh == NULL) return 0;
-
+		//printf("%d,%d\n", ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nSamplesPerSec, ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX2))->nSamplesPerSec);
+		auto buf0 = buf;
+		int rev = 0;
+		if (length < 0) {
+			rev++;
+			start += length - 1;
+			length = -length;
+		}
+		short audio_blocksize = ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nBlockAlign;
 		if (start < 0) {
-			length = min(length - start, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N));
+			length = min(length + start, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N));
+			if (length <= 0) return 0;
+			int ofs = -start * audio_blocksize;
+			memset(buf, 0, ofs);
+			buf = (short*)((int)buf + ofs);
 			start = 0;
 		} else {
 			length = min(length, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N) - start);
 		}
-		short audio_blocksize = ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nBlockAlign;
-		int len = length;
-		while (0 < len) {
+		int length0 = length;
+		while (0 < length) {
 			short* ptr = (short*)get_audio_shared_mem(afh, start >> AUDIO_SMEM_SHL);
 			if (ptr == NULL) {
 				ptr = (short*)create_audio_shared_mem(afh, start >> AUDIO_SMEM_SHL);
 				if (ptr == NULL) {
-					exfunc_avi_file_read_audio_sample_org(afh, start, len, buf);
+					exfunc_avi_file_read_audio_sample_org(afh, start, length, buf);
 					break;
 				}
-				
+
 				if (*(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_CURRENT_POS) != AUDIO_SMEM_HIGH(start) && 0 < AUDIO_SMEM_HIGH(start)) {
-					//printf("%d,%d\n", *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_CURRENT_POS) , AUDIO_SMEM_HIGH(start));
-					//for (int i = min(2, start >> AUDIO_SMEM_SHL); 0 < i; i--) {
-					//	exfunc_avi_file_read_audio_sample_org(afh, AUDIO_SMEM_HIGH(start) - AUDIO_SMEM_SIZE * i, AUDIO_SMEM_SIZE, ptr);
-					//}
-					for (int i = min(1023, ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nSamplesPerSec >> 7) + 1; 0 < i; i--) {
-						exfunc_avi_file_read_audio_sample_org(afh, AUDIO_SMEM_HIGH(start) - 1024 * i, 1024, ptr);
+					for (int i = min(min(4096, AUDIO_SMEM_HIGH(start) >> 8), (((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nSamplesPerSec >> 7) + 1); 0 < i; i--) {
+						exfunc_avi_file_read_audio_sample_org(afh, AUDIO_SMEM_HIGH(start) - 256 * i, 256, ptr);
 					}
 				}
-				exfunc_avi_file_read_audio_sample_org(afh, AUDIO_SMEM_HIGH(start), AUDIO_SMEM_SIZE, ptr);
+
+				int i2 = (0x40000 / audio_blocksize + AUDIO_SMEM_PART_SIZE - 1) >> AUDIO_SMEM_PART_SHL;
+
+				int s = AUDIO_SMEM_HIGH(start);
+				short* p = ptr;
+				for (int i = (1 << (AUDIO_SMEM_SHL - AUDIO_SMEM_PART_SHL)) - i2; 0 < i; i--) {
+					exfunc_avi_file_read_audio_sample_org(afh, s, AUDIO_SMEM_PART_SIZE, p);
+					s += AUDIO_SMEM_PART_SIZE;
+					p = (short*)((int)p + (audio_blocksize << AUDIO_SMEM_PART_SHL));
+				}
+				short* p2 = buf;
+				for (int i = i2; 0 < i; i--) {
+					exfunc_avi_file_read_audio_sample_org(afh, s, AUDIO_SMEM_PART_SIZE, p2);
+					s += AUDIO_SMEM_PART_SIZE;
+					p2 = (short*)((int)p2 + (audio_blocksize << AUDIO_SMEM_PART_SHL));
+				}
+				memcpy(p, buf, (i2 * audio_blocksize) << AUDIO_SMEM_PART_SHL);
 			}
-			
+
 			ptr = (short*)((int)ptr + AUDIO_SMEM_LOW(start) * audio_blocksize);
-			int smem_right = min(len, AUDIO_SMEM_SIZE - AUDIO_SMEM_LOW(start));
+			int smem_right = min(length, AUDIO_SMEM_SIZE - AUDIO_SMEM_LOW(start));
 			memcpy(buf, ptr, smem_right * audio_blocksize);
 			buf = (short*)((int)buf + smem_right * audio_blocksize);
 			start += smem_right;
-			len -= smem_right;
-			
+			length -= smem_right;
+
 		}
-		return length;
+		if (rev) {
+			short audio_ch = ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nChannels;
+			int p1 = 0;
+			int p2 = length0 - 1;
+			if (audio_ch == 1) {
+				while (p1 < p2) {
+					std::swap(buf0[p1], buf0[p2]);
+					p1++; p2--;
+				}
+			} else if (audio_ch == 2) {
+				int* bufi = (int*)buf0;
+				while (p1 < p2) {
+					std::swap(bufi[p1], bufi[p2]);
+					p1++; p2--;
+				}
+			} else {
+				p2 *= audio_ch;
+				while (p1 < p2) {
+					for (int i = 0; i < audio_ch; i++) {
+						std::swap(buf0[p1 + i], buf0[p2 + i]);
+					}
+					p1 += audio_ch; p2 -= audio_ch;
+				}
+			}
+		}
+		return length0;
 	}
 	
 	/*
-#define AVI_FILE_HANDLE_AUDIO_SAMPLING_RATE 0x3c
-#define AVI_FILE_HANDLE_AUDIO_N 0xc3b8
-#define AVI_FILE_HANDLE_AUDIO_CURRENT_POS 0xc3c0
+#define READ_AUDIO_PRE_SH 8
+#define READ_AUDIO_PRE_SIZE (1 << READ_AUDIO_PRE_SH)
+#define READ_AUDIO_PART_SH 10
+#define READ_AUDIO_PART_SIZE (1 << READ_AUDIO_PART_SH)
+#define READ_AUDIO_PART_HIGH(ofs) (ofs >> READ_AUDIO_PART_SH)
+#define READ_AUDIO_PART_LOW(ofs) ((READ_AUDIO_PART_SIZE - 1)&ofs)
 
 	int __cdecl read_audio_t::exfunc_avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, int length, short* buf) {
-		//auto a = *(short**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
-
 		if (afh == NULL) return 0;
-
+		auto buf0 = buf;
+		int rev = 0;
+		if (length < 0) {
+			rev++;
+			start += length - 1;
+			length = -length;
+		}
+		int length0 = length;
+		short audio_blocksize = ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nBlockAlign;
+		int ofs = 0;
 		if (start < 0) {
-			length = min(length - start, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N));
+			length = min(length + start, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N));
+			if (length <= 0) return 0;
+			ofs = -start * audio_blocksize;
 			start = 0;
 		} else {
 			length = min(length, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N) - start);
 		}
-		printf("%d,", *(int*)((int)afh + 0xc3b8));
-		if (*(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_CURRENT_POS) != start && 0 < start) {
-			int l = min(start, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_SAMPLING_RATE) / 16);
-			exfunc_avi_file_read_audio_sample_org(afh, start - l, l, buf);
-		}
-		return exfunc_avi_file_read_audio_sample_org(afh, start, length, buf);
 
+		if (*(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_CURRENT_POS) != start && READ_AUDIO_PRE_SIZE <= start) {
+			for (int i = min(min(1024, start >> READ_AUDIO_PRE_SH), (((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nSamplesPerSec >> 7) + 1); 0 < i; i--) {
+				exfunc_avi_file_read_audio_sample_org(afh, start - READ_AUDIO_PRE_SIZE * i, READ_AUDIO_PRE_SIZE, buf);
+			}
+		}
+
+		if (0 < ofs) {
+			memset(buf, 0, ofs);
+			buf = (short*)((int)buf + ofs);
+		}
+		if (READ_AUDIO_PART_LOW(length)) {
+			exfunc_avi_file_read_audio_sample_org(afh, start, READ_AUDIO_PART_LOW(length), buf);
+			start += READ_AUDIO_PART_LOW(length);
+			buf = (short*)((int)buf + READ_AUDIO_PART_LOW(length) * audio_blocksize);
+		}
+		int size = audio_blocksize << READ_AUDIO_PART_SH;
+		for (int i = READ_AUDIO_PART_HIGH(length); 0 < i; i--) {
+			exfunc_avi_file_read_audio_sample_org(afh, start, READ_AUDIO_PART_SIZE, buf);
+			start += READ_AUDIO_PART_SIZE;
+			buf = (short*)((int)buf + size);
+		}
+
+		if (rev) {
+			short audio_ch = ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nChannels;
+			int p1 = 0;
+			int p2 = length0 - 1;
+			if (audio_ch == 1) {
+				while (p1 < p2) {
+					std::swap(buf0[p1], buf0[p2]);
+					p1++; p2--;
+				}
+			} else if (audio_ch == 2) {
+				int* bufi = (int*)buf0;
+				while (p1 < p2) {
+					std::swap(bufi[p1], bufi[p2]);
+					p1++; p2--;
+				}
+			} else {
+				p2 *= audio_ch;
+				while (p1 < p2) {
+					for (int i = 0; i < audio_ch; i++) {
+						std::swap(buf0[p1 + i], buf0[p2 + i]);
+					}
+					p1 += audio_ch; p2 -= audio_ch;
+				}
+			}
+		}
+		return length0;
 	}
 	*/
 } // namespace patch

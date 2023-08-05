@@ -108,6 +108,9 @@ void init_t::InitAtPatchLoaded() {
 	patch::wave_file_reader.init();
 #endif
 
+#ifdef PATCH_SWITCH_ADJUST_VMEM
+	patch::adjust_vmem.init();
+#endif
 }
 
 void init_t::InitAtExeditLoad() {
@@ -489,6 +492,11 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 #ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
 	else if (lstrcmpiA(filename, "script_sort.auf") == 0) {
 		patch::patch_script_sort.init(ret);
+	}
+#endif
+#ifdef PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY
+	else if (lstrcmpiA(filename, "WideDialog.auf") == 0) {
+		patch::dialog_chromakey.switching(false);
 	}
 #endif
 #ifdef PATCH_SWITCH_WARNING_OLD_LSW

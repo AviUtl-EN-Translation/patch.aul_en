@@ -124,5 +124,5 @@
 #include "patch_load_exedit_backup.hpp"
 #include "patch_read_audio.hpp"
 #include "patch_playback_pos.hpp"
-
+#include "patch_adjust_vmem.hpp"
 

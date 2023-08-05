@@ -36,6 +36,7 @@
     <ClInclude Include="patch.hpp" />
     <ClInclude Include="patch_access_key.hpp" />
     <ClInclude Include="patch_add_extension.hpp" />
+    <ClInclude Include="patch_adjust_vmem.hpp" />
     <ClInclude Include="patch_alpha_bg.hpp" />
     <ClInclude Include="patch_any_obj.hpp" />
     <ClInclude Include="patch_aup_layer_setting.hpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="overwrite_resource.cpp" />
     <ClCompile Include="patch.cpp" />
     <ClCompile Include="patch_add_extension.cpp" />
+    <ClCompile Include="patch_adjust_vmem.cpp" />
     <ClCompile Include="patch_any_obj.cpp" />
     <ClCompile Include="patch_aviutl_wndproc_override.cpp" />
     <ClCompile Include="patch_blend.cpp" />

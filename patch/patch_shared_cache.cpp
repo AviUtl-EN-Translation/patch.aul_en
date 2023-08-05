@@ -127,7 +127,6 @@ namespace patch {
         if (ptr != nullptr) {
             return ptr;
         }
-
         sci = GetOrCreateSharedCacheInfo();
         if (sci != nullptr) {
             sci[new_id].name[0] = '\0';

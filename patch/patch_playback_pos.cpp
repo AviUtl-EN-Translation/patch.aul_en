@@ -17,10 +17,19 @@
 
 #ifdef PATCH_SWITCH_PLAYBACK_POS
 namespace patch {
+	int __cdecl playback_pos_t::calc_movie_frame(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip, AviUtl::FileInfo* fip, ExEdit::ObjectFilterIndex ofi, ExEdit::struct_exfunc0x04* objinfo) {
+		int subframe = (efpip->frame_num - efp->frame_start) * 100 + efpip->subframe;
+		double rate = (double)fip->video_rate * (double)efpip->framerate_de / ((double)fip->video_scale * (double)efpip->framerate_nu);
+
+		return (int)((double)subframe * (double)efp->track_value_left[1] * rate * 0.00001);
+	}
 	int __cdecl playback_pos_t::calc_scene_frame(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-		int subframe = (efpip->frame - efp->frame_start) * 100 + efpip->subframe;
+		int subframe = (efpip->frame_num - efp->frame_start) * 100 + efpip->subframe;
 		
 		return (int)((int64_t)subframe * (int64_t)efp->track_value_left[1] / 1000);
+	}
+	int __cdecl playback_pos_t::calc_scene_audio_frame(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+		return (efpip->frame_num - efp->frame_start) * efp->track_value_left[1];
 	}
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_PLAYBACK_POS

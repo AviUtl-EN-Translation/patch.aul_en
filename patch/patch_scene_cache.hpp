@@ -1,20 +1,22 @@
 /*
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
 #include "macro.h"
 
 #ifdef PATCH_SWITCH_SCENE_CACHE
+
+#include <chrono>
 
 #include <exedit.hpp>
 
@@ -26,79 +28,80 @@
 
 namespace patch {
 
-    // init at exedit load
-    // Rootで取得した場合のみシーンのキャッシュをとる
-    // 仕様：シーンの画像構成に掛かった時間が一定を超えた時にキャッシュを生成する。シーンを切り替えた時点でキャッシュは破棄されます。
+	// init at exedit load
+	// Rootで取得した場合のみシーンのキャッシュをとる
+	// 仕様：シーンの画像構成に掛かった時間が[json.threshold_time]msを超えた時にキャッシュを生成する。シーンを切り替えた時点でキャッシュは破棄されます。
 
-    inline class scene_cache_t {
-
-        static void* __cdecl get_scene_image_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int scene_idx, int frame, int subframe, int* w, int* h);
-        static void* __cdecl get_scene_image_mask_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int scene_idx, int frame, int subframe, int* w, int* h);
-        static void delete_scene_cache();
-
-        inline static void* (__cdecl* get_scene_image)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int, int, int, int*, int*);
+	inline class scene_cache_t {
 
 
-        inline static auto threshold_time_ms = 64;
-        inline static const char key_threshold_time[] = "threshold_time";
+		static void* __cdecl get_scene_image_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int scene_idx, int frame, int subframe, int* w, int* h);
+		static void* __cdecl get_scene_image_mask_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int scene_idx, int frame, int subframe, int* w, int* h);
+		static void delete_scene_cache();
 
+		inline static void* (__cdecl* get_scene_image)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int, int, int, int*, int*);
 
-        bool enabled = true;
-        bool enabled_i;
-        inline static const char key[] = "scene_cache";
-    public:
+		inline static auto threshold_time_ms = 64;
+		inline static const char key_threshold_time[] = "threshold_time";
 
-        void init() {
-            enabled_i = enabled;
+		bool enabled = true;
+		bool enabled_i;
+		inline static const char key[] = "scene_cache";
 
-            if (!enabled_i)return;
+	public:
 
-            get_scene_image = reinterpret_cast<decltype(get_scene_image)>(GLOBAL::exedit_base + OFS::ExEdit::get_scene_image);
+		void init() {
+			enabled_i = enabled;
 
-            {   // scene_obj
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0835bd, 4);
-                h.replaceNearJmp(0, &get_scene_image_wrap);
-            }
+			if (!enabled_i)return;
 
-            {   // mask
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x068a2d, 4);
-                h.replaceNearJmp(0, &get_scene_image_mask_wrap);
-            }
+			get_scene_image = reinterpret_cast<decltype(get_scene_image)>(GLOBAL::exedit_base + OFS::ExEdit::get_scene_image);
 
-            {   // シーン切り替え時に初期化
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x02be77, 5);
-                h.store_i8(0, '\xe9'); // jmp
-                h.replaceNearJmp(1, &delete_scene_cache);
-            }
-        }
+			{   // scene_obj
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0835bd, 4);
+				h.replaceNearJmp(0, &get_scene_image_wrap);
+			}
 
-        void switching(bool flag) {
-            enabled = flag;
-        }
+			{   // mask
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x068a2d, 4);
+				h.replaceNearJmp(0, &get_scene_image_mask_wrap);
+			}
 
-        bool is_enabled() { return enabled; }
-        bool is_enabled_i() { return enabled_i; }
+			{   // シーン切り替え時に初期化
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x02be77, 5);
+				h.store_i8(0, '\xe9'); // jmp
+				h.replaceNearJmp(1, &delete_scene_cache);
+			}
+		}
 
-        void switch_load(ConfigReader& cr) {
-            cr.regist(key, [this](json_value_s* value) {
-                ConfigReader::load_variable(value, enabled);
-                });
-        }
+		void switching(bool flag) {
+			enabled = flag;
+		}
 
-        void switch_store(ConfigWriter& cw) {
-            cw.append(key, enabled);
-        }
+		bool is_enabled() { return enabled; }
+		bool is_enabled_i() { return enabled_i; }
 
-        void config_load(ConfigReader& cr) {
-            cr.regist(key_threshold_time, [this](json_value_s* value) {
-                ConfigReader::load_variable(value, threshold_time_ms);
-                });
-        }
+		void switch_load(ConfigReader& cr) {
+			cr.regist(key, [this](json_value_s* value) {
+				ConfigReader::load_variable(value, enabled);
+				});
+		}
 
-        void config_store(ConfigWriter& cw) {
-            cw.append(key_threshold_time, threshold_time_ms);
-        }
-    } scene_cache;
+		void switch_store(ConfigWriter& cw) {
+			cw.append(key, enabled);
+		}
+
+		void config_load(ConfigReader& cr) {
+			cr.regist(key_threshold_time, [this](json_value_s* value) {
+				ConfigReader::load_variable(value, threshold_time_ms);
+				});
+		}
+
+		void config_store(ConfigWriter& cw) {
+			cw.append(key_threshold_time, threshold_time_ms);
+		}
+
+	} scene_cache;
 } // namespace patch
 
 #endif // ifdef PATCH_SWITCH_SCENE_CACHE

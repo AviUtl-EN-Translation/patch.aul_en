@@ -27,7 +27,7 @@ namespace OFS {
 		constexpr i32 edit_handle_ptr = 0x08717c;
 		constexpr i32 saveProjectFile = 0x024160;
 		constexpr i32 exfunc = 0x0a8c78;
-
+		constexpr i32 main_hwnd = 0x092874;
 
 		constexpr i32 ini_shiftselect = 0x086398;
 
@@ -202,6 +202,8 @@ namespace OFS {
 		constexpr i32 str_RGB_d_d_d = 0x0a2d24;
 		constexpr i32 str_SHITEINASHI_MOTOGAZOUNOIRO = 0x0a5c8c;
 
+		constexpr i32 AviFileHandleInfoArray = 0x0d4748;
+		constexpr i32 AviFileHandleMaxNum = 0x0d7250;
 
 		constexpr i32 GetCache = 0x00cff0;
 		constexpr i32 CreateCache = 0x00cd00;
@@ -365,6 +367,19 @@ namespace OFS {
 
 		constexpr i32 BPMGridColorBeat = 0x0a4050;
 		constexpr i32 BPMGridColorMeasure = 0x0a4054;
+
+
+		constexpr i32 init_copy_paste_info = 0x018130;
+		constexpr i32 copy_paste_buffer_free = 0x018150;
+		constexpr i32 copy_paste_buffer_size = 0x11ef58;
+
+		constexpr i32 efMovieFile_calc_pos = 0x005f50;
+		constexpr i32 efAudioFile_calc_pos = 0x08fa40;
+		constexpr i32 efAudioFile_update_dialog = 0x08f960;
+		constexpr i32 get_above_object = 0x04b300;
+		constexpr i32 avi_handle_open = 0x004ea0;
+		constexpr i32 avi_handle_close = 0x004e20;
+		constexpr i32 avi_handle_reopen = 0x0052e0;
 
 	}
 }

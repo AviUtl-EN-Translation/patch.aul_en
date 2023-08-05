@@ -54,7 +54,7 @@ namespace patch {
                 h.replaceNearJmp(1, &exedit_exfunc_x40_ret_wrap);
             }
             { // テキスト作成時のバッファ初期化の方法を変える
-
+                
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x050254, 4);
                 h.replaceNearJmp(0, &yc_buffer_fill_wrap);
             }

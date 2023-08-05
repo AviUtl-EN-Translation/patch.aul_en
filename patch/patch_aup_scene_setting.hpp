@@ -77,10 +77,10 @@ namespace patch {
                     "\x81\xfb\x2b\x23\x00\x00" // cmp     ebx,0000232b
                     "\xeb\x74"                 // jmp     skip,74 (10031be2)
                 };
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x031b49, 25);
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x031b49, 37);
                 h.store_i16(0, '\xc7\x90');
                 h.store_i16(5, '\x8d\xba');
-                memcpy(reinterpret_cast<void*>(h.address() + 11), load_scene_setting_all, sizeof(load_scene_setting_all) - 1);
+                memcpy(reinterpret_cast<void*>(h.address(11)), load_scene_setting_all, sizeof(load_scene_setting_all) - 1);
             }
 
         }

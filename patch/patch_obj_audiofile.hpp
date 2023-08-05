@@ -22,6 +22,9 @@
 #include "global.hpp"
 #include "config_rw.hpp"
 
+#include "patch_read_audio.hpp"
+#include "patch_playback_pos.hpp"
+
 namespace patch {
 	// init at exedit load
 	// 音声ファイルの再生速度トラックの最大値2000.0のはずが800.0となってしまう処理があるのを修正
@@ -30,6 +33,7 @@ namespace patch {
 		static BOOL __cdecl set_trackvalue_wrap8f9b5(ExEdit::Filter* efp, int track_s, int track_e, int scale);
 		//static int __cdecl avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		//static void __cdecl rev_audio_data(ExEdit::FilterProcInfo* efpip);
+		static BOOL __cdecl func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip0);
 
 		bool enabled = true;
 		bool enabled_i;
@@ -65,6 +69,13 @@ namespace patch {
 				h.store_i32(9, '\x28\x83\xc4\x10');
 			}
 
+			if (playback_pos.is_enabled() && read_audio.is_enabled()) { // 逆再生に対応
+				OverWriteOnProtectHelper(GLOBAL::exedit_base + 0xba5a0, 4).store_i32(0, &func_proc);
+
+				ExEdit::Filter* efp = (ExEdit::Filter*)(GLOBAL::exedit_base + 0xba570);
+				efp->track_s[1] = -20000;
+				efp->track_extra->track_drag_min[1] = -4000;
+			}
 		}
 
 		void switching(bool flag) { enabled = flag; }
