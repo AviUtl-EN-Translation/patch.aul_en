@@ -27,7 +27,10 @@
 namespace patch {
 
     // init at patch load
-    // exedit->avi_file_read_audio_sampleを改造して音声データのキャッシュを取るように変更
+    // exfunc->avi_file_read_audio_sampleを改造する
+    // 引数startがマイナスの時の計算が変だったのを修正
+    // 引数lengthにマイナスを入れた時に逆再生のデータを取得するように変更
+    // シークで音がおかしくなる問題の解決のためにキャッシュ作成・いくらか前の音声を仮に読み込ませる処理を行うようにした
 
     inline class read_audio_t {
 
