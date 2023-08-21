@@ -159,12 +159,11 @@ namespace patch {
                 "\xc1\xfa\x0c"             // sar     edx,0c
                 "\x66\x89\x51\x02"         // mov     [ecx+02],dx
                 "\x0f\xbf\x51\x04"         // movsx   edx,dword ptr [ecx+04]
-                "\x0f\xaf\xd3"             // imul    edx,ebx
-                "\x8b\x74\x24\x18"         // mov     esi,dword ptr [esp+18]
-                "\x0f\xaf\xf0"             // imul    esi,eax
-                "\x03\xd6"                 // add     edx,esi
-                "\xc1\xfa\x0c"             // sar     edx,0c
-                "\x66\x89\x51\x04"         // mov     [ecx+04],dx
+                "\x0f\xaf\xda"             // imul    ebx,edx
+                "\xf7\x64\x24\x18"         // mul     dword ptr [esp+18]
+                "\x03\xc3"                 // add     eax,ebx
+                "\xc1\xf8\x0c"             // sar     eax,0c
+                "\x66\x89\x41\x04"         // mov     [ecx+04],ax
                 "\x5b"                     // pop     ebx
                 "\x5e"                     // pop     esi
                 "\xc3"                     // ret

@@ -323,6 +323,12 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_EXCLUSION_FONT
 	patch::exclusion_font.init();
 #endif
+#ifdef PATCH_SWITCH_INIT_WINDOW_POS
+	patch::init_window_pos.init();
+#endif
+#ifdef PATCH_SWITCH_OBJECT_TABLE
+	patch::object_table.init();
+#endif
 #ifdef PATCH_SWITCH_GROUP_ID
 	patch::group_id.init();
 #endif
@@ -361,6 +367,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_BORDER
 			patch::fast::Border.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_BORDERBLUR
+			patch::fast::BorderBlur.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_BLUR
 			patch::fast::Blur.init();

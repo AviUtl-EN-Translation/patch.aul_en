@@ -310,10 +310,17 @@ namespace OFS {
 		constexpr i32 current_font_name = 0x236368;
 		constexpr i32 current_font_height = 0x23634c;
 
+		constexpr i32 ValidObjectNum = 0x146250;
+		constexpr i32 CurrentSceneObjectNum = 0x15918c;
 		constexpr i32 ObjectAllocNum = 0x1e0fa0;
 		constexpr i32 ObjectArrayPointer = 0x1e0fa4;
 		constexpr i32 ExdataPointer = 0x1e0fa8;
 		constexpr i32 NextObjectIdxArray = 0x1592d8;
+
+		constexpr i32 SortedObjectTable = 0x168fa8;
+		constexpr i32 update_ObjectTables = 0x02b0f0;
+
+		constexpr i32 MyRealloc = 0x08a450;
 
 		constexpr i32 get_exdata_ptr = 0x047b40;
 
@@ -322,6 +329,8 @@ namespace OFS {
 		constexpr i32 deselect_object = 0x34eb0;
 
 		constexpr i32 object2idx = 0x02b0d0;
+
+		constexpr i32 set_range_object = 0x038940;
 
 		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
 		constexpr i32 get_last_filter_idx = 0x0335f0;
@@ -368,7 +377,6 @@ namespace OFS {
 		constexpr i32 BPMGridColorBeat = 0x0a4050;
 		constexpr i32 BPMGridColorMeasure = 0x0a4054;
 
-
 		constexpr i32 init_copy_paste_info = 0x018130;
 		constexpr i32 copy_paste_buffer_free = 0x018150;
 		constexpr i32 copy_paste_buffer_size = 0x11ef58;
@@ -380,6 +388,12 @@ namespace OFS {
 		constexpr i32 avi_handle_open = 0x004ea0;
 		constexpr i32 avi_handle_close = 0x004e20;
 		constexpr i32 avi_handle_reopen = 0x0052e0;
+
+		constexpr i32 lut_random_wave = 0x1bad60;    // short[65536]: min=-2048 max=2048
+		constexpr i32 lut_cos_half = 0x1dad60;       // short[256]  : (1+cos(n*PI/256))*2048  : 4096 -> 0
+		constexpr i32 lut_cos = 0x1daf68;            // short[4096] : cos(n*PI/2048)*4096     : 4096 -> -4096 -> 4096
+		constexpr i32 lut_minus_cos_half = 0x1dcf78; // short[4096] : (1-cos(n*PI/4096))*2048 : 0 -> 4096
+		constexpr i32 lut_sin = 0x1def80;            // short[4096] : sin(n*PI/2048)*4096     : 0 -> 4096 -> -4096 -> 0
 
 	}
 }

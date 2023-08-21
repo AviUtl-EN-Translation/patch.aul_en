@@ -125,4 +125,7 @@
 #include "patch_read_audio.hpp"
 #include "patch_playback_pos.hpp"
 #include "patch_adjust_vmem.hpp"
+#include "patch_fast_borderblur.hpp"
+#include "patch_init_window_pos.hpp"
+#include "patch_object_table.hpp"
 

@@ -52,6 +52,7 @@
     <ClInclude Include="patch_dialog_new_file.hpp" />
     <ClInclude Include="patch_exclusion_font.hpp" />
     <ClInclude Include="patch_fast_blur.hpp" />
+    <ClInclude Include="patch_fast_borderblur.hpp" />
     <ClInclude Include="patch_fast_chromakey.hpp" />
     <ClInclude Include="patch_fast_colorkey.hpp" />
     <ClInclude Include="patch_fast_drawfilter.hpp" />
@@ -59,9 +60,11 @@
     <ClInclude Include="patch_fast_text_border.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
+    <ClInclude Include="patch_init_window_pos.hpp" />
     <ClInclude Include="patch_keyconfig.hpp" />
     <ClInclude Include="patch_load_exedit_backup.hpp" />
     <ClInclude Include="patch_lua_setanchor.hpp" />
+    <ClInclude Include="patch_object_table.hpp" />
     <ClInclude Include="patch_obj_blur.hpp" />
     <ClInclude Include="patch_obj_create_figure.hpp" />
     <ClInclude Include="patch_obj_mask.hpp" />
@@ -176,13 +179,16 @@
     <ClCompile Include="patch_change_disp_scene.cpp" />
     <ClCompile Include="patch_failed_file_drop.cpp" />
     <ClCompile Include="patch_fast_blur.cpp" />
+    <ClCompile Include="patch_fast_borderblur.cpp" />
     <ClCompile Include="patch_fast_chromakey.cpp" />
     <ClCompile Include="patch_fast_colorkey.cpp" />
     <ClCompile Include="patch_fast_extractedge.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
+    <ClCompile Include="patch_init_window_pos.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
     <ClCompile Include="patch_load_exedit_backup.cpp" />
+    <ClCompile Include="patch_object_table.cpp" />
     <ClCompile Include="patch_obj_glow.cpp" />
     <ClCompile Include="patch_obj_portionfilter.cpp" />
     <ClCompile Include="patch_obj_text.cpp" />

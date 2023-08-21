@@ -398,6 +398,15 @@
     <ClInclude Include="patch_adjust_vmem.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_borderblur.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_init_window_pos.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_object_table.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -605,6 +614,15 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_adjust_vmem.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_borderblur.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_init_window_pos.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_object_table.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>
