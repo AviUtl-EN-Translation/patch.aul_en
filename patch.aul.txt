@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_31
+patch.aul r43_ss_32
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -92,8 +92,8 @@ https://scrapbox.io/nazosauna/patch.aul
     ・パラメータを持つトラックバー変化方法スクリプトを含んだオブジェクトファイルの読み込みが正常に行えないことがあるのを修正
     ・ファイルの情報を開くと落ちる/ファイル制御情報が正しくないことがあるのを修正
     ・中間点で再生速度を変更した時、そこまでの中間点の数だけ速度変化が遅れて反映されるバグの修正
-    ・グローのしきい値が負の値になった時にエラーとなる
     ・グローの光成分のみチェックがある時に透過情報が失われるのを修正
+    ・図形の縦横比が-100未満や100超の時にエラーが出たり描画がおかしくなるのを修正
     ・スレッド数より小さいサイズに対して一部効果が正常に効果が反映されないバグの修正
     ・新規プロジェクト作成時にサイズ・フレームレートが変わるフィルタをオフにする
     ・レイヤー情報を保存するかどうかの判定方法を変える(従来:オブジェクトが存在する→変更:レイヤー情報が初期値でない)
@@ -158,6 +158,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・ウィンドウ位置の初期化で設定ダイアログも動くように変更
     ・タイムラインにグループ制御などを表示しながらオブジェクトを追加するとエラーになることがあったのを修正
     ・他シーンや1つのレイヤーにオブジェクトの数が多い時にタイムライン操作が重くなるのを改善
+    ・RGB色空間で飽和の処理を微調整（拡張編集0.93rc1と同じように）
 
     追加
     ・コンソールの表示
@@ -261,23 +262,23 @@ https://scrapbox.io/nazosauna/patch.aul
         "access_key" : boolean, ; アクセスキーを付加するか (既定値: false)
         "colorpalette_cache" : boolean, ; bmpのキャッシュが作られる際に、カラーパレット分のデータ容量を取り忘れているのを修正 (既定値: true)
         "fileinfo" : boolean, ; ファイルの情報を開くと落ちる/ファイル制御情報が正しくないことがあるのを修正 (既定値: true)
+        "read_audio" : boolean, ; exfunc->avi_file_read_audio_sampleを改造 (既定値: true)
         "wave_file_reader" boolean, ; Wave File Readerが読み込めない形式で失敗した時、別の入力プラグインに渡すように修正 (既定値: true)
         "aup_load" : boolean, ; 設定ダイアログ表示中のオブジェクトIDが異常値のaupを読み込むとエラーとなるのを対策 (既定値: true)
-        "aup_scene_setting" : boolean, ; プロジェクトの保存/読み込み時にシーン設定の一部情報（グリッド設定など）が欠けるのを修正 (既定値: true)
         "aup_layer_setting" : boolean, ; プロジェクトの保存時、レイヤー情報を保存する基準を変える (既定値: true)
+        "aup_scene_setting" : boolean, ; プロジェクトの保存/読み込み時にシーン設定の一部情報（グリッド設定など）が欠けるのを修正 (既定値: true)
         "load_exedit_backup" : boolean, ; 違うバージョンのバックアップファイルを開くのを試みることができるように変更 (既定値: true)
-        "exo_aviutl_filter" : boolean, ; 拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある (既定値: true)
+        "exo_aviutlfilter" : boolean, ; 拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある (既定値: true)
         "exo_sceneidx" : boolean, ; オブジェクトファイルの入出力で、シーン番号を正しく扱えない (既定値: true)
         "exo_trackparam" : boolean, ; オブジェクトファイルの入力で、トラックバー変化方法スクリプトの名前にASCII以外の文字が含まれているとパラメータを読み込めない (既定値: true)
-        "exa_fold_gui" : boolean, ; exa,exo生成時、設定ダイアログの▼（折り畳み）とマウスマーク（GUI表示）の情報を追加する (既定値: true)
         "exo_midpt_and_tra" : boolean, ; 中間点有りで.traスクリプト変化方式のあるオブジェクトがあるexoが正常に読み込めないことがあるのを修正 (既定値: true)
         "exo_specialcolorconv" : boolean, ; オブジェクトファイルの入出力で、特定色域変換のstatusが2つあって正しく入出力できない (既定値: true)
+        "exa_fold_gui" : boolean, ; exa,exo生成時、設定ダイアログの▼（折り畳み）とマウスマーク（GUI表示）の情報を追加する (既定値: true)
         "str_minusval" : boolean, ; オブジェクトファイルの入力、スクリプトファイルの読み込みで、トラックバーの -0.99～-0.01 が正になるのを修正 (既定値: true)
         "tra_aviutlfilter" : boolean, ; 拡張編集以外のフィルタのトラックバーにトラックバー変化方法スクリプトを適用していると例外になる問題 (既定値: true)
         "tra_change_drawfilter" : boolean, ; 標準描画-拡張描画-パーティクルの切り替え時にトラックバーの設定値(移動フレーム間隔)が0になるのを修正 (既定値: true)
         "tra_change_mode" : boolean, ; 移動無しから変更するときに右トラックバーの値を左と同じにする (既定値: true)
         "tra_specified_speed" : boolean, ; トラックバー変化方法の移動量指定と時間制御の組み合わせでバグるのを修正 (既定値: true)
-        "setting_new_project" : boolean, ; 新規プロジェクト作成時にサイズ・フレームレートの変わるフィルタをオフにする/小数点ありフレームレート値を最適化 (既定値: true)
         "text_op_size" : boolean, ; テキストオブジェクトでUTF-16で34バイト以上のフォント名を指定している時、制御文字<s>でサイズのみを指定していると正しい動作をしない (既定値: true)
         "ignore_media_param_reset" : boolean, ; 動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない (既定値: false)
         "failed_sjis_msgbox" : boolean, ; ファイルパスに使用できない文字が含まれている時に出すエラーメッセージを変更する (既定値: true)
@@ -285,7 +286,9 @@ https://scrapbox.io/nazosauna/patch.aul
         "failed_file_drop" : boolean, ; exedit.iniに登録されていないファイルをタイムラインにドロップした時にメッセージを表示する (既定値: true)
         "theme_cc" : boolean, ; テーマ機能 (既定値: true)
         "exeditwindow_sizing" : boolean, ; 拡張編集ウィンドウの上部をドラッグして正常にリサイズできるようにする (既定値: true)
-        "settingdialog_move" : boolean, ; 設定ダイアログを高ポーリングレートマウス環境で移動すると重たい の解消 (既定値: true)
+        "settingdialog_move"
+        "obj_text" : boolean, ; 制御文字を使用した時に変な描画がされることがあるのを簡易修正 (既定値: true)
+        "obj_create_figure" : boolean, ; 図形の縦横比が-100未満や100超の時にエラーが出たり描画がおかしくなるのを修正 (既定値: true)
         "obj_audiofile" : boolean, ; 音声ファイルの再生速度最大値を修正 (既定値: true)
         "obj_colorcorrection" : boolean, ; 色調補正の色相計算を修正 (既定値: true)
         "obj_glow" : boolean, ; グローのしきい値が負の値になった時にエラーとなる・スレッド数より小さいサイズに対して正常に反映されないバグを修正 (既定値: true)
@@ -302,21 +305,26 @@ https://scrapbox.io/nazosauna/patch.aul
         "settingdialog_chromakey" : boolean, ; クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更 (既定値: true)
         "r_click_menu_split" : boolean, ; 右クリック分割で設定ダイアログが更新されないのを修正 (既定値: true)
         "blend" : boolean, ; アルファチャンネルのあるフレームバッファで合成モード「通常」以外を使用すると誤った結果になるのを修正 (既定値: true)
-        "rendering" : boolean, ; 描画のバグを修正 (既定値: true)
         "add_extension" : boolean, ; 動画、音声ファイル参照の時、exedit.iniにある拡張子を追加する (既定値: true)
         "new_project_editbox" : boolean, ; 新規プロジェクト作成ダイアログの画像サイズ入力欄の幅を広げる (既定値: true)
-        "playback_speed" : boolean, ; 中間点で再生速度を変更した時、そこまでの中間点の数だけ速度変化が遅れて反映されるバグの修正 (既定値: true)
         "scene_cache" : boolean, ; シーン画像生成に時間がかかった時にキャッシュを作成する機能の追加 (既定値: true)
-        "warning_duplicate" : boolean, ; ファイル名が同じプラグインが複数フォルダに存在するときに警告出す (既定値: true)
+        "playback_speed" : boolean, ; 中間点で再生速度を変更した時、そこまでの中間点の数だけ速度変化が遅れて反映されるバグの修正 (既定値: true)
+        "playback_pos" : boolean, ; 再生位置をトラックバー移動にしてループ再生した時の再生位置が正しくないのを修正 (既定値: true)
+        "setting_new_project" : boolean, ; 新規プロジェクト作成時にサイズ・フレームレートの変わるフィルタをオフにする/小数点ありフレームレート値を最適化 (既定値: true)
         "shared_cache" : boolean, ; 一部キャッシュは共有メモリ(システムの設定のキャッシュサイズの部分)を使用するように変更 (既定値: true)
+        "warning_duplicate" : boolean, ; ファイル名が同じプラグインが複数フォルダに存在するときに警告出す (既定値: true)
+        "rendering" : boolean, ; 描画のバグを修正 (既定値: true)
         "yc_rgb_conv" : boolean, ; 改行のみのテキストで一部スクリプトを使うとエラーが発生するのを修正 (既定値: true)
         "camera_scene" : boolean, ; カメラ制御とシーンの入れ子で描画が正常でなくなるの修正 (既定値: true)
         "group_camera_scene" : boolean, ; グループ制御とカメラ制御を併用しているシーンを呼び出すと起こる不具合を修正 (既定値: true)
         "change_disp_scene" : boolean, ; シーン切り替え時のバグを修正 (既定値: true)
         "right_trackbar" : boolean, ; 複数選択状態で右トラックバーの値を変えた時に正常ではないのを修正 (既定値: true)
 	"any_obj" : boolean, ; Ctrlを押しながら複数選択状態での変更が正しく行われないのを修正 (既定値: true)
-        "exclusion_font" : boolean, ; フォント名が32バイト以上の場合、正常に扱うことはできないため表示しないように変更 (既定値: true)
+        "exclusion_font"
+        "init_window_pos" : boolean, ; ウィンドウ位置の初期化で設定ダイアログも動くように変更 (既定値: true)
+        "object_table" : boolean, ; 他シーンや1つのレイヤーにオブジェクトの数が多い時にタイムライン操作が重くなるのを改善 (既定値: true)
         "group_id" : boolean, ; プロジェクトファイル読み込み時にグループ化IDの最大値が高い場合、整理する (既定値: true)
+        "sat_rgb_space" : boolean, ; RGB色空間で飽和の処理を微調整 (既定値: true)
         "borderonly_text" : boolean, ; テキストに縁のみを追加する。fast.textborderがtrueの必要あり (既定値: true)
         "patch_script_sort" : boolean, ; スクリプト並び替え管理プラグインとの競合を解消 (既定値: true)
         "undo" : boolean, ; 元に戻す 関連のバグ修正 (既定値: true)
@@ -342,6 +350,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.create_figure" : boolean, ; 図形の高速化 (既定値: true)
             "fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
             "fast.blur" : boolean, ; ぼかしの高速化/バグ修正 (既定値: true)
+            "fast.borderblur" : 境界ぼかしの高速化 (既定値: true)
             "fast.extractedge" : boolean, ; エッジ抽出の高速化/色指定無しの追加 (既定値: true)
             "fast.glow" : boolean, ; グローの高速化 (既定値: true)
             "fast.colorkey" : boolean, ; カラーキーの高速化 (既定値: true)
@@ -358,7 +367,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_31" のような文字列が格納されている
+        例として "patch.aul r43_ss_32" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
