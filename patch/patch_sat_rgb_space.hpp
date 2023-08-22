@@ -27,7 +27,7 @@
 namespace patch {
 
     // init at exedit load
-    // RGB色空間で飽和 で下限の方の飽和を追加
+    // RGB色空間で飽和 の計算を0.93rc1と同じように微調整
 
     inline class sat_rgb_space_t {
 
@@ -41,6 +41,14 @@ namespace patch {
             enabled_i = enabled;
 
             if (!enabled_i)return;
+
+            store_i8(GLOBAL::exedit_base + 0xa992c, 0x4d); // 4b -> 4d
+            store_i8(GLOBAL::exedit_base + 0xa992e, 0x01); // 00 -> 01
+            store_i8(GLOBAL::exedit_base + 0xa9930, 0xd2); // d1 -> d2
+            store_i8(GLOBAL::exedit_base + 0xa9934, 0x92); // 91 -> 92
+            store_i8(GLOBAL::exedit_base + 0xa9936, 0xd2); // d1 -> d2
+            store_i8(GLOBAL::exedit_base + 0xa993c, 0x24); // 22 -> 24
+            store_i8(GLOBAL::exedit_base + 0xa9940, 0x01); // 00 -> 01
 
         }
 

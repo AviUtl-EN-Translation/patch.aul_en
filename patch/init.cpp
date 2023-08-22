@@ -332,6 +332,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_GROUP_ID
 	patch::group_id.init();
 #endif
+#ifdef PATCH_SWITCH_SAT_RGB_SPACE
+	patch::sat_rgb_space.init();
+#endif
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 	patch::borderonly_text.init();
 #endif

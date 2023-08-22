@@ -87,7 +87,7 @@ namespace patch {
 		auto exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
 		void* ptr = exfunc->get_shared_mem((int)&get_or_create_shared_mem, (int)&get_or_create_shared_mem, nullptr);
 		if (ptr != nullptr) return ptr;
-		return exfunc->create_shared_mem((int)&get_or_create_shared_mem, (int)&get_or_create_shared_mem, AUDIO_SMEM_SIZE, nullptr);
+		return exfunc->create_shared_mem((int)&get_or_create_shared_mem, (int)&get_or_create_shared_mem, 0x40000, nullptr);
 	}
 	
 	int __cdecl read_audio_t::exfunc_avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, int length, short* buf) {
@@ -137,13 +137,12 @@ namespace patch {
 					p = (short*)((int)p + (audio_blocksize << AUDIO_SMEM_PART_SHL));
 				}
 				short* p2 = (short*)get_or_create_shared_mem();
-				short* p3 = p2;
 				for (int i = i2; 0 < i; i--) {
-					exfunc_avi_file_read_audio_sample_org(afh, s, AUDIO_SMEM_PART_SIZE, p3);
+					exfunc_avi_file_read_audio_sample_org(afh, s, AUDIO_SMEM_PART_SIZE, p2);
 					s += AUDIO_SMEM_PART_SIZE;
-					p3 = (short*)((int)p3 + (audio_blocksize << AUDIO_SMEM_PART_SHL));
+					memcpy(p, p2, audio_blocksize << AUDIO_SMEM_PART_SHL);
+					p = (short*)((int)p + (audio_blocksize << AUDIO_SMEM_PART_SHL));
 				}
-				memcpy(p, p2, (i2 * audio_blocksize) << AUDIO_SMEM_PART_SHL);
 			}
 			ptr = (short*)((int)ptr + AUDIO_SMEM_LOW(start) * audio_blocksize);
 			int smem_right = min(length, AUDIO_SMEM_SIZE - AUDIO_SMEM_LOW(start));

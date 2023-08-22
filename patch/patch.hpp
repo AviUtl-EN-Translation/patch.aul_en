@@ -128,4 +128,5 @@
 #include "patch_fast_borderblur.hpp"
 #include "patch_init_window_pos.hpp"
 #include "patch_object_table.hpp"
+#include "patch_sat_rgb_space.hpp"
 

@@ -598,9 +598,6 @@
     <ClCompile Include="patch_fast_extractedge.cpp">
       <Filter>feature\fast</Filter>
     </ClCompile>
-    <ClCompile Include="patch_sat_rgb_space.cpp">
-      <Filter>feature</Filter>
-    </ClCompile>
     <ClCompile Include="patch_obj_portionfilter.cpp">
       <Filter>feature</Filter>
     </ClCompile>

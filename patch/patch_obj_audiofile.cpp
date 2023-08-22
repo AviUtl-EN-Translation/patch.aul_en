@@ -243,9 +243,9 @@ namespace patch {
 
                 efp->exfunc->getvalue(efp->exfunc->get_start_idx(ofi), &objinfo);
                 if (0 <= objinfo.track_left[TRACK_SPEED]) {
-                    pos_cs = (double)objinfo.track_left[TRACK_POS] * v_sync_rate;
+                    pos_cs = (double)(objinfo.track_left[TRACK_POS] - 1) * v_sync_rate;
                 } else {
-                    pos_cs = playback_e - (double)objinfo.track_left[TRACK_POS] * v_sync_rate;
+                    pos_cs = playback_e - (double)(objinfo.track_left[TRACK_POS] - 1) * v_sync_rate;
                 }
                 pos_cs *= 0.01;
                 pos_cs += reinterpret_cast<double(__cdecl*)(ExEdit::ObjectFilterIndex, int, int, int, ExEdit::Filter*)>(GLOBAL::exedit_base + OFS::ExEdit::efAudioFile_calc_pos)(ofi, milliframe, efpip->framerate_nu, efpip->framerate_de, efp);
@@ -270,7 +270,7 @@ namespace patch {
                     }
                     speed = (double)(objinfo.track_right[TRACK_POS] - objinfo.track_left[TRACK_POS]) * 0.01 * v_sync_rate * framerate / (double)(objinfo.frame_end - objinfo.frame_start);
                 }
-                pos_cs = (double)objinfo.track_left[TRACK_POS] * 0.01 * v_sync_rate + (double)(milliframe + (efp->frame_start_chain - objinfo.frame_start) * 1000) * speed / (framerate * 1000.0);
+                pos_cs = (double)(objinfo.track_left[TRACK_POS] - 1) * 0.01 * v_sync_rate + (double)(milliframe + (efp->frame_start_chain - objinfo.frame_start) * 1000) * speed / (framerate * 1000.0);
                 
             }
         } else if (efp->track_mode[TRACK_POS] == 0) { // 移動なし
@@ -369,12 +369,13 @@ namespace patch {
             while (playback_e <= pos) {
                 pos -= length;
             }
-        } else if ((double)pos < playback_s || playback_e <= (double)pos) {
+        } else if ((double)pos < playback_s || playback_e < (double)pos) {
             //exdata->current_frame = -1;
             return 0;
         }
 
         int read_size = efp->aviutl_exfunc->avi_file_read_audio_sample(afh, (int)round(pos), speed_sign * efpip->audio_n, efpip->audio_data);
+
         if (read_size <= 0) {
             return 0;
         }

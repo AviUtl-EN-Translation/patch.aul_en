@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_31"
+#define PATCH_VERSION_STR "r43_ss_32"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -174,6 +174,7 @@
 #define PATCH_SWITCH_INIT_WINDOW_POS init_window_pos
 #define PATCH_SWITCH_OBJECT_TABLE object_table
 #define PATCH_SWITCH_GROUP_ID group_id
+#define PATCH_SWITCH_SAT_RGB_SPACE sat_rgb
 #define PATCH_SWITCH_SCRIPT_SORT_PATCH script_sort_patch
 
 

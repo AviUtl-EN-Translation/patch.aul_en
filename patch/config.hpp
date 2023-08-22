@@ -290,6 +290,9 @@ public:
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_SAT_RGB_SPACE
+                patch::sat_rgb_space.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
                 patch::borderonly_text.switch_load(cr);
             #endif
@@ -781,6 +784,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_GROUP_ID
                 patch::group_id.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SAT_RGB_SPACE
+                patch::sat_rgb_space.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
                 patch::borderonly_text.switch_store(switch_);
