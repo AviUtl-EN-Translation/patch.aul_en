@@ -93,7 +93,6 @@ namespace patch {
 	int __cdecl read_audio_t::exfunc_avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, int length, short* buf) {
 		if (afh == NULL) return 0;
 		//printf("%d,%d\n", ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nSamplesPerSec, ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX2))->nSamplesPerSec);
-		//printf("%d,%d\n", start, length);
 		auto buf0 = buf;
 		int rev = 0;
 		if (length < 0) {
@@ -111,7 +110,6 @@ namespace patch {
 			start = 0;
 		} else {
 			length = min(length, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N) - start);
-			if (length <= 0) return 0;
 		}
 		int length0 = length;
 		while (0 < length) {
