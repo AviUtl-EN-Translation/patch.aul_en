@@ -61,7 +61,6 @@ namespace patch {
 			if (!enabled_i)return;
 
 			blend_yca_normal = reinterpret_cast<decltype(blend_yca_normal)>(GLOBAL::exedit_base + OFS::ExEdit::blend_yca_normal_func);
-
 			{
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x9fbb4, 48);
 				h.store_i32(0, &blend_yca_add);
@@ -83,19 +82,19 @@ namespace patch {
                 "\x8b\x54\x24\x14"         // mov     edx,dword ptr [esp+14]
                 "\xb8\x00\x10\x00\x00"     // mov     eax,00001000
                 "\x3b\xd0"                 // cmp     edx,eax
-                "\x7c\x1b"                 // jl      skip,+1b
-                "\xc1\xe0\x10"             // shl     eax,10
-                "\x66\x8b\x44\x24\x10"     // mov     ax,[esp+10]
+                "\x7c\x1f"                 // jl      10007e20
+                "\x66\x89\x41\x06"         // mov     [ecx+06],ax
+                "\x66\x8b\x44\x24\x08"     // mov     ax,[esp+08]
                 "\x66\x8b\x54\x24\x0c"     // mov     dx,[esp+0c]
-                "\xc1\xe2\x10"             // shl     edx,10
-                "\x66\x8b\x54\x24\x08"     // mov     dx,[esp+08]
-                "\x89\x11"                 // mov     dword ptr [ecx],edx
-                "\x89\x41\x04"             // mov     dword ptr [ecx+04],eax
+                "\x66\x89\x01"             // mov     [ecx],ax
+                "\x66\x8b\x44\x24\x10"     // mov     ax,[esp+10]
+                "\x66\x89\x51\x02"         // mov     [ecx+02],dx
+                "\x66\x89\x41\x04"         // mov     [ecx+04],ax
                 "\xc3"                     // ret
                 "\x56"                     // push    esi
                 "\x0f\xbf\x71\x06"         // movsx   esi,dword ptr [ecx+06]
                 "\x3b\xf0"                 // cmp     esi,eax
-                "\x7c\x40"                 // jl      skip,+40
+                "\x7c\x40"                 // jl      10007e69
                 "\x66\x89\x41\x06"         // mov     [ecx+06],ax
                 "\x0f\xbf\x31"             // movsx   esi,dword ptr [ecx]
                 "\x8b\x44\x24\x0c"         // mov     eax,dword ptr [esp+0c]
@@ -118,14 +117,14 @@ namespace patch {
                 "\x5e"                     // pop     esi
                 "\xc3"                     // ret
                 "\x85\xf6"                 // test    esi,esi
-                "\x7f\x1c"                 // jg      skip,+1c
-                "\xc1\xe2\x10"             // shl     edx,10
-                "\x66\x8b\x54\x24\x14"     // mov     dx,[esp+14]
-                "\x66\x8b\x44\x24\x10"     // mov     ax,[esp+10]
-                "\xc1\xe0\x10"             // shl     eax,10
+                "\x7f\x20"                 // jg      10007e90
+                "\x66\x89\x51\x06"         // mov     [ecx+06],dx
                 "\x66\x8b\x44\x24\x0c"     // mov     ax,[esp+0c]
-                "\x89\x01"                 // mov     dword ptr [ecx],eax
-                "\x89\x51\x04"             // mov     dword ptr [ecx+04],edx
+                "\x66\x8b\x54\x24\x10"     // mov     dx,[esp+10]
+                "\x66\x89\x01"             // mov     [ecx],ax
+                "\x66\x8b\x44\x24\x14"     // mov     ax,[esp+14]
+                "\x66\x89\x51\x02"         // mov     [ecx+02],dx
+                "\x66\x89\x41\x04"         // mov     [ecx+04],ax
                 "\x5e"                     // pop     esi
                 "\xc3"                     // ret
                 "\x53"                     // push    ebx
@@ -178,20 +177,22 @@ namespace patch {
                     "\x8b\x4c\x24\x04"         // mov     ecx,dword ptr [esp+04]
                     "\x8b\x54\x24\x14"         // mov     edx,dword ptr [esp+14]
                     "\x81\xfa\x00\x10\x00\x00" // cmp     edx,00001000
-                    "\x7c\x19"                 // jl      skip,+19
-                    "\x66\x8b\x44\x24\x10"     // mov     ax,[esp+10]
+                    "\x7c\x1b"                 // jl      10007f4b
+                    "\x66\x8b\x44\x24\x08"     // mov     ax,[esp+08]
                     "\x66\x8b\x54\x24\x0c"     // mov     dx,[esp+0c]
-                    "\xc1\xe2\x10"             // shl     edx,10
-                    "\x66\x8b\x54\x24\x08"     // mov     dx,[esp+08]
-                    "\x89\x11"                 // mov     dword ptr [ecx],edx
+                    "\x66\x89\x01"             // mov     [ecx],ax
+                    "\x66\x8b\x44\x24\x10"     // mov     ax,[esp+10]
+                    "\x66\x89\x51\x02"         // mov     [ecx+02],dx
                     "\x66\x89\x41\x04"         // mov     [ecx+04],ax
                     "\xc3"                     // ret
                     "\x56"                     // push    esi
                 };
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + OFS::ExEdit::blend_yc_normal_func, 104);
                 memcpy(reinterpret_cast<void*>(h.address()), blend_yc_normal_bin, sizeof(blend_yc_normal_bin) - 1);
-                memcpy(reinterpret_cast<void*>(h.address() + sizeof(blend_yc_normal_bin) - 1), &blend_yca_normal_bin[57], 60);
+                memcpy(reinterpret_cast<void*>(h.address() + sizeof(blend_yc_normal_bin) - 1), &blend_yca_normal_bin[61], 60);
             }
+
+
 		}
 		void switching(bool flag) {
 			enabled = flag;
