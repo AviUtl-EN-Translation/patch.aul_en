@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_33
+patch.aul r43_ss_34
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -155,6 +155,8 @@ https://scrapbox.io/nazosauna/patch.aul
     ・再生位置をトラックバー移動にしてループ再生した時の再生位置が正しくないのを修正
     ・音声ファイルの逆再生を行えるように変更
     ・音声ファイルで動画ファイルと連携・動画ファイルで再生位置をトラックバー直線移動にしている時に音が鳴るように変更
+    ・音声ファイルで動画ファイルと連携のチェックを外した時に動画ファイルのパラメータを引き継げるように変更
+    ・音声ファイルで動画ファイルと連携のチェックを外した後に長さを変えると1フレームになるのを修正
     ・ウィンドウ位置の初期化で設定ダイアログも動くように変更
     ・タイムラインにグループ制御などを表示しながらオブジェクトを追加するとエラーになることがあったのを修正
     ・他シーンや1つのレイヤーにオブジェクトの数が多い時にタイムライン操作が重くなるのを改善
@@ -367,7 +369,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_33" のような文字列が格納されている
+        例として "patch.aul r43_ss_34" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
