@@ -349,7 +349,9 @@ namespace patch {
         for (int i = 0; i < efp->track_n; i++) {
             update_any_track(efp->processing, i);
         }
-        update_any_dispname(efp->processing);
+        if ((int)efp->processing >> 16 == 0) {
+            update_any_dispname(efp->processing);
+        }
     }
     void __cdecl any_obj_t::init_setting_dialog_scenechange_wrap(ExEdit::Filter* efp, void* exdata, LPARAM lparam, int sw_flag, short type) {
         reinterpret_cast<void(__cdecl*)(ExEdit::Filter*, void*, LPARAM, int, short)>(GLOBAL::exedit_base + 0x871a0)(efp, exdata, lparam, sw_flag, type);

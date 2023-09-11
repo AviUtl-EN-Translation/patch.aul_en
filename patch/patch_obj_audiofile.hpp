@@ -31,9 +31,9 @@ namespace patch {
 	inline class AudioFile_t {
 		
 		static BOOL __cdecl set_trackvalue_wrap8f9b5(ExEdit::Filter* efp, int track_s, int track_e, int scale);
-		//static int __cdecl avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		//static void __cdecl rev_audio_data(ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip0);
+
+		static char* __cdecl update_dialog_wrap(ExEdit::Filter* efp, void* exdata);
 
 		bool enabled = true;
 		bool enabled_i;
@@ -67,6 +67,10 @@ namespace patch {
 				h.store_i16(0, '\x57\xe8');
 				h.replaceNearJmp(2, &set_trackvalue_wrap8f9b5);
 				h.store_i32(9, '\x28\x83\xc4\x10');
+			}
+			{   // 動画ファイルと連携を外した後にオブジェクトの長さを触ると1フレームになるのを修正
+				
+				ReplaceNearJmp(GLOBAL::exedit_base + 0x90269, &update_dialog_wrap);
 			}
 
 			if (playback_pos.is_enabled() && read_audio.is_enabled()) { // 逆再生に対応

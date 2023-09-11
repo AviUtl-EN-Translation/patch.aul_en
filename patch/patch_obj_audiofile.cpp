@@ -17,6 +17,12 @@
 #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
 
 namespace patch {
+
+#define TRACK_POS 0
+#define TRACK_SPEED 1
+#define CHECK_LOOP 0
+#define CHECK_SYNC 1
+
     struct TrackInfo {
         int value;
         int value_s;
@@ -28,6 +34,37 @@ namespace patch {
         HWND updown_hwnd;
         int pos_y;
         int scale2;
+    };
+
+
+    struct ObjectInfo {
+        int frame_start;
+        int frame_end;
+        int* track_left;
+        int* track_right;
+        int* track_mode;
+        int* check;
+        void* exdata;
+        int* track_param;
+    };
+
+    struct Exdata_MovieFile {
+        char path[_MAX_PATH];
+        int id_and_count;
+        int	TickCount;
+        int frame_n;
+        int	video_rate;
+        int	video_scale;
+        int	current_frame;
+    };
+
+    struct Exdata_AudioFile {
+        char path[_MAX_PATH];
+        int id_and_count;
+        int	TickCount;
+        int centi_sec;
+        int	current_frame;
+        int	current_pos;
     };
 
     BOOL __cdecl AudioFile_t::set_trackvalue_wrap8f9b5(ExEdit::Filter* efp, int track_s, int track_e, int scale) {
@@ -71,11 +108,36 @@ namespace patch {
         return 1;
     }
     
+    char* __cdecl AudioFile_t::update_dialog_wrap(ExEdit::Filter* efp, void* exdata) {
+        ObjectInfo objinfo;
+
+        if (efp->check[CHECK_SYNC] == 0) { // 連携
+            auto ofi = reinterpret_cast<ExEdit::ObjectFilterIndex(__cdecl*)(ExEdit::ObjectFilterIndex, char*)>(GLOBAL::exedit_base + OFS::ExEdit::get_above_object)(efp->processing, reinterpret_cast<char*>(GLOBAL::exedit_base + OFS::ExEdit::str_DOUGAFILE));
+            if ((int)ofi != 0) {
+                efp->exfunc->getvalue(ofi, &objinfo);
+                if (((Exdata_MovieFile*)objinfo.exdata)->path[0] != '\0') {
+                    lstrcpyA(((Exdata_AudioFile*)exdata)->path, ((Exdata_MovieFile*)objinfo.exdata)->path);
+
+                    double v_sync_rate = 100.0 * (double)((Exdata_MovieFile*)objinfo.exdata)->video_scale / (double)((Exdata_MovieFile*)objinfo.exdata)->video_rate;
+
+                    ((Exdata_AudioFile*)exdata)->centi_sec = (int)((double)((Exdata_MovieFile*)objinfo.exdata)->frame_n * v_sync_rate);
+
+                    if (efp->exfunc->count_section_num(efp->processing) == 1) {
+                        efp->track_mode[TRACK_POS] = objinfo.track_mode[TRACK_POS];
+
+                        efp->track_value_left[TRACK_SPEED] = objinfo.track_left[TRACK_SPEED];
+                        efp->track_value_left[TRACK_POS] = (int)((double)(objinfo.track_left[TRACK_POS] - 1) * v_sync_rate);
+                        efp->track_value_right[TRACK_POS] = (int)((double)(objinfo.track_right[TRACK_POS] - 1) * v_sync_rate);
+                        efp->exfunc->x00(efp->processing); // update_object_data
+                    }
+                }
+            }
+        }
+        return reinterpret_cast<char*(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x8f960)(efp, exdata);
+    }
+
+
     BOOL __cdecl AudioFile_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip0) {
-#define TRACK_POS 0
-#define TRACK_SPEED 1
-#define CHECK_LOOP 0
-#define CHECK_SYNC 1
 
         struct FilterProcInfo_1_2 {
             enum Flag : uint32_t {
@@ -154,37 +216,9 @@ namespace patch {
             int32_t clipping_data_exists;
         } *efpip = (FilterProcInfo_1_2*)efpip0;
 
-        struct ObjectInfo {
-            int frame_start;
-            int frame_end;
-            int* track_left;
-            int* track_right;
-            int* track_mode;
-            int* check;
-            void* exdata;
-            int* track_param;
-        }objinfo;
-
-        struct Exdata_MovieFile {
-            char path[_MAX_PATH];
-            int id_and_count;
-            int	TickCount;
-            int frame_n;
-            int	video_rate;
-            int	video_scale;
-            int	current_frame;
-        };
-
-        struct Exdata_AudioFile {
-            char path[_MAX_PATH];
-            int id_and_count;
-            int	TickCount;
-            int centi_sec;
-            int	current_frame;
-            int	current_pos;
-        };
 
         AviUtl::FileInfo* fip;
+        ObjectInfo objinfo;
 
         double audio_rate = (double)efpip->audio_rate;
         int milliframe;
@@ -236,6 +270,8 @@ namespace patch {
 
             efp->exfunc->getvalue(ofi, &objinfo);
             v_sync_rate = 100.0 * (double)((Exdata_MovieFile*)objinfo.exdata)->video_scale / (double)((Exdata_MovieFile*)objinfo.exdata)->video_rate;
+            exdata->centi_sec = (int)((double)((Exdata_MovieFile*)objinfo.exdata)->frame_n * v_sync_rate);
+
             if (objinfo.track_mode[TRACK_POS] == 0) {
                 playback_s = 0.0;
                 playback_e = (double)((Exdata_MovieFile*)objinfo.exdata)->frame_n * v_sync_rate;
