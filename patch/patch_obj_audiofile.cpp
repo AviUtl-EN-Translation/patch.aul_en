@@ -136,6 +136,9 @@ namespace patch {
         return reinterpret_cast<char*(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x8f960)(efp, exdata);
     }
 
+    double __cdecl AudioFile_t::calc_pos_wrap(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp) {
+        return abs(calc_pos(ofi, milliframe, video_rate, video_scale, efp));
+    }
 
     BOOL __cdecl AudioFile_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip0) {
 
@@ -284,7 +287,7 @@ namespace patch {
                     pos_cs = playback_e - (double)(objinfo.track_left[TRACK_POS] - 1) * v_sync_rate;
                 }
                 pos_cs *= 0.01;
-                pos_cs += reinterpret_cast<double(__cdecl*)(ExEdit::ObjectFilterIndex, int, int, int, ExEdit::Filter*)>(GLOBAL::exedit_base + OFS::ExEdit::efAudioFile_calc_pos)(ofi, milliframe, efpip->framerate_nu, efpip->framerate_de, efp);
+                pos_cs += calc_pos(ofi, milliframe, efpip->framerate_nu, efpip->framerate_de, efp);
 
             } else {
                 if (objinfo.track_left[TRACK_POS] == objinfo.track_right[TRACK_POS]) return FALSE;
@@ -321,7 +324,7 @@ namespace patch {
                 pos_cs = playback_e - (double)objinfo.track_left[TRACK_POS];
             }
             pos_cs *= 0.01;
-            pos_cs += reinterpret_cast<double(__cdecl*)(ExEdit::ObjectFilterIndex, int, int, int, ExEdit::Filter*)>(GLOBAL::exedit_base + OFS::ExEdit::efAudioFile_calc_pos)(efp->processing, milliframe, efpip->framerate_nu, efpip->framerate_de, efp);
+            pos_cs += calc_pos(efp->processing, milliframe, efpip->framerate_nu, efpip->framerate_de, efp);
         } else { // playback_pos easing
             playback_s = (double)efp->track_value_left[TRACK_POS];
             playback_e = (double)efp->track_value_right[TRACK_POS];
