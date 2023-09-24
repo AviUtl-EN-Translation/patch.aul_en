@@ -79,6 +79,7 @@
     <ClInclude Include="patch_right_trackbar.hpp" />
     <ClInclude Include="patch_sat_rgb_space.hpp" />
     <ClInclude Include="patch_script_sort.hpp" />
+    <ClInclude Include="patch_setting_dialog_add_filter.hpp" />
     <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
     <ClInclude Include="patch_shared_cache.hpp" />
     <ClInclude Include="patch_exception_history.hpp" />
@@ -195,6 +196,7 @@
     <ClCompile Include="patch_playback_pos.cpp" />
     <ClCompile Include="patch_read_audio.cpp" />
     <ClCompile Include="patch_rendering.cpp" />
+    <ClCompile Include="patch_setting_dialog_add_filter.cpp" />
     <ClCompile Include="patch_setting_dialog_chromakey.cpp" />
     <ClCompile Include="patch_shared_cache.cpp" />
     <ClCompile Include="patch_exception_log.cpp" />

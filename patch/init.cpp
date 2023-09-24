@@ -212,6 +212,10 @@ void init_t::InitAtExeditLoad() {
 	patch::failed_file_drop.init();
 #endif
 
+#ifdef PATCH_SWITCH_SETTINGDIALOG_ADD_FILTER
+	patch::setting_dialog_add_filter.init();
+#endif
+
 #ifdef PATCH_SWITCH_OBJ_TEXT
 	patch::Text.init();
 #endif

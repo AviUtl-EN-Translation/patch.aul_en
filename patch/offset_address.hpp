@@ -249,6 +249,7 @@ namespace OFS {
 		constexpr i32 scenechange_progress_times4096 = 0x230c60;
 		constexpr i32 GetCurrentProcessing = 0x047ba0;
 		constexpr i32 LoadedFilterTable = 0x187c98;
+		constexpr i32 LoadedFilterCount = 0x146248;
 		constexpr i32 splitted_object_new_group_belong = 0x034f90;
 		constexpr i32 DrawTimelineMask = 0x0392f0;
 		constexpr i32 InitScrollHorizonal = 0x038d30;
@@ -336,6 +337,9 @@ namespace OFS {
 		constexpr i32 get_last_filter_idx = 0x0335f0;
 		constexpr i32 get_filterp = 0x047b00;
 		constexpr i32 delete_filter_effect = 0x033d20;
+
+		constexpr i32 is_camera_object = 0x039990;
+		constexpr i32 is_camera_effect = 0x0399e0;
 
 		constexpr i32 TrackModeInfoArray = 0x14d3b0;
 		constexpr i32 TrackLeftInfoArray = 0x14d4c8;

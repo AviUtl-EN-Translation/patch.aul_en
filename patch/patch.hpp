@@ -129,4 +129,5 @@
 #include "patch_init_window_pos.hpp"
 #include "patch_object_table.hpp"
 #include "patch_sat_rgb_space.hpp"
+#include "patch_setting_dialog_add_filter.hpp"
 

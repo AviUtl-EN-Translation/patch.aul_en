@@ -167,6 +167,9 @@ public:
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_ADD_FILTER
+                patch::setting_dialog_add_filter.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_TEXT
                 patch::Text.switch_load(cr);
             #endif
@@ -661,6 +664,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SETTINGDIALOG_MOVE
                 patch::setting_dialog_move.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_ADD_FILTER
+                patch::setting_dialog_add_filter.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_OBJ_TEXT
                 patch::Text.switch_store(switch_);

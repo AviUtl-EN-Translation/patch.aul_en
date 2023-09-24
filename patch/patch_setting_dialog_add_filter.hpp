@@ -14,7 +14,7 @@
 #pragma once
 #include "macro.h"
 
-#ifdef PATCH_SWITCH_OBJ_TEXT
+#ifdef PATCH_SWITCH_SETTINGDIALOG_ADD_FILTER
 
 #include <exedit.hpp>
 
@@ -27,38 +27,35 @@
 namespace patch {
 
     // init at exedit load
-    // 改行のみのテキストが幅0 高さ1以上となってしまい、エラーの原因となるのを修正
+    // 主にプラグインで本来付けられないフィルタ効果を付与できてしまうのを修正
 
-    // テキストで制御文字を使用した時に変な描画がされることがあるのを簡易修正
+    inline class settingdialog_add_filter_t {
+        static bool check_add_filter_type(int object_idx, int filter_idx);
+        static void set_last_menu_object_flag(int object_idx);
+        static void __stdcall SendMessageA_wrap(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
-    inline class obj_Text_t {
 
         bool enabled = true;
         bool enabled_i;
-        inline static const char key[] = "obj_text";
+        inline static const char key[] = "settingdialog_add_filter";
     public:
-        static void __cdecl exedit_exfunc_x40_ret_wrap(void*, int, int, wchar_t*, ExEdit::PixelBGR, ExEdit::PixelBGR, int, HFONT, int*, int*, int, int, int, int*, int);
-        static void __cdecl yc_buffer_fill_wrap(void*, int, int, int, int, short, short, short, short, int);
-        static void __cdecl FUN_100877e0(HMENU hmenu, int param);
         void init() {
             enabled_i = enabled;
-
             if (!enabled_i)return;
 
-            { // テキストの幅か高さが0であれば両方0にする
-                /*
-                    1004fee8 c3        ret
-                    1004fee9 90909090  nop
-                */
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x04fee8, 5);
-                h.store_i8(0, '\xe9'); // jmp
-                h.replaceNearJmp(1, &exedit_exfunc_x40_ret_wrap);
-            }
-            { // テキスト作成時のバッファ初期化の範囲を増やす
-                
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x050254, 4);
-                h.replaceNearJmp(0, &yc_buffer_fill_wrap);
-            }
+            /*
+                1002d927 6811010000         push    00000111 ;WM_COMMAND
+                1002d92c 50                 push    eax ;exedit_hwnd
+                1002d92d ffd5               call    ebp ;SendMessageA
+                ↓
+                1002d927 50                 push    eax
+                1002d928 6690               nop
+                1002d92a e8XxXxXxXx         call    newfunc
+            */
+            OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x2d927, 8);
+            h.store_i32(0, '\x50\x66\x90\xe8');
+            h.replaceNearJmp(4, &SendMessageA_wrap);
+
         }
 
         void switching(bool flag) {
@@ -77,7 +74,7 @@ namespace patch {
         void switch_store(ConfigWriter& cw) {
             cw.append(key, enabled);
         }
-    } Text;
+    } setting_dialog_add_filter;
 } // namespace patch
 
-#endif // ifdef PATCH_SWITCH_OBJ_TEXT
+#endif // ifdef PATCH_SWITCH_SETTINGDIALOG_ADD_FILTER
