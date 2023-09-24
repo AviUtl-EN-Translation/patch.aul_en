@@ -325,7 +325,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "change_disp_scene" : boolean, ; シーン切り替え時のバグを修正 (既定値: true)
         "right_trackbar" : boolean, ; 複数選択状態で右トラックバーの値を変えた時に正常ではないのを修正 (既定値: true)
 	"any_obj" : boolean, ; Ctrlを押しながら複数選択状態での変更が正しく行われないのを修正 (既定値: true)
-        "exclusion_font"
+        "exclusion_font" : boolean, ; フォント名が32バイト以上の場合、正常に扱うことはできないため表示しないように変更 (既定値: true)
         "init_window_pos" : boolean, ; ウィンドウ位置の初期化で設定ダイアログも動くように変更 (既定値: true)
         "object_table" : boolean, ; 他シーンや1つのレイヤーにオブジェクトの数が多い時にタイムライン操作が重くなるのを改善 (既定値: true)
         "group_id" : boolean, ; プロジェクトファイル読み込み時にグループ化IDの最大値が高い場合、整理する (既定値: true)
