@@ -256,6 +256,12 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_NOISE
 	patch::Noise.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_RADIATIONALBLUR
+	patch::RadiationalBlur.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_FLASH
+	patch::Flash.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
 	patch::obj_specialcolorconv.init();
 #endif

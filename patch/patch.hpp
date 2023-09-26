@@ -130,4 +130,6 @@
 #include "patch_object_table.hpp"
 #include "patch_sat_rgb_space.hpp"
 #include "patch_setting_dialog_add_filter.hpp"
+#include "patch_obj_radiationalblur.hpp"
+#include "patch_obj_flash.hpp"
 

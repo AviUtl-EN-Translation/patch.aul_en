@@ -67,8 +67,10 @@
     <ClInclude Include="patch_object_table.hpp" />
     <ClInclude Include="patch_obj_blur.hpp" />
     <ClInclude Include="patch_obj_create_figure.hpp" />
+    <ClInclude Include="patch_obj_flash.hpp" />
     <ClInclude Include="patch_obj_mask.hpp" />
     <ClInclude Include="patch_obj_portionfilter.hpp" />
+    <ClInclude Include="patch_obj_radiationalblur.hpp" />
     <ClInclude Include="patch_obj_resize.hpp" />
     <ClInclude Include="patch_obj_rotation.hpp" />
     <ClInclude Include="patch_obj_sharp.hpp" />

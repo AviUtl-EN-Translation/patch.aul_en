@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_35"
+#define PATCH_VERSION_STR "r43_ss_36"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -150,6 +150,8 @@
 #define PATCH_SWITCH_OBJ_LENSBLUR obj_lensblur
 #define PATCH_SWITCH_OBJ_IMAGELOOP obj_imageloop
 #define PATCH_SWITCH_OBJ_NOISE obj_noise
+#define PATCH_SWITCH_OBJ_RADIATIONALBLUR obj_radiationalblur
+#define PATCH_SWITCH_OBJ_FLASH obj_flash
 #define PATCH_SWITCH_OBJ_SPECIALCOLORCONV obj_specialcolorconv
 #define PATCH_SWITCH_OBJ_PORTIONFILTER obj_portionfilter
 #define PATCH_SWITCH_BORDER_ONLY_TEXT border_only_text

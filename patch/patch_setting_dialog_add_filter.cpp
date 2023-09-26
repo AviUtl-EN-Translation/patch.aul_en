@@ -40,7 +40,7 @@ namespace patch {
 		}
 
 		if (has_flag(base_flag, ExEdit::Filter::Flag::Input) || has_flag(base_flag, ExEdit::Filter::Flag::Effect)) { // メディアオブジェクト
-			return has_flag(filter_flag, ExEdit::Filter::Flag::Effect);
+			return has_flag(filter_flag, ExEdit::Filter::Flag::Effect) || has_flag(base_flag, ExEdit::Filter::Flag::Input) || has_flag(base_flag, ExEdit::Filter::Flag::Output);
 		}
 
 		return !has_flag(filter_flag, ExEdit::Filter::Flag::Effect);
