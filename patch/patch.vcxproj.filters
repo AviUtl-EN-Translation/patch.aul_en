@@ -416,6 +416,12 @@
     <ClInclude Include="patch_obj_radiationalblur.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_audio_spectrum.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_fast_specialcolorconv.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -633,6 +639,12 @@
     </ClCompile>
     <ClCompile Include="patch_setting_dialog_add_filter.cpp">
       <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_audio_spectrum.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_specialcolorconv.cpp">
+      <Filter>feature\fast</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -132,4 +132,4 @@
 #include "patch_setting_dialog_add_filter.hpp"
 #include "patch_obj_radiationalblur.hpp"
 #include "patch_obj_flash.hpp"
-
+#include "patch_fast_specialcolorconv.hpp"

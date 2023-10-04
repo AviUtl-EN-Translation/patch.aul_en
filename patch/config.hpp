@@ -381,6 +381,12 @@ public:
                 #ifdef PATCH_SWITCH_FAST_CHROMAKEY
                     patch::fast::Chromakey.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
+                    patch::fast::SpecialColorConv.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_AUDIO_SPECTRUM
+                    patch::fast::audio_spectrum.switch_load(cr);
+                #endif
         
                 #ifdef PATCH_SWITCH_CL
                     patch::fast::cl.switch_load(cr);
@@ -884,6 +890,12 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_CHROMAKEY
                     patch::fast::Chromakey.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
+                    patch::fast::SpecialColorConv.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_AUDIO_SPECTRUM
+                    patch::fast::audio_spectrum.switch_store(switch_);
                 #endif
         
                 #ifdef PATCH_SWITCH_CL

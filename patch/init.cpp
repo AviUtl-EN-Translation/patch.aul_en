@@ -402,6 +402,12 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_CHROMAKEY
 			patch::fast::Chromakey.init();
 		#endif
+		#ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
+			patch::fast::SpecialColorConv.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_AUDIO_SPECTRUM
+			patch::fast::audio_spectrum.init();
+		#endif
 		
 		#ifdef PATCH_SWITCH_CL
 			if (patch::fast::cl.init()) {
