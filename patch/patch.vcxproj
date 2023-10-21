@@ -55,6 +55,7 @@
     <ClInclude Include="patch_fast_blur.hpp" />
     <ClInclude Include="patch_fast_borderblur.hpp" />
     <ClInclude Include="patch_fast_chromakey.hpp" />
+    <ClInclude Include="patch_fast_colordrift.hpp" />
     <ClInclude Include="patch_fast_colorkey.hpp" />
     <ClInclude Include="patch_fast_drawfilter.hpp" />
     <ClInclude Include="patch_fast_extractedge.hpp" />
@@ -187,6 +188,7 @@
     <ClCompile Include="patch_fast_blur.cpp" />
     <ClCompile Include="patch_fast_borderblur.cpp" />
     <ClCompile Include="patch_fast_chromakey.cpp" />
+    <ClCompile Include="patch_fast_colordrift.cpp" />
     <ClCompile Include="patch_fast_colorkey.cpp" />
     <ClCompile Include="patch_fast_extractedge.cpp" />
     <ClCompile Include="patch_fast_specialcolorconv.cpp" />

@@ -133,3 +133,4 @@
 #include "patch_obj_radiationalblur.hpp"
 #include "patch_obj_flash.hpp"
 #include "patch_fast_specialcolorconv.hpp"
+#include "patch_fast_colordrift.hpp"

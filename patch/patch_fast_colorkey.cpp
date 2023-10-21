@@ -54,41 +54,72 @@ namespace patch::fast {
     void __cdecl Colorkey_t::conv1_mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         int border_size = efp->track[2];
         int loop3 = efpip->obj_h - border_size * 2 - 1;
-        int linesize = efpip->obj_line * sizeof(ExEdit::PixelYCA);
         int x = efpip->obj_w * thread_id / thread_num;
         int* dst0 = (int*)efpip->obj_temp + x;
+        int* cnv0 = (int*)dst0 + efpip->obj_w * efpip->obj_h;
         short* src0 = (short*)((ExEdit::PixelYCA*)efpip->obj_edit + x) + 3;
-        for (x = efpip->obj_w * (thread_id + 1) / thread_num - x; 0 < x; x--) {
-            auto src1 = src0;
-            auto src2 = src1;
-            src0 += 4;
-            auto dst = dst0;
-            dst0++;
-            int sum_a = 0;
-            for (int y = border_size; 0 < y; y--) {
-                sum_a += *src1;
-                src1 = (short*)((int)src1 + linesize);
+        int w = efpip->obj_w * (thread_id + 1) / thread_num - x;
+
+        memset(cnv0, 0, w * sizeof(int));
+
+        auto src1 = src0;
+        auto dst = dst0;
+        for (int y = border_size; 0 < y; y--) {
+            auto src2 = src0;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv += *src2;
+                src2 += 4;
+                cnv++;
             }
-            for (int y = border_size; 0 <= y; y--) {
-                sum_a += *src1;
-                *dst = sum_a;
-                src1 = (short*)((int)src1 + linesize);
-                dst = (int*)((int)dst + linesize);
-            }
-            for (int y = loop3; 0 < y; y--) {
-                sum_a += *src1 - *src2;
-                *dst = sum_a;
-                src1 = (short*)((int)src1 + linesize);
-                src2 = (short*)((int)src2 + linesize);
-                dst = (int*)((int)dst + linesize);
-            }
-            for (int y = border_size; 0 < y; y--) {
-                sum_a -= *src2;
-                *dst = sum_a;
-                src2 = (short*)((int)src2 + linesize);
-                dst = (int*)((int)dst + linesize);
-            }
+            src0 += efpip->obj_line * 4;
         }
+        for (int y = border_size; 0 <= y; y--) {
+            auto src2 = src0;
+            auto dst = dst0;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv += *src2;
+                *dst = *cnv;
+                src2 += 4;
+                dst++;
+                cnv++;
+            }
+            src0 += efpip->obj_line * 4;
+            dst0 += efpip->obj_w;
+        }
+        for (int y = loop3; 0 < y; y--) {
+            auto src2 = src0;
+            auto src3 = src1;
+            auto dst = dst0;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv += *src2 - *src3;
+                *dst = *cnv;
+                src2 += 4;
+                src3 += 4;
+                dst++;
+                cnv++;
+            }
+            src0 += efpip->obj_line * 4;
+            src1 += efpip->obj_line * 4;
+            dst0 += efpip->obj_w;
+        }
+        for (int y = border_size; 0 < y; y--) {
+            auto src3 = src1;
+            auto dst = dst0;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv -= *src3;
+                *dst = *cnv;
+                src3 += 4;
+                dst++;
+                cnv++;
+            }
+            src1 += efpip->obj_line * 4;
+            dst0 += efpip->obj_w;
+        }
+
     }
     void __cdecl Colorkey_t::conv2_mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         int border_size = efp->track[2];
@@ -97,17 +128,16 @@ namespace patch::fast {
         int border_sq_range = border_range * border_range;
         int oa = (1 - border_size) << 12;
         int thres = (-oa) / border_size;
-        int linesize = efpip->obj_line * sizeof(ExEdit::PixelYCA);
-        int* src0 = (int*)((int)efpip->obj_temp + linesize * thread_id);
-        short* dst0 = (short*)((int)efpip->obj_edit + linesize * thread_id) + 3;
-        linesize *= thread_num;
+        int y = efpip->obj_h * thread_id / thread_num;
+        int* src0 = (int*)efpip->obj_temp + efpip->obj_w * y;
+        short* dst0 = &((ExEdit::PixelYCA*)efpip->obj_edit + efpip->obj_line * y)->a;
 
-        for (int y = (efpip->obj_h + thread_num - 1 - thread_id) / thread_num; 0 < y; y--) {
+        for (y = efpip->obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
             auto src1 = src0;
             auto src2 = src1;
-            src0 = (int*)((int)src0 + linesize);
+            src0 += efpip->obj_w;
             auto dst = dst0;
-            dst0 = (short*)((int)dst0 + linesize);
+            dst0 += efpip->obj_line * 4;
 
             int sum_a = 0;
             for (int x = border_size; 0 < x; x--) {

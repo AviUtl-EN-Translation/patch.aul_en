@@ -375,6 +375,9 @@ public:
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_COLORDRIFT
+                    patch::fast::ColorDrift.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_COLORKEY
                     patch::fast::Colorkey.switch_load(cr);
                 #endif
@@ -884,6 +887,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_COLORDRIFT
+                    patch::fast::ColorDrift.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_COLORKEY
                     patch::fast::Colorkey.switch_store(switch_);

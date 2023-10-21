@@ -396,6 +396,9 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_MOTIONBLUR
 			patch::fast::MotionBlur.init();
 		#endif
+		#ifdef PATCH_SWITCH_FAST_COLORDRIFT
+			patch::fast::ColorDrift.init();
+		#endif
 		#ifdef PATCH_SWITCH_FAST_COLORKEY
 			patch::fast::Colorkey.init();
 		#endif

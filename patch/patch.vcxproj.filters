@@ -422,6 +422,9 @@
     <ClInclude Include="patch_fast_specialcolorconv.hpp">
       <Filter>feature\fast</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_colordrift.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -644,6 +647,9 @@
       <Filter>feature\fast</Filter>
     </ClCompile>
     <ClCompile Include="patch_fast_specialcolorconv.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_colordrift.cpp">
       <Filter>feature\fast</Filter>
     </ClCompile>
   </ItemGroup>

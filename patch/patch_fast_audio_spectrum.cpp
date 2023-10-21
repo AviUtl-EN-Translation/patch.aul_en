@@ -22,16 +22,18 @@
 
 namespace patch::fast {
     void __cdecl AudioSpectrum_t::fft_wrap() {
-        int n = 0;
-        auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
-        double* data = (double*)a_exfunc->get_shared_mem((int)&smi, 0, smi);
-        if (data == nullptr) {
-            data = (double*)a_exfunc->create_shared_mem((int)&smi, 0, 0x400 * 2 * sizeof(double), &smi);
+        // reinterpret_cast<void(__cdecl*)()>(GLOBAL::exedit_base + 0x8dc20)(); original_func
+        for (int i = 0; i < 1000; i++) {
+            int n = 0;
+            auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
+            double* data = (double*)a_exfunc->get_shared_mem((int)&smi, 0, smi);
             if (data == nullptr) {
-                reinterpret_cast<void(__cdecl*)()>(GLOBAL::exedit_base + 0x8dc20)();
-                return;
-            }
-            n = 0;
+                data = (double*)a_exfunc->create_shared_mem((int)&smi, 0, 0x400 * 2 * sizeof(double), &smi);
+                if (data == nullptr) {
+                    reinterpret_cast<void(__cdecl*)()>(GLOBAL::exedit_base + 0x8dc20)();
+                    return;
+                }
+                n = 0;
 
                 for (int i = 0; i < 0x400 * 2; i++) {
                     double r = n * 0.003067961575771282;
@@ -45,37 +47,36 @@ namespace patch::fast {
                         n ^= bit;
                     }
                 }
-            
-        }
-        AudioSpectrum_var* as = reinterpret_cast<AudioSpectrum_var*>(GLOBAL::exedit_base + 0x244e30);
-        n = 0;
-        for (int i = 1; i < 2047; i++) {
-            int bit = 0x400;
-            n ^= 0x400;
-            while (n < bit) {
-                bit >>= 1;
-                n ^= bit;
             }
-            if (i < n) {
-                std::swap(as->buf4[i], as->buf4[n]);
-                // std::swap(as->buf3[i], as->buf3[n]);
+            AudioSpectrum_var* as = reinterpret_cast<AudioSpectrum_var*>(GLOBAL::exedit_base + 0x244e30);
+            n = 0;
+            for (int i = 1; i < 2047; i++) {
+                int bit = 0x400;
+                n ^= 0x400;
+                while (n < bit) {
+                    bit >>= 1;
+                    n ^= bit;
+                }
+                if (i < n) {
+                    std::swap(as->buf4[i], as->buf4[n]);
+                    // std::swap(as->buf3[i], as->buf3[n]);
+                }
             }
-        }
-        memset(as->buf3, 0, 2048 * sizeof(double));
-
-        for (int i = 1; i <= 0x400; i <<= 1) {
-            for (int j = n = 0; j < 0x800; j += i * 2) {
-                double dsin = data[n];
-                n++;
-                double dcos = data[n];
-                n++;
-                for (int k = j; k < i + j; k++) {
-                    double d1 = as->buf4[k] - as->buf4[k + i];
-                    double d2 = as->buf3[k] - as->buf3[k + i];
-                    as->buf4[k] += as->buf4[k + i];
-                    as->buf3[k] += as->buf3[k + i];
-                    as->buf4[k + i] = dcos * d1 - dsin * d2;
-                    as->buf3[k + i] = dsin * d1 + dcos * d2;
+            memset(as->buf3, 0, 2048 * sizeof(double));
+            for (int i = 1; i <= 0x400; i <<= 1) {
+                for (int j = n = 0; j < 0x800; j += i * 2) {
+                    double dsin = data[n];
+                    n++;
+                    double dcos = data[n];
+                    n++;
+                    for (int k = j; k < i + j; k++) {
+                        double d1 = as->buf4[k] - as->buf4[k + i];
+                        double d2 = as->buf3[k] - as->buf3[k + i];
+                        as->buf4[k] += as->buf4[k + i];
+                        as->buf3[k] += as->buf3[k + i];
+                        as->buf4[k + i] = dcos * d1 - dsin * d2;
+                        as->buf3[k + i] = dsin * d1 + dcos * d2;
+                    }
                 }
             }
         }
