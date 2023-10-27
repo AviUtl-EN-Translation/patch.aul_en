@@ -51,7 +51,7 @@ namespace patch::fast {
 
         int add_size = efp->track[0] * 2;
 
-        add_size = (std::min)({ add_size, efpip->obj_line - obj_w, efpip->obj_max_h - obj_h });
+        add_size = (std::min)({ add_size, *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_w) - obj_w, *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_h) - obj_h });
         add_size &= 0xfffffffe;
 
         obj_w += add_size;

@@ -558,11 +558,11 @@ kernel void DisplacementMap_rot(global short* dst, global short* src, global sho
 	}
 }
 )" R"(
-kernel void RadiationalBlur_Media(global short* dst, global short* src, int src_w, int src_h, int buffer_line,
+kernel void RadiationalBlur_Media(global short* dst, global short* src, int src_w, int src_h, int vram_w,
 	int rb_blur_cx, int rb_blur_cy, int rb_obj_cx, int rb_obj_cy, int rb_range, int rb_pixel_range) {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
-	int pixel_itr = x + y * buffer_line;
+	int pixel_itr = x + y * vram_w;
 
 	x += rb_obj_cx;
 	y += rb_obj_cy;
@@ -595,7 +595,7 @@ kernel void RadiationalBlur_Media(global short* dst, global short* src, int src_
 			int x_itr = x + i * cx / c_dist_times8;
 			int y_itr = y + i * cy / c_dist_times8;
 			if (0 <= x_itr && x_itr < src_w && 0 <= y_itr && y_itr < src_h) {
-				short4 itr = vload4(x_itr + y_itr * buffer_line, src);
+				short4 itr = vload4(x_itr + y_itr * vram_w, src);
 				int itr_a = itr.w;
 				sum_a += itr_a;
 				if (0x1000 < itr_a) {
@@ -623,11 +623,11 @@ kernel void RadiationalBlur_Media(global short* dst, global short* src, int src_
 	} else if (x < 0 || y < 0 || src_w <= x || src_h <= y) {
 		vstore4((short4)(0, 0, 0, 0), pixel_itr, dst);
 	} else {
-		vstore4(vload4(x + y * buffer_line, src), pixel_itr, dst);
+		vstore4(vload4(x + y * vram_w, src), pixel_itr, dst);
 	}
 }
 
-kernel void RadiationalBlur_Filter(global short* dst, global short* src, int buffer_line,
+kernel void RadiationalBlur_Filter(global short* dst, global short* src, int vram_w,
 	int rb_blur_cx, int rb_blur_cy, int rb_range, int rb_pixel_range) {
 	int x = get_global_id(0);
 	int y = get_global_id(1);
@@ -650,7 +650,7 @@ kernel void RadiationalBlur_Filter(global short* dst, global short* src, int buf
 		range *= 2;
 	}
 
-	int offset = (x + y * buffer_line) * 3;
+	int offset = (x + y * vram_w) * 3;
 	if (2 <= c_dist_times8 && 2 <= range) {
 		int sum_y = 0;
 		int sum_cb = 0;
@@ -658,7 +658,7 @@ kernel void RadiationalBlur_Filter(global short* dst, global short* src, int buf
 		for (int i = 0; i < range; i++) {
 			int x_itr = x + i * cx / c_dist_times8;
 			int y_itr = y + i * cy / c_dist_times8;
-			int pix_offset = (x_itr + y_itr * buffer_line) * 3;
+			int pix_offset = (x_itr + y_itr * vram_w) * 3;
 			sum_y += src[pix_offset];
 			sum_cb += src[++pix_offset];
 			sum_cr += src[++pix_offset];
@@ -673,7 +673,7 @@ kernel void RadiationalBlur_Filter(global short* dst, global short* src, int buf
 		dst[offset + 2] = src[offset + 2];
 	}
 }
-kernel void RadiationalBlur_Filter_Far(	global short* dst, global short* src, int scene_w, int scene_h, int buffer_line,
+kernel void RadiationalBlur_Filter_Far(	global short* dst, global short* src, int scene_w, int scene_h, int vram_w,
 	int rb_blur_cx, int rb_blur_cy, int rb_range, int rb_pixel_range) {
 	int x = get_global_id(0), y = get_global_id(1);
 
@@ -695,7 +695,7 @@ kernel void RadiationalBlur_Filter_Far(	global short* dst, global short* src, in
 		range *= 2;
 	}
 
-	int offset = (x + y * buffer_line) * 3;
+	int offset = (x + y * vram_w) * 3;
 	if (2 <= c_dist_times8 && 2 <= range) {
 		int sum_y = 0;
 		int sum_cb = 0;
@@ -704,7 +704,7 @@ kernel void RadiationalBlur_Filter_Far(	global short* dst, global short* src, in
 			int x_itr = x + i * cx / c_dist_times8;
 			int y_itr = y + i * cy / c_dist_times8;
 			if (0 <= x_itr && 0 <= y_itr && x_itr < scene_w && y_itr < scene_h) {
-				int pix_offset = (x_itr + y_itr * buffer_line) * 3;
+				int pix_offset = (x_itr + y_itr * vram_w) * 3;
 				sum_y += src[pix_offset];
 				sum_cb += src[++pix_offset];
 				sum_cr += src[++pix_offset];
@@ -721,7 +721,7 @@ kernel void RadiationalBlur_Filter_Far(	global short* dst, global short* src, in
 	}
 }
 )" R"(
-kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
+kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, int vram_w,
 	int g_cx, int g_cy, int g_range, int g_pixel_range, int g_temp_x, int g_temp_y, int g_r_intensity) {
 	int xi = get_global_id(0);
 	int yi = get_global_id(1);
@@ -757,7 +757,7 @@ kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, i
 			int y_itr = y + i * cy / c_dist_times8;
 
 			if (0 <= x_itr && 0 <= y_itr && x_itr < src_w && y_itr < src_h) {
-				short4 itr = vload4(x_itr + y_itr * exedit_buffer_line, src);
+				short4 itr = vload4(x_itr + y_itr * vram_w, src);
 				if (4096 < itr.w) {
 					itr.w = 4096;
 				}
@@ -770,13 +770,13 @@ kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, i
 		sum_cb /= range;
 		sum_cr /= range;
 	} else if (0 <= x && 0 <= y && x < src_w && y < src_h) {
-		short4 itr = vload4(x + y * exedit_buffer_line, src);
+		short4 itr = vload4(x + y * vram_w, src);
 		sum_y = itr.x * itr.w / 4096;
 		sum_cb = itr.y * itr.w / 4096;
 		sum_cr = itr.z * itr.w / 4096;
 	}
 
-	int pixel_itr = xi + yi * exedit_buffer_line;
+	int pixel_itr = xi + yi * vram_w;
 	short ya = sum_y - g_r_intensity;
 	if (ya <= 0) {
 		vstore4((short4)(0, 0, 0, 0), pixel_itr, dst);
@@ -796,7 +796,7 @@ kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, i
 		dst[2] = sum_cr * 4096 / ya;
 	}
 }
-kernel void FlashColor(	global short* dst, global short* src, int src_w, int src_h, int exedit_buffer_line,
+kernel void FlashColor(	global short* dst, global short* src, int src_w, int src_h, int vram_w,
 	int g_cx, int g_cy, int g_range, int g_pixel_range, int g_temp_x, int g_temp_y,
 	int g_r_intensity, short g_color_y, short g_color_cb, short g_color_cr) {
 	int xi = get_global_id(0);
@@ -829,18 +829,18 @@ kernel void FlashColor(	global short* dst, global short* src, int src_w, int src
 			int y_itr = y + i * cy / c_dist_times8;
 
 			if (0 <= x_itr && 0 <= y_itr && x_itr < src_w && y_itr < src_h) {
-				sum_a += min((int)src[(x_itr + y_itr * exedit_buffer_line) * 4 + 3], 4096);
+				sum_a += min((int)src[(x_itr + y_itr * vram_w) * 4 + 3], 4096);
 			}
 		}
 		sum_a /= range;
 	} else if (0 <= x && 0 <= y && x < src_w && y < src_h) {
-		sum_a = src[(x + y * exedit_buffer_line) * 4 + 3];
+		sum_a = src[(x + y * vram_w) * 4 + 3];
 	}
 	int col_y = g_color_y * sum_a / 4096;
 	int col_cb = g_color_cb * sum_a / 4096;
 	int col_cr = g_color_cr * sum_a / 4096;
 
-	int pixel_itr = xi + yi * exedit_buffer_line;
+	int pixel_itr = xi + yi * vram_w;
 	short ya = col_y - g_r_intensity;
 	if (ya <= 0) {
 		vstore4((short4)(0, 0, 0, 0), pixel_itr, dst);

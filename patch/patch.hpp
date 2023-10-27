@@ -134,3 +134,6 @@
 #include "patch_obj_flash.hpp"
 #include "patch_fast_specialcolorconv.hpp"
 #include "patch_fast_colordrift.hpp"
+#include "patch_fast_shadow.hpp"
+#include "patch_obj_diffuselight.hpp"
+#include "patch_paste_pos.hpp"

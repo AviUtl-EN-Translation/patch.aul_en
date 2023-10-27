@@ -262,6 +262,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_FLASH
 	patch::Flash.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_DIFFUSELIGHT
+	patch::DiffuseLight.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
 	patch::obj_specialcolorconv.init();
 #endif
@@ -348,6 +351,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 	patch::borderonly_text.init();
 #endif
+#ifdef PATCH_SWITCH_PASTE_POS
+	patch::paste_pos.init();
+#endif
 	
 	patch::setting_dialog();
 
@@ -377,6 +383,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
 			patch::fast::create_figure.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_SHADOW
+			patch::fast::Shadow.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_BORDER
 			patch::fast::Border.init();

@@ -74,7 +74,7 @@ namespace patch::fast {
         }
         if (efp->check[0] == 0) {
 
-            int oversize = dblur.x_end - dblur.x_begin - efpip->obj_line;
+            int oversize = dblur.x_end - dblur.x_begin - *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_w);
             if (0 < oversize) {
                 oversize++;
                 oversize >>= 1;
@@ -82,7 +82,7 @@ namespace patch::fast {
                 dblur.x_end -= oversize;
             }
 
-            oversize = dblur.y_end - dblur.y_begin - efpip->obj_max_h;
+            oversize = dblur.y_end - dblur.y_begin - *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_h);
             if (0 < oversize) {
                 oversize++;
                 oversize >>= 1;

@@ -1471,8 +1471,8 @@ namespace patch::fast {
         }
         int check0 = efp->check[0];
         if (check0 == 0) {
-            blur_w = min(blur_w, (*(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_max_w) - efpip->obj_w) / 2);
-            blur_h = min(blur_h, (efpip->obj_max_h - efpip->obj_h) / 2);
+            blur_w = min(blur_w, (*(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_w) - efpip->obj_w) / 2);
+            blur_h = min(blur_h, (*(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_h) - efpip->obj_h) / 2);
         }
 
         int conv2_w = blur_w >> 1;

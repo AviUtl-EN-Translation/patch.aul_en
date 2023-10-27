@@ -140,7 +140,7 @@ namespace patch::fast {
 	}
 
 	void short_font_border(int thread_id, int thread_num, void* n1, void* n2) {
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
 		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
@@ -148,8 +148,8 @@ namespace patch::fast {
 		auto masksrc1 = masksrc0 + (font->border + font->src_oy) * mask_line + font->border + font->src_ox;
 		int a_max_thres = (0x400000 - 1 + font->alpha_rate) / font->alpha_rate;
 
-		int yline8 = thread_num * exedit_buffer_line * sizeof(ExEdit::PixelYCA);
-		auto dst0 = font->dst + (thread_id + font->dst_oy) * exedit_buffer_line + font->dst_ox;
+		int yline8 = thread_num * yca_vram_w * sizeof(ExEdit::PixelYCA);
+		auto dst0 = font->dst + (thread_id + font->dst_oy) * yca_vram_w + font->dst_ox;
 
 		int xx_max = font->src_w - 1;
 		int yy_max = font->src_h - 1;
@@ -261,7 +261,7 @@ namespace patch::fast {
 	}
 
 	void byte_font_border(int thread_id, int thread_num, void* n1, void* n2) {
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
 		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
@@ -269,8 +269,8 @@ namespace patch::fast {
 		auto masksrc1 = masksrc0 + (font->border + font->src_oy) * mask_line + font->border + font->src_ox;
 		int a_max_thres = (0x40000 - 1 + font->alpha_rate) / font->alpha_rate;
 
-		int yline8 = thread_num * exedit_buffer_line * sizeof(ExEdit::PixelYCA);
-		auto dst0 = font->dst + (thread_id + font->dst_oy) * exedit_buffer_line + font->dst_ox;
+		int yline8 = thread_num * yca_vram_w * sizeof(ExEdit::PixelYCA);
+		auto dst0 = font->dst + (thread_id + font->dst_oy) * yca_vram_w + font->dst_ox;
 
 		int xx_max = font->src_w - 1;
 		int yy_max = font->src_h - 1;
@@ -323,7 +323,7 @@ namespace patch::fast {
 
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 	void short_font_border_only(int thread_id, int thread_num, void* n1, void* n2) {
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
 		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
@@ -331,8 +331,8 @@ namespace patch::fast {
 		auto masksrc1 = masksrc0 + (font->border + font->src_oy) * mask_line + font->border + font->src_ox;
 		int a_max_thres = (0x400000 - 1 + font->alpha_rate) / font->alpha_rate;
 
-		int yline8 = thread_num * exedit_buffer_line * sizeof(ExEdit::PixelYCA);
-		auto dst0 = font->dst + (thread_id + font->dst_oy) * exedit_buffer_line + font->dst_ox;
+		int yline8 = thread_num * yca_vram_w * sizeof(ExEdit::PixelYCA);
+		auto dst0 = font->dst + (thread_id + font->dst_oy) * yca_vram_w + font->dst_ox;
 
 		int xx_max = font->src_w - 1;
 		int yy_max = font->src_h - 1;
@@ -389,7 +389,7 @@ namespace patch::fast {
 	}
 
 	void byte_font_border_only(int thread_id, int thread_num, void* n1, void* n2) {
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
 		auto font = (TextBorder_t::CreateFontBorder*)(GLOBAL::exedit_base + OFS::ExEdit::CreateFontBorder_var_ptr);
 
 		int mask_line = font->src_w + font->border * 2;
@@ -397,8 +397,8 @@ namespace patch::fast {
 		auto masksrc1 = masksrc0 + (font->border + font->src_oy) * mask_line + font->border + font->src_ox;
 		int a_max_thres = (0x40000 - 1 + font->alpha_rate) / font->alpha_rate;
 
-		int yline8 = thread_num * exedit_buffer_line * sizeof(ExEdit::PixelYCA);
-		auto dst0 = font->dst + (thread_id + font->dst_oy) * exedit_buffer_line + font->dst_ox;
+		int yline8 = thread_num * yca_vram_w * sizeof(ExEdit::PixelYCA);
+		auto dst0 = font->dst + (thread_id + font->dst_oy) * yca_vram_w + font->dst_ox;
 
 		int xx_max = font->src_w - 1;
 		int yy_max = font->src_h - 1;
@@ -480,8 +480,8 @@ namespace patch::fast {
 			font->dst_h += ofsy;
 			ofsy = 0;
 		}
-		font->dst_w = min(font->dst_w, *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_max_w) - ofsx);
-		font->dst_h = min(font->dst_h, *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_max_h) - ofsy);
+		font->dst_w = min(font->dst_w, *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_w) - ofsx);
+		font->dst_h = min(font->dst_h, *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_h) - ofsy);
 
 		if (font->dst_w <= 0 || font->dst_h <= 0) return;
 

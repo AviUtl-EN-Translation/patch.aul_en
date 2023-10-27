@@ -101,16 +101,20 @@ namespace OFS {
 		constexpr i32 yc_vram_h = 0x14ca4c;
 		constexpr i32 yc_max_w = 0x178ec0;
 		constexpr i32 yc_max_h = 0x1790c8;
-		constexpr i32 yc_vram_linesize = 0x158d10;
+		constexpr i32 yc_vram_line_size = 0x158d10;
+
+		constexpr i32 yca_vram_w = 0x135c68;
+		constexpr i32 yca_vram_h = 0x135c64;
+		constexpr i32 yca_max_w = 0x196748;
+		constexpr i32 yca_max_h = 0x1920e0;
+		constexpr i32 yca_vram_line_size = 0x1539c0;
+		constexpr i32 yca_vram_buffer_size = 0x177a28;
 		
 		constexpr i32 timeline_obj_click_mode = 0x177a24;
-
-		constexpr i32 exedit_buffer_size = 0x177a28;
-		constexpr i32 exedit_max_h_add8 = 0x135c64;
-		constexpr i32 exedit_buffer_line = 0x135c68;
-
-		constexpr i32 exedit_max_w = 0x196748;
-		constexpr i32 exedit_max_h = 0x1920e0;
+		constexpr i32 timeline_click_x = 0x1460b4;
+		constexpr i32 timeline_click_y = 0x196744;
+		constexpr i32 timeline_x2frame = 0x032b70;
+		constexpr i32 timeline_y2layer = 0x032c10;
 
 		constexpr i32 memory_ptr = 0x1a5328;
 		constexpr i32 zbuffer_ptr = 0x1ec7ac;
@@ -141,6 +145,8 @@ namespace OFS {
 		constexpr i32 CreateFigure_polygons_func_call = 0x073949;
 		constexpr i32 CreateFigure_polygons_func_mt_call = 0x07395b;
 
+		constexpr i32 efShadow_func_proc_var_ptr = 0x0b8590;
+		constexpr i32 efShadow_var_ptr = 0x231f90;
 		constexpr i32 efBorder_func_proc_var_ptr = 0x0a5d28;
 		constexpr i32 efBorder_func_proc_ptr = 0x0515d0;
 		constexpr i32 efBorder_var_ptr = 0x1b1e30;

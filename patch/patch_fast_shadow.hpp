@@ -15,7 +15,7 @@
 
 #pragma once
 #include "macro.h"
-#ifdef PATCH_SWITCH_FAST_BORDER
+#ifdef PATCH_SWITCH_FAST_SHADOW
 
 #include <aviutl.hpp>
 #include <exedit.hpp>
@@ -28,37 +28,35 @@
 
 namespace patch::fast {
 	// init at exedit load
-	// 縁取りの速度アップ
-	/* 縁取りのバグ修正
-	縁取りが縦長にとられることがあるを修正
-　　縁取りのサイズ変更をしたときに変化が滑らかじゃないのを修正
-　　縁取りのぼかし0、サイズが大きい時にアーチファクトが出ることがあるのを修正
-　　最大画像サイズが小さいときに縁取りのサイズを上げると縁取りが小さくなっていくことがあるのを修正
-　　縁取りのパターン画像ファイルを設定している時に表示位置が正常じゃないことがあるのを修正
+	// シャドーの速度アップ
+	/* シャドーのバグ修正
+	拡散がオブジェクトサイズを超えた場合に正常ではなくなるのを修正
 	最大画像サイズ+8まで広げられてしまい、不具合を起こすのを修正
+	XYと拡散が0以外の時に無駄な領域拡張が行われるのを修正
+	透明度反転を掛けた時の見た目を改善
 	*/
-	inline class Border_t {
+	inline class Shadow_t {
 		static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
 		bool enabled = true;
 		bool enabled_i;
-		inline static const char key[] = "fast.border";
+		inline static const char key[] = "fast.shadow";
 
 	public:
 
-		struct efBorder_var { // 1b1e30
-			unsigned short* ExEditMemory;
-			int add_size;
-			int inv_range;
-			int shift_x;
-			int shift_y;
-			int _undefined;
-			char _exdata_def[260]; // 1b1e48 - 1b1f4b
-			short color_cb; // 1b1f4c
-			short color_cr;
-			short color_y;
-			short _alpha_shift;// short _padding;
-			int alpha;
+		struct efShadow_var {
+			short* buf1; // 231f90
+			int diffuse1; // 231f94
+			int diffuse2; // 231f98
+			int intensity; // 231f9c
+			short* buf2; // 231fa0
+			int ox; // 231fa4
+			int oy; // 231fa8
+			int _undefined; // 231fac
+			char _exdata_def[260]; // 231fb0
+			short color_cb; // 2320b4
+			short color_cr; // 2320b6
+			short color_y; // 2320b8
 		};
 
 
@@ -66,7 +64,7 @@ namespace patch::fast {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			store_i32(GLOBAL::exedit_base + OFS::ExEdit::efBorder_func_proc_var_ptr, &func_proc);
+			store_i32(GLOBAL::exedit_base + OFS::ExEdit::efShadow_func_proc_var_ptr, &func_proc);
 		}
 
 		void switching(bool flag) { enabled = flag; }
@@ -77,13 +75,13 @@ namespace patch::fast {
 		void switch_load(ConfigReader& cr) {
 			cr.regist(key, [this](json_value_s* value) {
 				ConfigReader::load_variable(value, enabled);
-			});
+				});
 		}
 
 		void switch_store(ConfigWriter& cw) {
 			cw.append(key, enabled);
 		}
 
-	} Border;
+	} Shadow;
 } // namespace patch::fast
-#endif // ifdef PATCH_SWITCH_FAST_BORDER
+#endif // ifdef PATCH_SWITCH_FAST_SHADOW

@@ -120,23 +120,23 @@ namespace patch {
 
 	void __cdecl obj_LensBlur_t::lbResize_media_interpolation_y(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 70df0 相当
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		lbResize_media(thread_id, thread_num, lbresize->resize_h, exedit_buffer_line, lbresize->resize_w, 1, 0);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
+		lbResize_media(thread_id, thread_num, lbresize->resize_h, yca_vram_w, lbresize->resize_w, 1, 0);
 	}
 	void __cdecl obj_LensBlur_t::lbResize_media_interpolation_x(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 71270 相当
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		lbResize_media(thread_id, thread_num, lbresize->resize_w, 1, lbresize->resize_h, exedit_buffer_line, 0);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
+		lbResize_media(thread_id, thread_num, lbresize->resize_w, 1, lbresize->resize_h, yca_vram_w, 0);
 	}
 	void __cdecl obj_LensBlur_t::lbResize_media_interpolation_y_fbb(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 71870 相当
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		lbResize_media(thread_id, thread_num, lbresize->resize_h, exedit_buffer_line, lbresize->resize_w, 1, 1);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
+		lbResize_media(thread_id, thread_num, lbresize->resize_h, yca_vram_w, lbresize->resize_w, 1, 1);
 	}
 	void __cdecl obj_LensBlur_t::lbResize_media_interpolation_x_fbb(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 71ce0 相当
-		int exedit_buffer_line = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::exedit_buffer_line);
-		lbResize_media(thread_id, thread_num, lbresize->resize_w, 1, lbresize->resize_h, exedit_buffer_line, 1);
+		int yca_vram_w = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_vram_w);
+		lbResize_media(thread_id, thread_num, lbresize->resize_w, 1, lbresize->resize_h, yca_vram_w, 1);
 	}
 	void __cdecl obj_LensBlur_t::lbResize_filter_interpolation_y(int thread_id, int thread_num, void* n1, void* n2) {
 		// exedit + 72390 相当

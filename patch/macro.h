@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_38"
+#define PATCH_VERSION_STR "r43_ss_39"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -152,6 +152,7 @@
 #define PATCH_SWITCH_OBJ_NOISE obj_noise
 #define PATCH_SWITCH_OBJ_RADIATIONALBLUR obj_radiationalblur
 #define PATCH_SWITCH_OBJ_FLASH obj_flash
+#define PATCH_SWITCH_OBJ_DIFFUSELIGHT obj_diffuselight
 #define PATCH_SWITCH_OBJ_SPECIALCOLORCONV obj_specialcolorconv
 #define PATCH_SWITCH_OBJ_PORTIONFILTER obj_portionfilter
 #define PATCH_SWITCH_BORDER_ONLY_TEXT border_only_text
@@ -178,6 +179,7 @@
 #define PATCH_SWITCH_OBJECT_TABLE object_table
 #define PATCH_SWITCH_GROUP_ID group_id
 #define PATCH_SWITCH_SAT_RGB_SPACE sat_rgb
+#define PATCH_SWITCH_PASTE_POS paste_pos
 #define PATCH_SWITCH_SCRIPT_SORT_PATCH script_sort_patch
 
 
@@ -213,6 +215,7 @@
 	#define PATCH_SWITCH_FAST_TEXT fast_text
 	#define PATCH_SWITCH_FAST_TEXTBORDER fast_text_border
 	#define PATCH_SWITCH_FAST_CREATE_FIGURE fast_create_figure
+	#define PATCH_SWITCH_FAST_SHADOW fast_shadow
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 	#define PATCH_SWITCH_FAST_BORDERBLUR fast_borderblur
 	#define PATCH_SWITCH_FAST_BLUR fast_blur
