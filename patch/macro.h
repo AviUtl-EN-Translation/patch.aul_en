@@ -174,12 +174,12 @@
 #define PATCH_SWITCH_RIGHT_TRACKBAR right_trackbar
 // #define PATCH_SWITCH_SYNC_PLAY_CURSOR sync_play_cursor // 副作用が見つかった&字間行間修正でほぼ起こらないので
 #define PATCH_SWITCH_ANY_OBJ any_obj
+#define PATCH_SWITCH_PASTE_POS paste_pos
 #define PATCH_SWITCH_EXCLUSION_FONT exclusion_font
 #define PATCH_SWITCH_INIT_WINDOW_POS init_window_pos
 #define PATCH_SWITCH_OBJECT_TABLE object_table
 #define PATCH_SWITCH_GROUP_ID group_id
 #define PATCH_SWITCH_SAT_RGB_SPACE sat_rgb
-#define PATCH_SWITCH_PASTE_POS paste_pos
 #define PATCH_SWITCH_SCRIPT_SORT_PATCH script_sort_patch
 
 

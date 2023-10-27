@@ -290,6 +290,9 @@ public:
             #ifdef PATCH_SWITCH_ANY_OBJ
                 patch::any_obj.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_PASTE_POS
+                patch::paste_pos.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_EXCLUSION_FONT
                 patch::exclusion_font.switch_load(cr);
             #endif
@@ -307,9 +310,6 @@ public:
             #endif
             #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
                 patch::borderonly_text.switch_load(cr);
-            #endif
-            #ifdef PATCH_SWITCH_PASTE_POS
-                patch::paste_pos.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
                 patch::patch_script_sort.switch_load(cr);
@@ -812,6 +812,9 @@ public:
             #ifdef PATCH_SWITCH_ANY_OBJ
                 patch::any_obj.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_PASTE_POS
+                patch::paste_pos.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_EXCLUSION_FONT
                 patch::exclusion_font.switch_store(switch_);
             #endif
@@ -829,9 +832,6 @@ public:
             #endif
             #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
                 patch::borderonly_text.switch_store(switch_);
-            #endif
-            #ifdef PATCH_SWITCH_PASTE_POS
-                patch::paste_pos.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_SCRIPT_SORT_PATCH
                 patch::patch_script_sort.switch_store(switch_);

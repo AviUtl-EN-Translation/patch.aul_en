@@ -333,6 +333,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_ANY_OBJ
 	patch::any_obj.init();
 #endif
+#ifdef PATCH_SWITCH_PASTE_POS
+	patch::paste_pos.init();
+#endif
 #ifdef PATCH_SWITCH_EXCLUSION_FONT
 	patch::exclusion_font.init();
 #endif
@@ -350,9 +353,6 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_BORDER_ONLY_TEXT
 	patch::borderonly_text.init();
-#endif
-#ifdef PATCH_SWITCH_PASTE_POS
-	patch::paste_pos.init();
 #endif
 	
 	patch::setting_dialog();
