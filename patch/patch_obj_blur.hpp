@@ -29,11 +29,13 @@ namespace patch {
 
     // init at exedit load
     // ぼかしのバグ修正
-
-    /* 小さいオブジェクトに効果が無いのを修正
+    /* 曲線移動などで 範囲 が負の数になった時にエラーが出るのを修正
+        フィルタオブジェクトで0xc0000094 オフセットアドレス[0xfe64, 0x100d3, 0x115d1, 0x1188b]
+        エフェクトで0xc0000005 オフセットアドレス[0xec7b, 0xf573, 0x1034c, 0x10c8a]
+    */
+    /* 小さいオブジェクトに効果が無いのを修正 (fast.blurにより不要に)
         スレッド数より小さいオブジェクトに効果が乗らない
     */
-
 
     inline class obj_Blur_t {
 
@@ -42,12 +44,20 @@ namespace patch {
         inline static const char key[] = "obj_blur";
     public:
 
-
         void init() {
             enabled_i = enabled;
-
             if (!enabled_i)return;
 
+            { // 曲線移動などで 範囲 が負の数になった時にエラーが出るのを修正
+                /*
+                    if(range == 0) return; // jz
+                    ↓
+                    if(range <= 0) return; // jle
+                */
+                OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x0e301, 1).store_i8(0, '\x8e');
+            }
+
+            /*
 #ifdef PATCH_SWITCH_SMALL_FILTER
             { // 小さいオブジェクトに効果が無いのを修正
                 constexpr int ofs[] = { 0x0eb05,0x0ef11,0x0f34c,0x0f818,0x0fce2,0x0ff72,0x101cc,0x10618,0x10a6c,0x10f58,0x11432,0x11702 };
@@ -57,6 +67,7 @@ namespace patch {
                 small_filter(ofs, n, amin, size);
             }
 #endif // PATCH_SWITCH_SMALL_FILTER
+*/
 
         }
 

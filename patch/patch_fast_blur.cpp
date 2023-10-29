@@ -1456,9 +1456,7 @@ namespace patch::fast {
 
     BOOL __cdecl Blur_t::efBlur_effect_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         int blur_size = efp->track[0];
-        if (blur_size <= 0) {
-            return TRUE;
-        }
+        if (blur_size <= 0 || efpip->obj_w <= 0 || efpip->obj_h <= 0) return TRUE;
         int blur_w = blur_size;
         int blur_h = blur_size;
         int aspect = efp->track[1];

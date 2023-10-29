@@ -55,8 +55,8 @@ namespace patch {
         if ((UndoInfo_limit_mode && (flag & 2) == 0) || UndoInfo_write_offset < 0 || UndoInfo_object_num < 0) {
             return UndoInfo_limit_mode;
         }
+        auto ObjectArrayPointer = *ObjectArrayPointer_ptr;
         if ((flag & 0x10) == 0) {
-            auto ObjectArrayPointer = *ObjectArrayPointer_ptr;
             if (!has_flag(ObjectArrayPointer[object_idx].flag, ExEdit::Object::Flag::Exist) && ((flag & 2) == 0)) {
                 return UndoInfo_limit_mode;
             }
@@ -65,6 +65,13 @@ namespace patch {
             }
         }
         // ----------------------------------
+
+        /*
+        int scene_idx = ObjectArrayPointer[object_idx].scene_set;
+        if (scene_idx != *SceneDisplaying_ptr) {
+            change_disp_scene(scene_idx, *fp_g_ptr, *editp_ptr);
+        }
+        */
 
         if (running_undo) {
             /*if (flag & 2) {

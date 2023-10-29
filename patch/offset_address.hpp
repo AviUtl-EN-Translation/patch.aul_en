@@ -229,6 +229,7 @@ namespace OFS {
 		constexpr i32 get_scene_size = 0x02b980;
 		constexpr i32 scene_has_alpha = 0x02ba00;
 
+		constexpr i32 next_undo = 0x08d150;
 		constexpr i32 set_undo = 0x08d290;
 
 		constexpr i32 frame_cursor = 0x1a5304;
@@ -336,6 +337,7 @@ namespace OFS {
 		constexpr i32 deselect_object = 0x34eb0;
 
 		constexpr i32 object2idx = 0x02b0d0;
+		constexpr i32 delete_object = 0x034500;
 
 		constexpr i32 set_range_object = 0x038940;
 

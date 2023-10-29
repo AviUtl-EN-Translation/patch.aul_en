@@ -18,6 +18,8 @@
 
 #ifdef PATCH_SWITCH_AUP_LOAD
 
+#include <exedit.hpp>
+
 #include "global.hpp"
 #include "util.hpp"
 #include "restorable_patch.hpp"
@@ -27,9 +29,11 @@
 namespace patch {
     // init at exedit load
     // プロジェクト読み込み時のバグ修正
-    // 
-    // 選択中のオブジェクトのIDが異常値になっている時にエラーとなるのを修正
+
+    // 異常なオブジェクトを削除するように変更
+
     inline class aup_load_t {
+        //static int __cdecl func_project_load_end();
 
         bool enabled = true;
         bool enabled_i;
@@ -75,7 +79,13 @@ namespace patch {
                 store_i32(cursor, '\xff\x89\x47\x18'); cursor += 3;
                 store_i32(cursor, '\x18\x85\xc0\xc3'); cursor += 4;
             }
-
+            /*
+            { // 読み込み後の最後に実行する関数を追加
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x3261c, 5);
+                h.store_i8(0, '\xe8');
+                h.replaceNearJmp(1, &func_project_load_end);
+            }
+            */
         }
         void switching(bool flag) {
             enabled = flag;
