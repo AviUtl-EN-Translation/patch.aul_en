@@ -170,6 +170,10 @@ void init_t::InitAtExeditLoad() {
 	patch::exo_specialcolorconv.init();
 #endif
 
+#ifdef PATCH_SWITCH_EXO_ABNORMAL_POS
+	patch::exo_abnormal_pos.init();
+#endif
+
 #ifdef PATCH_SWITCH_EXO_FOLD_GUI
 	patch::exo_fold_gui.init();
 #endif

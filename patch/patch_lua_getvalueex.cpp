@@ -111,20 +111,17 @@ namespace patch {
 			if (efp->track_gui == nullptr)return 0;
 
 #if 1
-			char target2[7];
-			{
-				int i = 0;
-				do{
-					if(target[i] == '\0') {
-						target2[i] = '\0';
-						goto BREAK;
-					}
-					target2[i] = target[i] | 0b10'0000; // to lower
-					i++;
-				} while(i < 7);
+			char target2[11]; // max=len("totalframe" + "\0")
+			int i;
+			for (i = 0; i < sizeof(target2); i++) {
+				if (target[i] == '\0') {
+					target2[i] = '\0';
+					break;
+				}
+				target2[i] = target[i] | 0b10'0000; // to lower
+			}
+			if (i == sizeof(target2)) {
 				return 0;
-				BREAK:
-				;
 			}
 
 			switch(target2[0]) {
@@ -181,15 +178,66 @@ namespace patch {
 						return 0;
 				}
 				break;
-			case 't': // time
-				if(*(int*)(target2 + 1) != '\0emi') return 0;
-
-				if (auto leader = eop->index_midpt_leader; leader >= 0) {
-					eop = load_i32<ExEdit::Object*>(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer) + leader;
+			case 'f': // frame
+				if (*(int*)(target2 + 1) == 'emar' && target2[5] == '\0') {
+					if (auto leader = eop->index_midpt_leader; leader >= 0) {
+						eop = load_i32<ExEdit::Object*>(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer) + leader;
+					}
+					lua_pushnumber(L, (subframe * 0.01 + (double)(frame - eop->frame_begin)));
+					return 1;
 				}
-				lua_pushnumber(L, (subframe * 0.01 + (double)(frame - eop->frame_begin))* (double)efpip->framerate_de / (double)efpip->framerate_nu);
-				//lua_pushnumber(L, (subframe * 0.01 + (double)(frame - ScriptProcessingFilter->frame_start_chain)) * (double)efpip->framerate_de / (double)efpip->framerate_nu);
-				return 1;
+				return 0;
+			case 't': // time totaltime totalframe
+				if (*(int*)(target2 + 1) == '\0emi') {
+
+					if (auto leader = eop->index_midpt_leader; leader >= 0) {
+						eop = load_i32<ExEdit::Object*>(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer) + leader;
+					}
+					lua_pushnumber(L, (subframe * 0.01 + (double)(frame - eop->frame_begin)) * (double)efpip->framerate_de / (double)efpip->framerate_nu);
+					//lua_pushnumber(L, (subframe * 0.01 + (double)(frame - ScriptProcessingFilter->frame_start_chain)) * (double)efpip->framerate_de / (double)efpip->framerate_nu);
+					return 1;
+				} else if (*(int*)(target2 + 1) == 'lato') {
+					if (*(int*)(target2 + 5) == 'emit' && target2[9] == '\0') {
+						int frame_begin, frame_end;
+						if (auto idx = eop->index_midpt_leader; idx >= 0) {
+							eop = load_i32<ExEdit::Object*>(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer) + idx;
+							frame_begin = eop->frame_begin;
+
+							int* next_obj = reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::NextObjectIdxArray);
+							while (0 <= next_obj[idx]) {
+								idx = next_obj[idx];
+							}
+							eop = load_i32<ExEdit::Object*>(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer) + idx;
+							frame_end = eop->frame_end;
+						} else {
+							frame_begin = eop->frame_begin;
+							frame_end = eop->frame_end;
+						}
+						lua_pushnumber(L, (double)(frame_end - frame_begin) * (double)efpip->framerate_de / (double)efpip->framerate_nu); // 本来より1フレーム短いがobj.totaltimeと同じ値を採用
+						// lua_pushnumber(L, (double)(frame_end + 1 - frame_begin) * (double)efpip->framerate_de / (double)efpip->framerate_nu);
+						return 1;
+					} else if (*(int*)(target2 + 5) == 'marf' && *(short*)(target2 + 9) == '\0e') {
+						int frame_begin, frame_end;
+						if (auto idx = eop->index_midpt_leader; idx >= 0) {
+							eop = load_i32<ExEdit::Object*>(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer) + idx;
+							frame_begin = eop->frame_begin;
+
+							int* next_obj = reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::NextObjectIdxArray);
+							while (0 <= next_obj[idx]) {
+								idx = next_obj[idx];
+							}
+							eop = load_i32<ExEdit::Object*>(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer) + idx;
+							frame_end = eop->frame_end;
+						} else {
+							frame_begin = eop->frame_begin;
+							frame_end = eop->frame_end;
+						}
+						lua_pushnumber(L, frame_end - frame_begin); // 本来より1フレーム短いがobj.totalframeと同じ値を採用
+						// lua_pushnumber(L, frame_end + 1 - frame_begin);
+						return 1;
+					}
+				}
+				return 0;
 			case 'r': // rx ry rz
 				switch(*(short*)(target2 + 1)) {
 					case '\0x':

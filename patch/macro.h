@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_40"
+#define PATCH_VERSION_STR "r43_ss_41"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -120,6 +120,7 @@
 #define PATCH_SWITCH_EXO_TRACKPARAM exo_trackparam
 #define PATCH_SWITCH_EXO_MIDPT_AND_TRA exo_midpt_tra
 #define PATCH_SWITCH_EXO_SPECIALCOLORCONV exo_specialcolorconv
+#define PATCH_SWITCH_EXO_ABNORMAL_POS exo_abnormal_pos
 #define PATCH_SWITCH_EXO_FOLD_GUI exo_fold_gui
 #define PATCH_SWITCH_STR_MINUSVAL str_minusval
 #define PATCH_SWITCH_TEXT_OP_SIZE text_op_size

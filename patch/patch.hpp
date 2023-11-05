@@ -137,3 +137,4 @@
 #include "patch_fast_shadow.hpp"
 #include "patch_obj_diffuselight.hpp"
 #include "patch_paste_pos.hpp"
+#include "patch_exo_abnormal_pos.hpp"
