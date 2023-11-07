@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+#include <bit>
 
 using i8 = uint8_t;
 using i16 = uint16_t;

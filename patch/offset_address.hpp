@@ -340,6 +340,7 @@ namespace OFS {
 		constexpr i32 delete_object = 0x034500;
 
 		constexpr i32 set_range_object = 0x038940;
+		constexpr i32 RangeObjectTable = 0x192200;
 
 		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
 		constexpr i32 get_last_filter_idx = 0x0335f0;

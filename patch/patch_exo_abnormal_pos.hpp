@@ -45,7 +45,6 @@ namespace patch {
 			enabled_i = enabled;
 
 			if (!enabled_i)return;
-
 			{
 				/*
 					10029436 85db               test    ebx,ebx

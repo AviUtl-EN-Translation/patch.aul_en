@@ -19,16 +19,41 @@
 #ifdef PATCH_SWITCH_OBJECT_TABLE
 namespace patch {
 
+	void update_obj_ptr(int ptr_sub) {
+		auto SortedObjectTable = reinterpret_cast<ExEdit::Object**>(GLOBAL::exedit_base + OFS::ExEdit::SortedObjectTable);
+		int objnum= *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::ValidObjectNum);
+		for (int i = 0; i < objnum; i++) {
+			SortedObjectTable[i] = (ExEdit::Object*)((int)SortedObjectTable[i] + ptr_sub);
+		}
+
+		auto RangeObjectTable = reinterpret_cast<ExEdit::Object**>(GLOBAL::exedit_base + OFS::ExEdit::RangeObjectTable);
+		for (int i = 0; i < 4096; i++) {
+			if (RangeObjectTable[i] == NULL) {
+				break;
+			}
+			RangeObjectTable[i] = (ExEdit::Object*)((int)RangeObjectTable[i] + ptr_sub);
+		}
+
+	}
+
+
     BOOL __cdecl object_table_t::object_realloc_wrap(void** pointer, size_t size) {
+		int obj_ptr_old = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
         BOOL r = reinterpret_cast<BOOL(__cdecl*)(void**, size_t)>(GLOBAL::exedit_base + OFS::ExEdit::MyRealloc)(pointer, size);
-        if (r) {
-            reinterpret_cast<void(__cdecl*)()>(GLOBAL::exedit_base + OFS::ExEdit::update_ObjectTables)();
+		int obj_ptr_new = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        if (obj_ptr_new != obj_ptr_old) {
+			update_obj_ptr(obj_ptr_new - obj_ptr_old);
+			/*
+            reinterpret_cast<int(__cdecl*)()>(GLOBAL::exedit_base + OFS::ExEdit::update_ObjectTables)();
             reinterpret_cast<void(__cdecl*)()>(GLOBAL::exedit_base + OFS::ExEdit::set_range_object)();
+			*/
         }
         return r;
     }
 
 	void __fastcall object_table_t::comb_sort_current_layer(int sort_s, int sort_e) {
+		int s = sort_s;
+		int e = sort_e;
 		int n = sort_e - sort_s;
 		// if (n < 1) return; // この関数の前にある
 		auto SortedObjectTable = reinterpret_cast<ExEdit::Object**>(GLOBAL::exedit_base + OFS::ExEdit::SortedObjectTable);
