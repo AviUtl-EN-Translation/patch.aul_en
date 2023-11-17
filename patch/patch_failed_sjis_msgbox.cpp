@@ -44,10 +44,14 @@ namespace patch {
         return ret;
     }
 
-    int __stdcall failed_sjis_msgbox_t::MessageBoxA_exo(HWND hWnd, LPCSTR lpText, LPCSTR path) {
+    int __stdcall failed_sjis_msgbox_t::MessageBoxA_import_exo(HWND hWnd, LPCSTR lpText, LPCSTR path) {
         return MessageBoxA_1(hWnd, lpText, path, MB_TOPMOST | MB_ICONWARNING | MB_TASKMODAL);
-        
     }
+    int __cdecl failed_sjis_msgbox_t::MessageBoxA_new_project_exo(LPCSTR path, void* param) {
+        MessageBoxA_1(NULL, (LPCSTR)(GLOBAL::exedit_base + 0xa46bc), path, MB_TOPMOST | MB_ICONWARNING | MB_TASKMODAL);
+        return 0;
+    }
+
     int __cdecl failed_sjis_msgbox_t::MessageBoxA_exa(LPCSTR path) {
         MessageBoxA_1(NULL, (LPCSTR)(GLOBAL::exedit_base + 0xa46bc), path, MB_TOPMOST | MB_ICONWARNING | MB_TASKMODAL);
         return 0;

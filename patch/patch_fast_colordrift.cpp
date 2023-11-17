@@ -228,7 +228,7 @@ namespace patch::fast {
                     dst->b = (src->y + ((src->cb * 14516                  ) >> 13)) * cd->intensity >> 12;
                     src++; dst++;
                 }
-                ofs += efpip->obj_line * sizeof(ExEdit::PixelYC);
+                ofs += efpip->scene_line * sizeof(ExEdit::PixelYC);
             }
         } else {
             int inv_intensity = 0x1000 - cd->intensity;
@@ -248,7 +248,7 @@ namespace patch::fast {
 
                     src++; dst++; mem++;
                 }
-                ofs += efpip->obj_line * sizeof(ExEdit::PixelYC);
+                ofs += efpip->scene_line * sizeof(ExEdit::PixelYC);
             }
         }
     }

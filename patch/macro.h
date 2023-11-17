@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_41"
+#define PATCH_VERSION_STR "r43_ss_42"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -163,6 +163,7 @@
 #define PATCH_SWITCH_ADD_EXTENSION add_extension
 #define PATCH_SWITCH_DIALOG_NEW_FILE dlg_newfile
 #define PATCH_SWITCH_SCENE_CACHE scenecache
+#define PATCH_SWITCH_SCENE_VRAM scenevram
 #define PATCH_SWITCH_PLAYBACK_SPEED pb_speed
 #define PATCH_SWITCH_PLAYBACK_POS pb_pos
 #define PATCH_SWITCH_SETTING_NEW_PROJECT setting_newproject
@@ -212,6 +213,7 @@
 	
 	#define PATCH_SWITCH_FAST_SETTINGDIALOG fast_settingdialog
 	#define PATCH_SWITCH_FAST_EXEDITWINDOW fast_exeditwindow
+	// #define PATCH_SWITCH_FAST_EXFUNC_FILL exfunc_fill
 	#define PATCH_SWITCH_FAST_DRAWFILTER draw_filter
 	#define PATCH_SWITCH_FAST_TEXT fast_text
 	#define PATCH_SWITCH_FAST_TEXTBORDER fast_text_border

@@ -32,6 +32,8 @@ namespace patch {
 	// Rootで取得した場合のみシーンのキャッシュをとる
 	// 仕様：シーンの画像構成に掛かった時間が[json.threshold_time]msを超えた時にキャッシュを生成する。シーンを切り替えた時点でキャッシュは破棄されます。
 
+	// ついでの修正として、マスクなどから呼び出したシーンにて最終的にfpip->ycp_editとfpip->ycp_tempが入れ替わった状態だった場合に正常に表示できなかったのを修正
+
 	inline class scene_cache_t {
 
 

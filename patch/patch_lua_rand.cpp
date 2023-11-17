@@ -29,7 +29,7 @@ namespace patch {
 
         int seed, time;
 
-        if (auto efpip = load_i32<ExEdit::FilterProcInfo*>(GLOBAL::exedit_base + OFS::ExEdit::efpip_g); efpip != nullptr) {
+        if (auto efpip = load_i32<ExEdit::FilterProcInfo*>(GLOBAL::exedit_base + OFS::ExEdit::script_efpip); efpip != nullptr) {
             seed = efpip->obj_layerp->layer_set * 1913 ^ efpip->obj_index * 757;
             time = efpip->frame - efpip->object_start_frame;
         }else {

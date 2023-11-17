@@ -91,7 +91,7 @@ namespace OFS {
 
 		constexpr i32 exo_trackparam_overwrite = 0x0299d1;
 
-		constexpr i32 efpip_g = 0x1b2b20;
+		constexpr i32 script_efpip = 0x1b2b20;
 
 		constexpr i32 getpixeldata = 0x09a65c;
 		constexpr i32 rgb2yc = 0x06fed0;

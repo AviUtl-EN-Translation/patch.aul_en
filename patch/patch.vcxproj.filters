@@ -440,6 +440,12 @@
     <ClInclude Include="patch_exo_abnormal_pos.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_exfunc_fill.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_scene_vram.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -674,6 +680,12 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_aup_load.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_exfunc_fill.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_scene_vram.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

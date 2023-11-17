@@ -83,6 +83,7 @@ namespace patch {
 			
 			//OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x03943c, 4).store_i32(0, &GetDC_Wrap_ptr);
 			//OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x039483, 4).store_i32(0, &ReleaseDC_Wrap_ptr);
+
 		}
 
         void switching(bool flag) { enabled = flag; }

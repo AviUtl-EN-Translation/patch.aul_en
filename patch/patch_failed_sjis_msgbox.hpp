@@ -38,7 +38,8 @@ namespace patch {
         inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした。\nファイル名やフォルダ名に使用できない文字が含まれている可能性があります";
         static int __stdcall MessageBoxA_1(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_2(LPCSTR path, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
-        static int __stdcall MessageBoxA_exo(HWND hWnd, LPCSTR lpText, LPCSTR path);
+        static int __stdcall MessageBoxA_import_exo(HWND hWnd, LPCSTR lpText, LPCSTR path);
+        static int __cdecl MessageBoxA_new_project_exo(LPCSTR path, void* param);
         static int __cdecl MessageBoxA_exa(LPCSTR path);
 
         bool enabled = true;
@@ -78,27 +79,48 @@ namespace patch {
             }
 
             { // exo
-                /*
-                    10029238 6830200400         push    0x42030
-                    1002923d 68e0d80910         push    "拡張編集"
-                    10029242 68bc460a10         push    "ファイルの読み込みに失敗しました"
-                    10029247 53                 push    ebx ; 0
-                    10029248 ff1520a30910       call    dword ptr [USER32.MessageBoxA]
-                    ↓
-                    10029238 ffb42494000000     push    dword ptr [esp+00000094] ; path
-                    1002923f 0f1f00             nop
-                    10029242 68bc460a10         push    "ファイルの読み込みに失敗しました"
-                    10029247 53                 push    ebx ; 0
-                    10029248 90                 nop
-                    10029249 e8XxXxXxXx         call    newfunc
-                */
-                constexpr int vp_begin = 0x29238;
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x2924e - vp_begin);
-                h.store_i32(0x29238 - vp_begin, '\xff\xb4\x24\x94');
-                h.store_i16(0x2923c - vp_begin, '\x00\x00');
-                h.store_i32(0x2923e - vp_begin, '\x00\x0f\x1f\x00');
-                h.store_i16(0x29248 - vp_begin, '\x90\xe8');
-                h.replaceNearJmp(0x2924a - vp_begin, &MessageBoxA_exo);
+                { // new project
+                    /*
+                        1002a578 33c0               xor     eax,eax
+                        1002a57a 5e                 pop     esi
+                        1002a57b 83c408             add     edp,+08
+                        ↓
+                        1002a578 5e                 pop     esi
+                        1002a579 e9XxXxXxXx         jmp     cursor
+                        
+                        10000000 83c408             add     edp,+08
+                        10000000 e9XxXxXxxx         jmp     newfunc
+                    */
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x02a578, 6);
+                    h.store_i16(0, '\x5e\xe9');
+                    h.replaceNearJmp(2, cursor);
+
+                    store_i32(cursor, '\x83\xc4\x08\xe9'); cursor += 4;
+                    store_i32(cursor, (int)&MessageBoxA_new_project_exo - (int)cursor - 4); cursor += 4;
+                }
+                { // import
+                    /*
+                        10029238 6830200400         push    0x42030
+                        1002923d 68e0d80910         push    "拡張編集"
+                        10029242 68bc460a10         push    "ファイルの読み込みに失敗しました"
+                        10029247 53                 push    ebx ; 0
+                        10029248 ff1520a30910       call    dword ptr [USER32.MessageBoxA]
+                        ↓
+                        10029238 ffb42494000000     push    dword ptr [esp+00000094] ; path
+                        1002923f 0f1f00             nop
+                        10029242 68bc460a10         push    "ファイルの読み込みに失敗しました"
+                        10029247 53                 push    ebx ; 0
+                        10029248 90                 nop
+                        10029249 e8XxXxXxXx         call    newfunc
+                    */
+                    constexpr int vp_begin = 0x29238;
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x2924e - vp_begin);
+                    h.store_i32(0x29238 - vp_begin, '\xff\xb4\x24\x94');
+                    h.store_i16(0x2923c - vp_begin, '\x00\x00');
+                    h.store_i32(0x2923e - vp_begin, '\x00\x0f\x1f\x00');
+                    h.store_i16(0x29248 - vp_begin, '\x90\xe8');
+                    h.replaceNearJmp(0x2924a - vp_begin, &MessageBoxA_import_exo);
+                }
             }
             { // exa
                 /*
@@ -114,7 +136,7 @@ namespace patch {
                     10000000 5e                 pop     esi
                     10000000 e9XxXxXxXx         jmp     newfunc
                 */
-                OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x4dbb5, 4).replaceNearJmp(0, cursor);
+                ReplaceNearJmp(GLOBAL::exedit_base + 0x4dbb5, cursor);
                 store_i16(cursor, '\x5e\xe9'); cursor += 2;
                 store_i32(cursor, (int)&MessageBoxA_exa - (int)cursor - 4); cursor += 4;
             

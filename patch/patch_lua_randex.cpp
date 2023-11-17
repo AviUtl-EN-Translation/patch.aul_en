@@ -26,7 +26,7 @@ namespace patch {
     int lua_randex_t::l_randex(lua_State* L) {
         int seed, time;
 
-        if (auto efpip = *(ExEdit::FilterProcInfo**)(GLOBAL::exedit_base + OFS::ExEdit::efpip_g); efpip != nullptr) {
+        if (auto efpip = *(ExEdit::FilterProcInfo**)(GLOBAL::exedit_base + OFS::ExEdit::script_efpip); efpip != nullptr) {
             seed = efpip->obj_layerp->layer_set * 1913 ^ efpip->obj_index * 757;
             time = efpip->frame - efpip->object_start_frame;
         }

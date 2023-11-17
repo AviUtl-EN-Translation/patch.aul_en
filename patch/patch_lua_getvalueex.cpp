@@ -24,7 +24,7 @@ namespace patch {
 		int layer_idx = 0;
 		int target_i = 0;
 
-		auto efpip = load_i32<ExEdit::FilterProcInfo*>(GLOBAL::exedit_base + OFS::ExEdit::efpip_g);
+		auto efpip = load_i32<ExEdit::FilterProcInfo*>(GLOBAL::exedit_base + OFS::ExEdit::script_efpip);
 		auto ScriptProcessingFilter = load_i32<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::ScriptProcessingFilter);
 
 		int n = lua_gettop(L);

@@ -254,6 +254,9 @@ public:
             #ifdef PATCH_SWITCH_SCENE_CACHE
                 patch::scene_cache.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_SCENE_VRAM
+                patch::scene_vram.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_load(cr);
             #endif
@@ -356,6 +359,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
                     patch::fast_setting_dialog.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_EXFUNC_FILL
+                    patch::fast::exfunc_fill.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_DRAWFILTER
                     patch::fast::DrawFilter.switch_load(cr);
@@ -475,6 +481,13 @@ public:
         cr.load();
             });
 #endif
+#ifdef PATCH_SWITCH_SCENE_VRAM
+        cr.regist("scene_vram", [](json_value_s* value) {
+            ConfigReader cr(value);
+        patch::scene_vram.config_load(cr);
+        cr.load();
+            });
+#endif
 
         cr.load();
     }
@@ -574,6 +587,19 @@ public:
             scene_cache.write(ss);
 
             cw.append("scene_cache", ss.str());
+            --level;
+        }
+#endif
+#ifdef PATCH_SWITCH_SCENE_VRAM
+        {
+            ConfigWriter scene_vram(++level);
+
+            patch::scene_vram.config_store(scene_vram);
+
+            std::stringstream ss;
+            scene_vram.write(ss);
+
+            cw.append("scene_vram", ss.str());
             --level;
         }
 #endif
@@ -779,6 +805,9 @@ public:
             #ifdef PATCH_SWITCH_SCENE_CACHE
                 patch::scene_cache.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_SCENE_VRAM
+                patch::scene_vram.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_store(switch_);
             #endif
@@ -881,6 +910,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SETTINGDIALOG
                     patch::fast_setting_dialog.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_EXFUNC_FILL
+                    patch::fast::exfunc_fill.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_DRAWFILTER
                     patch::fast::DrawFilter.switch_store(switch_);
