@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_42
+patch.aul r43_ss_43
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -33,7 +33,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・メニュー文字列を実態に即したものに変更
     ・動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない
     ・拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある
-    ・極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/シャドー/グロー/ぼかし/境界ぼかし/エッジ抽出/色ずれ/カラーキー/クロマキー/特定色域変換の高速化
+    ・音声波形表示/極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/シャドー/グロー/ぼかし/境界ぼかし/エッジ抽出/色ずれ/カラーキー/クロマキー/特定色域変換の高速化
         OpenCL/AVX2を使用することがあります
         わずかにオリジナルと結果が変わってしまいます (floatとdoubleの差です)
         また、アーティファクトなどのバグを解消することもあります
@@ -170,7 +170,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・ぼかしの範囲が負の値になった時にエラーとなるのを修正
     ・フィルタオブジェクトのレンズブラーやぼかしフィルタなどをシーンで読むとエラーとなるのを修正
     ・マスク・ディスプレイスメントマップから呼び出したシーンにて、フィルタオブジェクトを使用しているとに正常にではない事があったのを修正
-
+    ・音声波形表示にて横解像度0、音声サンプル数＜横幅 の時に範囲外のおかしな波形が表示されるのを修正
 
     追加
     ・コンソールの表示
@@ -306,6 +306,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "settingdialog_add_filter" : boolean, ; 他のプラグインからフィルタ効果を追加するときに起こる問題を修正 (既定値: true)
         "obj_text" : boolean, ; 制御文字を使用した時に変な描画がされることがあるのを簡易修正 (既定値: true)
         "obj_create_figure" : boolean, ; 図形の縦横比が-100未満や100超の時にエラーが出たり描画がおかしくなるのを修正 (既定値: true)
+        "obj_waveform" : boolean, ; 音声波形表示にて横解像度0、音声サンプル数＜横幅 の時に範囲外のおかしな波形が表示されるのを修正 (既定値: true)
         "obj_audiofile" : boolean, ; 音声ファイルの再生速度最大値を修正 (既定値: true)
         "obj_colorcorrection" : boolean, ; 色調補正の色相計算を修正 (既定値: true)
         "obj_glow" : boolean, ; グローのしきい値が負の値になった時にエラーとなる・スレッド数より小さいサイズに対して正常に反映されないバグを修正 (既定値: true)
@@ -370,6 +371,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.text" : boolean, ; テキストの軽量化 (既定値: true)
             "fast.textborder" : boolean, ; テキスト縁取り文字の軽量化 (既定値: true)
             "fast.create_figure" : boolean, ; 図形の高速化 (既定値: true)
+            "fast.waveform" : boolean, ; 音声波形表示の高速化 (既定値: true)
             "fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
             "fast.shadow" : boolean, ; シャドーの高速化/バグ修正 (既定値: true)
             "fast.blur" : boolean, ; ぼかしの高速化/バグ修正 (既定値: true)
@@ -392,7 +394,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_42" のような文字列が格納されている
+        例として "patch.aul r43_ss_43" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
