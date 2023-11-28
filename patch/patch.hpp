@@ -140,3 +140,5 @@
 #include "patch_exo_abnormal_pos.hpp"
 #include "patch_fast_exfunc_fill.hpp"
 #include "patch_scene_vram.hpp"
+#include "patch_fast_waveform.hpp"
+#include "patch_obj_waveform.hpp"

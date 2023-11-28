@@ -29,13 +29,11 @@ namespace patch {
     // ファイル名（パス）が原因で読み込み失敗のエラー表記を変更する
 
     // **ファイルの読み込みに失敗しました 対応していないフォーマットの可能性があります
-    // ↓
-    // パス(ファイルもしくはフォルダ名)に使用できない文字が含まれています
 
     inline class failed_sjis_msgbox_t {
 
-        inline static const char str_new_failed_msg_question[] = "ファイルパスに使用できない文字が含まれています\nファイル名やフォルダ名を確認してください";
-        inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした。\nファイル名やフォルダ名に使用できない文字が含まれている可能性があります";
+        inline static const char str_new_failed_msg_question[] = "ファイルパスに扱えない環境依存文字が含まれています\nファイル名やフォルダ名を確認してください";
+        inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした\n削除されたファイルを読み込ませようとしたか、ファイル名やフォルダ名に環境依存文字が含まれる可能性があります\n\n毎回このメッセージが出る場合は.excファイルを削除するか、参照ファイルが無い状態で「現在の設定を初期値にする」を行ってください";
         static int __stdcall MessageBoxA_1(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_2(LPCSTR path, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_import_exo(HWND hWnd, LPCSTR lpText, LPCSTR path);

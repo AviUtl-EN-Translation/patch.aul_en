@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_42"
+#define PATCH_VERSION_STR "r43_ss_43"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -140,6 +140,7 @@
 #define PATCH_SWITCH_SMALL_FILTER small_filter
 #define PATCH_SWITCH_OBJ_TEXT obj_text
 #define PATCH_SWITCH_OBJ_CREATE_FIGURE obj_create_figure
+#define PATCH_SWITCH_OBJ_WAVEFORM obj_waveform
 #define PATCH_SWITCH_OBJ_AUDIOFILE obj_audiofile
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
 #define PATCH_SWITCH_OBJ_BLUR obj_blur
@@ -218,6 +219,7 @@
 	#define PATCH_SWITCH_FAST_TEXT fast_text
 	#define PATCH_SWITCH_FAST_TEXTBORDER fast_text_border
 	#define PATCH_SWITCH_FAST_CREATE_FIGURE fast_create_figure
+	#define PATCH_SWITCH_FAST_WAVEFORM fast_waveform
 	#define PATCH_SWITCH_FAST_SHADOW fast_shadow
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 	#define PATCH_SWITCH_FAST_BORDERBLUR fast_borderblur

@@ -179,6 +179,9 @@ public:
             #ifdef PATCH_SWITCH_OBJ_CREATE_FIGURE
                 patch::CreateFigure.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_WAVEFORM
+                patch::Waveform.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_load(cr);
             #endif
@@ -374,6 +377,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
                     patch::fast::create_figure.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_WAVEFORM
+                    patch::fast::Waveform.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SHADOW
                     patch::fast::Shadow.switch_load(cr);
@@ -730,6 +736,9 @@ public:
             #ifdef PATCH_SWITCH_OBJ_CREATE_FIGURE
                 patch::CreateFigure.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_WAVEFORM
+                patch::Waveform.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_store(switch_);
             #endif
@@ -925,6 +934,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
                     patch::fast::create_figure.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_WAVEFORM
+                    patch::fast::Waveform.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SHADOW
                     patch::fast::Shadow.switch_store(switch_);

@@ -65,6 +65,7 @@
     <ClInclude Include="patch_fast_shadow.hpp" />
     <ClInclude Include="patch_fast_specialcolorconv.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />
+    <ClInclude Include="patch_fast_waveform.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
     <ClInclude Include="patch_init_window_pos.hpp" />
@@ -83,6 +84,7 @@
     <ClInclude Include="patch_obj_rotation.hpp" />
     <ClInclude Include="patch_obj_sharp.hpp" />
     <ClInclude Include="patch_obj_text.hpp" />
+    <ClInclude Include="patch_obj_waveform.hpp" />
     <ClInclude Include="patch_paste_pos.hpp" />
     <ClInclude Include="patch_playback_pos.hpp" />
     <ClInclude Include="patch_read_audio.hpp" />
@@ -203,6 +205,7 @@
     <ClCompile Include="patch_fast_shadow.cpp" />
     <ClCompile Include="patch_fast_specialcolorconv.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />
+    <ClCompile Include="patch_fast_waveform.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_init_window_pos.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />

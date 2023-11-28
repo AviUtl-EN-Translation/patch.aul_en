@@ -226,6 +226,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_CREATE_FIGURE
 	patch::CreateFigure.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_WAVEFORM
+	patch::Waveform.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
 	patch::AudioFile.init();
 #endif
@@ -393,6 +396,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
 			patch::fast::create_figure.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_WAVEFORM
+			patch::fast::Waveform.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_SHADOW
 			patch::fast::Shadow.init();

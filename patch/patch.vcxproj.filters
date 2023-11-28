@@ -446,6 +446,12 @@
     <ClInclude Include="patch_scene_vram.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_waveform.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_obj_waveform.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -687,6 +693,9 @@
     </ClCompile>
     <ClCompile Include="patch_scene_vram.cpp">
       <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_waveform.cpp">
+      <Filter>feature\fast</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
