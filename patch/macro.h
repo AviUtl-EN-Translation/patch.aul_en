@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_43"
+#define PATCH_VERSION_STR "r43_ss_44"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -102,6 +102,7 @@
 #define PATCH_SWITCH_ACCESS_KEY access_key
 #define PATCH_SWITCH_KEYCONFIG key_config
 #define PATCH_SWITCH_COLORPALETTE_CACHE colorpalette_cache
+#define PATCH_SWITCH_TRACKBAR trackbar
 #define PATCH_SWITCH_FILEINFO file_info
 #define PATCH_SWITCH_READ_AUDIO read_audio
 #define PATCH_SWITCH_WAVE_FILE_READER wave_file_reader
@@ -122,6 +123,7 @@
 #define PATCH_SWITCH_EXO_SPECIALCOLORCONV exo_specialcolorconv
 #define PATCH_SWITCH_EXO_ABNORMAL_POS exo_abnormal_pos
 #define PATCH_SWITCH_EXO_FOLD_GUI exo_fold_gui
+#define PATCH_SWITCH_EXA_CAMERA exa_camera
 #define PATCH_SWITCH_STR_MINUSVAL str_minusval
 #define PATCH_SWITCH_TEXT_OP_SIZE text_op_size
 #define PATCH_SWITCH_IGNORE_MEDIA_PARAM_RESET ignore_media_param_reset
@@ -142,6 +144,7 @@
 #define PATCH_SWITCH_OBJ_CREATE_FIGURE obj_create_figure
 #define PATCH_SWITCH_OBJ_WAVEFORM obj_waveform
 #define PATCH_SWITCH_OBJ_AUDIOFILE obj_audiofile
+#define PATCH_SWITCH_OBJ_SCENE_AUDIO obj_sceneaudio
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
 #define PATCH_SWITCH_OBJ_BLUR obj_blur
 #define PATCH_SWITCH_OBJ_GLOW obj_glow

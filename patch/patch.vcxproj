@@ -51,6 +51,7 @@
     <ClInclude Include="patch_colorpalette_cache.hpp" />
     <ClInclude Include="patch_console.hpp" />
     <ClInclude Include="patch_dialog_new_file.hpp" />
+    <ClInclude Include="patch_exa_camera.hpp" />
     <ClInclude Include="patch_exclusion_font.hpp" />
     <ClInclude Include="patch_exo_abnormal_pos.hpp" />
     <ClInclude Include="patch_fast_audio_spectrum.hpp" />
@@ -82,6 +83,7 @@
     <ClInclude Include="patch_obj_radiationalblur.hpp" />
     <ClInclude Include="patch_obj_resize.hpp" />
     <ClInclude Include="patch_obj_rotation.hpp" />
+    <ClInclude Include="patch_obj_scene_audio.hpp" />
     <ClInclude Include="patch_obj_sharp.hpp" />
     <ClInclude Include="patch_obj_text.hpp" />
     <ClInclude Include="patch_obj_waveform.hpp" />
@@ -158,6 +160,7 @@
     <ClInclude Include="patch_sysinfo_write.hpp" />
     <ClInclude Include="patch_text_op_size.hpp" />
     <ClInclude Include="patch_theme_cc.hpp" />
+    <ClInclude Include="patch_trackbar.hpp" />
     <ClInclude Include="patch_tra_aviutlfilter.hpp" />
     <ClInclude Include="patch_tra_change_drawfilter.hpp" />
     <ClInclude Include="patch_tra_change_mode.hpp" />
@@ -193,6 +196,7 @@
     <ClCompile Include="patch_border_only_text.cpp" />
     <ClCompile Include="patch_camera_scene.cpp" />
     <ClCompile Include="patch_change_disp_scene.cpp" />
+    <ClCompile Include="patch_exa_camera.cpp" />
     <ClCompile Include="patch_failed_file_drop.cpp" />
     <ClCompile Include="patch_fast_audio_spectrum.cpp" />
     <ClCompile Include="patch_fast_blur.cpp" />
@@ -260,6 +264,7 @@
     <ClCompile Include="patch_splash.cpp" />
     <ClCompile Include="patch_susie_load.cpp" />
     <ClCompile Include="patch_theme_cc.cpp" />
+    <ClCompile Include="patch_trackbar.cpp" />
     <ClCompile Include="patch_tra_change_drawfilter.cpp" />
     <ClCompile Include="patch_undo.cpp" />
     <ClCompile Include="patch_yc_rgb_conv.cpp" />

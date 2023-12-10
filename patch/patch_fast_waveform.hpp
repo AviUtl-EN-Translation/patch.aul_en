@@ -28,7 +28,7 @@
 namespace patch::fast {
 	// init at exedit load
 	// 音声波形表示の速度アップ
-	// 波形モード0の部分の処理をマルチスレッドに
+	// 処理をマルチスレッドに
 	inline class Waveform_t {
 		struct wf_var { // [esp+10]
 			int obj_w;
@@ -37,8 +37,8 @@ namespace patch::fast {
 			int res_h;
 			int obj_h;
 			int _other24;
+			int _other28;
 			int mirror;
-			int _other2c;
 			int _other30;
 			int _other34;
 			int pad_h;
@@ -60,7 +60,11 @@ namespace patch::fast {
 		};
 
 		static void __cdecl normal_wrap(wf_var* wf, ExEdit::FilterProcInfo* efpip);
-		static void __cdecl mt(int thread_id, int thread_num, void* param1, void* param2);
+		static void __cdecl normal_mt(int thread_id, int thread_num, void* param1, void* param2);
+
+		static void __cdecl spectrum_wrap(wf_var* wf, ExEdit::FilterProcInfo* efpip);
+		static void __cdecl spectrum_mt(int thread_id, int thread_num, void* param1, void* param2);
+		static void __cdecl spectrum_mirror_mt(int thread_id, int thread_num, void* param1, void* param2);
 
 		inline static int(__cdecl* calc_pos)(int, int, int, int);
 
@@ -77,26 +81,50 @@ namespace patch::fast {
 
 			calc_pos = reinterpret_cast<decltype(calc_pos)>(GLOBAL::exedit_base + 0x8e010);
 
-			/*
-			1008e557 - 1008e8a0 wrap
-			jmp 1008eaec
+			{ // mode=0
+				/*
+					1008e557 - 1008e8a0 wrap
+					jmp 1008eaec
 
-			1008e557 8d442410           lea     eax,dword ptr [esp+10]
-			1008e55b 51                 push    ecx ; efpip
-			1008e55c 50                 push    eax
-			1008e55d e8XxXxXxXx         call    normal_wrap
-			1008e562 83c408             add     esp,+08
-			1008e565 e982050000         jmp     1008eaec
-			1008e56a
-			*/
+					1008e557 8d442410           lea     eax,dword ptr [esp+10]
+					1008e55b 51                 push    ecx ; efpip
+					1008e55c 50                 push    eax
+					1008e55d e8XxXxXxXx         call    normal_wrap
+					1008e562 83c408             add     esp,+08
+					1008e565 e982050000         jmp     1008eaec
+					1008e56a
+				*/
 
-			constexpr int vp_begin = 0x8e557;
-			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8e56a - vp_begin);
-			h.store_i32(0x8e557 - vp_begin, '\x8d\x44\x24\x10');
-			h.store_i32(0x8e55b - vp_begin, '\x51\x50\xe8\x00');
-			h.replaceNearJmp(0x8e55e - vp_begin, &normal_wrap);
-			h.store_i32(0x8e562 - vp_begin, '\x83\xc4\x08\xe9');
-			h.store_i32(0x8e566 - vp_begin, '\x82\x05\x00\x00');
+				constexpr int vp_begin = 0x8e557;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8e56a - vp_begin);
+				h.store_i32(0x8e557 - vp_begin, '\x8d\x44\x24\x10');
+				h.store_i32(0x8e55b - vp_begin, '\x51\x50\xe8\x00');
+				h.replaceNearJmp(0x8e55e - vp_begin, &normal_wrap);
+				h.store_i32(0x8e562 - vp_begin, '\x83\xc4\x08\xe9');
+				h.store_i32(0x8e566 - vp_begin, '\x82\x05\x00\x00');
+			}
+			{ // mode=1
+				/*
+					1008e9b2 - 1008eaeb wrap
+					jmp 1008eaec
+
+					1008e9b2 8d442410           lea     eax,dword ptr [esp+10]
+					1008e9b6 52                 push    edx ; efpip
+					1008e9b7 50                 push    eax
+					1008e9b8 e8XxXxXxXx         call    spectrum_wrap
+					1008e9bd 83c408             add     esp,+08
+					1008e9c0 e927010000         jmp     1008eaec
+					1008e9c5
+				*/
+
+				constexpr int vp_begin = 0x8e9b2;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8e9c5 - vp_begin);
+				h.store_i32(0x8e9b2 - vp_begin, '\x8d\x44\x24\x10');
+				h.store_i32(0x8e9b6 - vp_begin, '\x52\x50\xe8\x00');
+				h.replaceNearJmp(0x8e9b9 - vp_begin, &spectrum_wrap);
+				h.store_i32(0x8e9bd - vp_begin, '\x83\xc4\x08\xe9');
+				h.store_i32(0x8e9c1 - vp_begin, '\x27\x01\x00\x00');
+			}
 		}
 
 		void switching(bool flag) { enabled = flag; }

@@ -22,7 +22,7 @@
 
 namespace patch::fast {
 
-    void __cdecl BorderBlur_t::mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    void __cdecl BorderBlur_t::object_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto bblur = reinterpret_cast<efBorderBlur_var*>(GLOBAL::exedit_base + 0x11ec48);
         auto lut_minus_cos_half = reinterpret_cast<short*>(GLOBAL::exedit_base + OFS::ExEdit::lut_minus_cos_half);
         auto a = (short*)efpip->obj_temp + thread_id;
@@ -39,7 +39,7 @@ namespace patch::fast {
         }
     }
 
-    void __cdecl BorderBlur_t::mt2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    void __cdecl BorderBlur_t::object_mt2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto bblur = reinterpret_cast<efBorderBlur_var*>(GLOBAL::exedit_base + 0x11ec48);
         int half_w = efpip->obj_w >> 1;
         int half_h = efpip->obj_h >> 1;
@@ -143,5 +143,124 @@ namespace patch::fast {
             }
         }
     }
+
+
+    void __cdecl BorderBlur_t::alpha_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        auto bblur = reinterpret_cast<efBorderBlur_var*>(GLOBAL::exedit_base + 0x11ec48);
+        int x = efpip->obj_w * thread_id / thread_num;
+        auto src0 = &((ExEdit::PixelYCA*)efpip->obj_edit + x)->a;
+        auto src1 = src0;
+        auto dst0 = (short*)efpip->obj_temp + x;
+        auto cnv0 = (int*)((short*)efpip->obj_temp + efpip->obj_w * efpip->obj_h) + x;
+        int w = efpip->obj_w * (thread_id + 1) / thread_num - x;
+
+        memset(cnv0, 0, w * sizeof(int));
+
+        for (int y = bblur->size_h; 0 < y; y--) {
+            auto src2 = src0;
+            src0 += efpip->obj_line * 4;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv += *src2;
+                cnv++;
+                src2 += 4;
+            }
+        }
+        for (int y = bblur->range_h - bblur->size_h; 0 < y; y--) {
+            auto dst = dst0;
+            dst0 += efpip->obj_w;
+            auto src2 = src0;
+            src0 += efpip->obj_line * 4;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv += *src2;
+                *dst = *cnv / bblur->range_h;
+                dst++;
+                cnv++;
+                src2 += 4;
+            }
+        }
+        for (int y = efpip->obj_h - bblur->range_h; 0 < y; y--) {
+            auto dst = dst0;
+            dst0 += efpip->obj_w;
+            auto src2 = src0;
+            src0 += efpip->obj_line * 4;
+            auto src3 = src1;
+            src1 += efpip->obj_line * 4;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv += *src2 - *src3;
+                *dst = *cnv / bblur->range_h;
+                dst++;
+                cnv++;
+                src2 += 4; src3 += 4;
+            }
+        }
+        for (int y = bblur->size_h; 0 < y; y--) {
+            auto dst = dst0;
+            dst0 += efpip->obj_w;
+            auto src3 = src1;
+            src1 += efpip->obj_line * 4;
+            auto cnv = cnv0;
+            for (x = w; 0 < x; x--) {
+                *cnv -= *src3;
+                *dst = *cnv / bblur->range_h;
+                dst++;
+                cnv++;
+                src3 += 4;
+            }
+        }
+    }
+
+    void __cdecl BorderBlur_t::alpha_mt2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        auto bblur = reinterpret_cast<efBorderBlur_var*>(GLOBAL::exedit_base + 0x11ec48);
+        int y = efpip->obj_h * thread_id / thread_num;
+        short* src1 = (short*)efpip->obj_temp + y * efpip->obj_w;
+        short* dst0 = &((ExEdit::PixelYCA*)efpip->obj_edit + y * efpip->obj_line)->a;
+        for (y = efpip->obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
+            auto dst = dst0;
+            dst0 += efpip->obj_line * 4;
+            int cnv = 0;
+            short* src2 = src1;
+            for (int x = bblur->size_w; 0 < x; x--) {
+                cnv += *src1;
+                src1++;
+            }
+            for (int x = bblur->range_w - bblur->size_w; 0 < x; x--) {
+                cnv += *src1;
+                src1++;
+                int a = (cnv / bblur->range_w * *dst >> 11) - 0x1000;
+                if (a <= 0) {
+                    *dst = 0;
+                } else {
+                    *dst = *dst * a >> 12;
+                }
+                dst += 4;
+            }
+            for (int x = efpip->obj_w - bblur->range_w; 0 < x; x--) {
+                cnv += *src1 - *src2;
+                src1++; src2++;
+                int a = (cnv / bblur->range_w * *dst >> 11) - 0x1000;
+                if (a <= 0) {
+                    *dst = 0;
+                } else {
+                    *dst = *dst * a >> 12;
+                }
+                dst += 4;
+            }
+            for (int x = bblur->size_w; 0 < x; x--) {
+                cnv -= *src2;
+                src2++;
+                int a = (cnv / bblur->range_w * *dst >> 11) - 0x1000;
+                if (a <= 0) {
+                    *dst = 0;
+                } else {
+                    *dst = *dst * a >> 12;
+                }
+                dst += 4;
+            }
+        }
+    }
+
 } // namespace patch::fast
 #endif // ifdef PATCH_SWITCH_FAST_BORDERBLUR

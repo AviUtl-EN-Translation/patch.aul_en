@@ -30,7 +30,7 @@ namespace patch {
     // 改行のみのテキストが幅0 高さ1以上となってしまい、エラーの原因となるのを修正
 
     // テキストで制御文字を使用した時に変な描画がされることがあるのを簡易修正
-
+    // フレームレートの分母が大きい時に正常に表示されないのを修正
     inline class obj_Text_t {
 
         bool enabled = true;
@@ -58,6 +58,35 @@ namespace patch {
                 
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x050254, 4);
                 h.replaceNearJmp(0, &yc_buffer_fill_wrap);
+            }
+            { // フレームレートの分母が大きい時に正常に表示されないのを修正
+                /*
+                    1008a92a 8b8700010000       mov     eax,dword ptr [edi+00000100]
+                    1008a930 8954243c           mov     dword ptr [esp+3c],edx
+                    1008a934 8d0480             lea     eax,dword ptr [eax+eax*4]
+                    1008a937 db44243c           fild    dword ptr [esp+3c]
+                    1008a93b 8d0480             lea     eax,dword ptr [eax+eax*4]
+                    1008a93e 8d0c80             lea     ecx,dword ptr [eax+eax*4]
+                    1008a941 c1e103             shl     ecx,03
+                    1008a944 894c243c           mov     dword ptr [esp+3c],ecx
+                    1008a948 db44243c           fild    dword ptr [esp+3c]
+                    1008a94c
+                    ↓
+                    1008a92a 8954243c           mov     dword ptr [esp+3c],edx
+                    1008a92e db44243c           fild    dword ptr [esp+3c]
+                    1008a932 db8700010000       fild    dword ptr [edi+00000100]
+                    1008a938 dc0dXxXxXxXx       fmul    qword ptr [ee+9a3d0] ; 1000.0d
+                    1008a93e eb0c               jmp     skip,+0c
+                    1008a940
+                */
+
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x8a92a, 22);
+                h.store_i32(0, '\x89\x54\x24\x3c');
+                h.store_i32(4, '\xdb\x44\x24\x3c');
+                h.store_i32(8, '\xdb\x87\x00\x01');
+                h.store_i32(12, '\x00\x00\xdc\x0d');
+                h.store_i32(16, GLOBAL::exedit_base + OFS::ExEdit::double_1000);
+                h.store_i16(20, '\xeb\x0c');
             }
         }
 

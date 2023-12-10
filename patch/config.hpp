@@ -65,6 +65,9 @@ public:
             #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
                 patch::colorpalette_cache.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_TRACKBAR
+                patch::trackbar.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_FILEINFO
                 patch::fileinfo.switch_load(cr);
             #endif
@@ -118,6 +121,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_EXO_FOLD_GUI
                 patch::exo_fold_gui.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_EXA_CAMERA
+                patch::exa_camera.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_STR_MINUSVAL
                 patch::str_minusval.switch_load(cr);
@@ -184,6 +190,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_OBJ_SCENE_AUDIO
+                patch::SceneAudio.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_load(cr);
@@ -622,6 +631,9 @@ public:
             #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
                 patch::colorpalette_cache.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_TRACKBAR
+                patch::trackbar.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_FILEINFO
                 patch::fileinfo.switch_store(switch_);
             #endif
@@ -675,6 +687,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_EXO_FOLD_GUI
                 patch::exo_fold_gui.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_EXA_CAMERA
+                patch::exa_camera.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_STR_MINUSVAL
                 patch::str_minusval.switch_store(switch_);
@@ -741,6 +756,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
                 patch::AudioFile.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_OBJ_SCENE_AUDIO
+                patch::SceneAudio.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
                 patch::ColorCorrection.switch_store(switch_);

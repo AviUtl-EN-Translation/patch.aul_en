@@ -96,6 +96,10 @@ void init_t::InitAtPatchLoaded() {
 	patch::colorpalette_cache.init();
 #endif
 
+#ifdef PATCH_SWITCH_TRACKBAR
+	patch::trackbar.init();
+#endif
+
 #ifdef PATCH_SWITCH_FILEINFO
 	patch::fileinfo.init();
 #endif
@@ -178,6 +182,10 @@ void init_t::InitAtExeditLoad() {
 	patch::exo_fold_gui.init();
 #endif
 
+#ifdef PATCH_SWITCH_EXA_CAMERA
+	patch::exa_camera.init();
+#endif
+
 #ifdef PATCH_SWITCH_STR_MINUSVAL
 	patch::str_minusval.init();
 #endif
@@ -231,6 +239,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_OBJ_AUDIOFILE
 	patch::AudioFile.init();
+#endif
+#ifdef PATCH_SWITCH_OBJ_SCENE_AUDIO
+	patch::SceneAudio.init();
 #endif
 #ifdef PATCH_SWITCH_OBJ_COLORCORRECTION
 	patch::ColorCorrection.init();

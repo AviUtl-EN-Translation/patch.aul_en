@@ -29,9 +29,9 @@ namespace patch::fast {
         audio_data[0] = audio_data[1];
         audio_data[wf->audio_n + 1] = audio_data[wf->audio_n + 2] = audio_data[wf->audio_n];
         auto a_exfunc = reinterpret_cast<AviUtl::ExFunc*>(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
-        a_exfunc->exec_multi_thread_func(&mt, wf, efpip);
+        a_exfunc->exec_multi_thread_func(&normal_mt, wf, efpip);
     }
-    void __cdecl Waveform_t::mt(int thread_id, int thread_num, void* param1, void* param2) {
+    void __cdecl Waveform_t::normal_mt(int thread_id, int thread_num, void* param1, void* param2) {
         auto wf = static_cast<wf_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
         short* audio_data = (short*)wf->audio_data;
@@ -122,6 +122,64 @@ namespace patch::fast {
                         *edit_a += temp_data[ofs];
                     }
                     edit_a += efpip->obj_line * 4;
+                }
+            }
+        }
+    }
+
+
+
+    void __cdecl Waveform_t::spectrum_wrap(wf_var* wf, ExEdit::FilterProcInfo* efpip) {
+        auto a_exfunc = reinterpret_cast<AviUtl::ExFunc*>(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
+        if (wf->mirror == 0) {
+            a_exfunc->exec_multi_thread_func(&spectrum_mt, wf, efpip);
+        } else {
+            a_exfunc->exec_multi_thread_func(&spectrum_mirror_mt, wf, efpip);
+        }
+    }
+    void __cdecl Waveform_t::spectrum_mt(int thread_id, int thread_num, void* param1, void* param2) {
+        auto wf = static_cast<wf_var*>(param1);
+        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
+        short* obj_edit_a = (short*)efpip->obj_edit + 3;
+        int x_end = wf->obj_w * (thread_id + 1) / thread_num;
+        for (int x = wf->obj_w * thread_id / thread_num; x < x_end; x++) {
+            int xpos = calc_pos(x, wf->obj_w, wf->res_w, wf->pad_w);
+            if (0 <= xpos) {
+                int ad = wf->audio_data[xpos] * wf->res_h >> 12;
+                short* edit_a = obj_edit_a + x * 4;
+                for (int y = wf->obj_h - 1; 0 <= y; y--) {
+                    int ypos = calc_pos(y, wf->obj_h, wf->res_h, wf->pad_h);
+                    if (0 <= ypos && ypos < ad) {
+                        *edit_a = 0x1000;
+                    }
+                    edit_a += efpip->obj_line * 4;
+                }
+            }
+        }
+    }
+    void __cdecl Waveform_t::spectrum_mirror_mt(int thread_id, int thread_num, void* param1, void* param2) {
+        auto wf = static_cast<wf_var*>(param1);
+        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
+        short* obj_edit_a = (short*)efpip->obj_edit + 3;
+        int x_end = wf->obj_w * (thread_id + 1) / thread_num;
+        for (int x = wf->obj_w * thread_id / thread_num; x < x_end; x++) {
+            int xpos = calc_pos(x, wf->obj_w, wf->res_w, wf->pad_w);
+            if (0 <= xpos) {
+                int ad = wf->audio_data[xpos] * wf->res_h >> 12;
+                short* edit_a1 = obj_edit_a + x * 4;
+                short* edit_a2 = edit_a1 + efpip->obj_line * 4 * (wf->obj_h - 1);
+                int y;
+                for (y = wf->obj_h - 2; wf->mirror < y; y -= 2) {
+                    int ypos = calc_pos(y, wf->obj_h, wf->res_h, wf->pad_h);
+                    if (0 <= ypos && ypos < ad) {
+                        *edit_a2 = *edit_a1 = 0x1000;
+                    }
+                    edit_a1 += efpip->obj_line * 4;
+                    edit_a2 -= efpip->obj_line * 4;
+                }
+                while (edit_a1 <= edit_a2) {
+                    *edit_a1 = 0x1000;
+                    edit_a1 += efpip->obj_line * 4;
                 }
             }
         }

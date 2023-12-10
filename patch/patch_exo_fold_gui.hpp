@@ -29,7 +29,7 @@ namespace patch {
     inline class exo_fold_gui_t {
         bool enabled = true;
         bool enabled_i;
-        inline static const char key[] = "exa_fold_gui";
+        inline static const char key[] = "exo_fold_gui";
 
         inline static const char fold_gui_write[] = "_fold_gui=%d\r\n";
         inline static const char fold_gui_read[] = "_fold_gui";

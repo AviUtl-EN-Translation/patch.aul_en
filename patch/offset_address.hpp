@@ -37,7 +37,12 @@ namespace OFS {
 		constexpr i32 filter_change_framerate_ptr = 0x080b28;
 		constexpr i32 filter_clipping_and_resize_ptr = 0x07ad58;
 
+
+		constexpr i32 ini_trackbarclick = 0x086270;
+		constexpr i32 trackbar_WndProc = 0x2daaf4;
+
 		constexpr i32 str_AviUtl = 0x0742a0; // "AviUtl"
+
 		
 
 		constexpr i32 str_dot_avi = 0x0745fc; // ".avi"
@@ -188,6 +193,8 @@ namespace OFS {
 
 		constexpr i32 ScriptProcessingFilter = 0x1b2b10;
 
+		constexpr i32 double_1000 = 0x09a3d0;
+
 		constexpr i32 extract_extension = 0x04e1d0;
 		constexpr i32 ini_extension_buf = 0x14cb58;
 		constexpr i32 str_DOUGAFILE= 0x09df6c; // "動画ファイル"
@@ -207,6 +214,7 @@ namespace OFS {
 		constexpr i32 str_blend = 0x0a30e8;
 		constexpr i32 str_RGB_d_d_d = 0x0a2d24;
 		constexpr i32 str_SHITEINASHI_MOTOGAZOUNOIRO = 0x0a5c8c;
+
 
 		constexpr i32 AviFileHandleInfoArray = 0x0d4748;
 		constexpr i32 AviFileHandleMaxNum = 0x0d7250;
