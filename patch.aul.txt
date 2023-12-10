@@ -306,8 +306,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "exeditwindow_sizing" : boolean, ; 拡張編集ウィンドウの上部をドラッグして正常にリサイズできるようにする (既定値: true)
         "settingdialog_move" : boolean, ; 設定ダイアログを高ポーリングレートマウス環境で移動すると重たい の解消 (既定値: true)
         "settingdialog_add_filter" : boolean, ; 他のプラグインからフィルタ効果を追加するときに起こる問題を修正 (既定値: true)
-        "obj_text" : boolean, ; フレームレートの分母が大きい時にテキストが正常に表示されないのを修正
-・制御文字を使用した時に変な描画がされることがあるのを簡易修正 (既定値: true)
+        "obj_text" : boolean, ; フレームレートの分母が大きい時にテキストが正常に表示されないのを修正・制御文字を使用した時に変な描画がされることがあるのを簡易修正 (既定値: true)
         "obj_create_figure" : boolean, ; 図形の縦横比が-100未満や100超の時にエラーが出たり描画がおかしくなるのを修正 (既定値: true)
         "obj_waveform" : boolean, ; 音声波形表示にて横解像度0、音声サンプル数＜横幅 の時に範囲外のおかしな波形が表示されるのを修正 (既定値: true)
         "obj_audiofile" : boolean, ; 音声ファイルの再生速度最大値を修正 (既定値: true)
