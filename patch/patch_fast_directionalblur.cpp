@@ -176,7 +176,7 @@ namespace patch::fast {
 
 
 
-    void __cdecl DirectionalBlur_t::filter_mt_wrap00cae8(AviUtl::MultiThreadFunc func, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    BOOL DirectionalBlur_t::filter_mt_func(AviUtl::MultiThreadFunc func, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         efDirectionalBlur_var& dblur = *(efDirectionalBlur_var*)uintptr_t(reinterpret_cast<efDirectionalBlur_var*>(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_var_ptr));
 
         try {

@@ -60,6 +60,7 @@
     <ClInclude Include="patch_fast_chromakey.hpp" />
     <ClInclude Include="patch_fast_colordrift.hpp" />
     <ClInclude Include="patch_fast_colorkey.hpp" />
+    <ClInclude Include="patch_fast_convexedge.hpp" />
     <ClInclude Include="patch_fast_drawfilter.hpp" />
     <ClInclude Include="patch_fast_exfunc_fill.hpp" />
     <ClInclude Include="patch_fast_extractedge.hpp" />
@@ -204,6 +205,7 @@
     <ClCompile Include="patch_fast_chromakey.cpp" />
     <ClCompile Include="patch_fast_colordrift.cpp" />
     <ClCompile Include="patch_fast_colorkey.cpp" />
+    <ClCompile Include="patch_fast_convexedge.cpp" />
     <ClCompile Include="patch_fast_exfunc_fill.cpp" />
     <ClCompile Include="patch_fast_extractedge.cpp" />
     <ClCompile Include="patch_fast_shadow.cpp" />

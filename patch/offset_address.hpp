@@ -176,6 +176,7 @@ namespace OFS {
 		constexpr i32 efLensBlur_Media_mt_func_call = 0x012761;
 		constexpr i32 efLensBlur_Filter_mt_func_call = 0x012786;
 		constexpr i32 efLensBlur_var_ptr = 0x11ec5c;
+		constexpr i32 efConvexEdge_var_ptr = 0x0d7588;
 		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
 		constexpr i32 efAnimationEffect_ptr = 0x09d2b8;

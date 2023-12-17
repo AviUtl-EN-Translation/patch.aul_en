@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_44"
+#define PATCH_VERSION_STR "r43_ss_45"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -227,6 +227,7 @@
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 	#define PATCH_SWITCH_FAST_BORDERBLUR fast_borderblur
 	#define PATCH_SWITCH_FAST_BLUR fast_blur
+	#define PATCH_SWITCH_FAST_CONVEXEDGE fast_convexedge
 	#define PATCH_SWITCH_FAST_EXTRACTEDGE fast_extractedge
 	#define PATCH_SWITCH_FAST_GLOW fast_glow
 	#define PATCH_SWITCH_FAST_COLORDRIFT fast_colordrift
@@ -243,6 +244,7 @@
 		#define PATCH_SWITCH_FAST_FLASH fast_flash
 		#define PATCH_SWITCH_FAST_DIRECTIONALBLUR fast_directionalblur
 		#define PATCH_SWITCH_FAST_LENSBLUR fast_lensblur
+		#define PATCH_SWITCH_FAST_CONVEXEDGE_CL fast_convexedge_cl
 	//	#define PATCH_SWITCH_FAST_BLEND fast_blend
 
 	#endif // define PATCH_SWITCH_CL

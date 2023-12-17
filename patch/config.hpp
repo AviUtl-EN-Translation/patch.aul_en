@@ -402,6 +402,9 @@ public:
                 #ifdef PATCH_SWITCH_FAST_BLUR
                     patch::fast::Blur.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_CONVEXEDGE
+                    patch::fast::ConvexEdge.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_EXTRACTEDGE
                     patch::fast::ExtractEdge.switch_load(cr);
                 #endif
@@ -447,6 +450,9 @@ public:
                     #endif
                     #ifdef PATCH_SWITCH_FAST_LENSBLUR
                         patch::fast::LensBlur.switch_load(cr);
+                    #endif
+                    #ifdef PATCH_SWITCH_FAST_CONVEXEDGE_CL
+                        patch::fast::ConvexEdgeCL.switch_load(cr);
                     #endif
                 #endif
             #endif
@@ -962,11 +968,14 @@ public:
                 #ifdef PATCH_SWITCH_FAST_BORDER
                     patch::fast::Border.switch_store(switch_);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_BORDERBLUR
+                    patch::fast::BorderBlur.switch_store(switch_);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_BLUR
                     patch::fast::Blur.switch_store(switch_);
                 #endif
-                #ifdef PATCH_SWITCH_FAST_BORDERBLUR
-                    patch::fast::BorderBlur.switch_store(switch_);
+                #ifdef PATCH_SWITCH_FAST_CONVEXEDGE
+                    patch::fast::ConvexEdge.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_EXTRACTEDGE
                     patch::fast::ExtractEdge.switch_store(switch_);
@@ -1013,6 +1022,9 @@ public:
                     #endif
                     #ifdef PATCH_SWITCH_FAST_LENSBLUR
                         patch::fast::LensBlur.switch_store(switch_);
+                    #endif
+                    #ifdef PATCH_SWITCH_FAST_CONVEXEDGE_CL
+                        patch::fast::ConvexEdgeCL.switch_store(switch_);
                     #endif
                 #endif
             #endif

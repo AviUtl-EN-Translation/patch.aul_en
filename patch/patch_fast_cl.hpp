@@ -1085,6 +1085,40 @@ kernel void LensBlur_Filter(global char* dst, global char* src, int scene_w, int
 	dst[4] = (char)(((sum_a >> 1) + sum_cb) / sum_a);
 	dst[5] = (char)(((sum_a >> 1) + sum_cr) / sum_a);
 }
+kernel void ConvexEdge(global short* dst, global short* src, int obj_w, int obj_h, int obj_line, int width, float height_rate, int step_x16, int step_y16) {
+	int x = get_global_id(0);
+	int y = get_global_id(1);
+
+	src += 3;
+	int xx = 0;
+	int yy = 0;
+	int a = 0;
+	for (int n = width; 0 < n; n--) {
+		xx += step_x16;
+		yy += step_y16;
+		int xxx = x + (xx >> 0x10);
+		int yyy = y + (yy >> 0x10);
+		if (0 <= xxx && xxx < obj_w && 0 <= yyy && yyy < obj_h) {
+			a += src[(yyy * obj_line + xxx) * 4];
+		}
+		xxx = x - (xx >> 0x10);
+		yyy = y - (yy >> 0x10);
+		if (0 <= xxx && xxx < obj_w && 0 <= yyy && yyy < obj_h) {
+			a -= src[(yyy * obj_line + xxx) * 4];
+		}
+	}
+	src += (x + y * obj_line) * 4 - 3;
+	dst += (x + y * obj_line) * 4;
+	a = src[0] + (int)round((float)a * height_rate);
+	int aa;
+	if (src[0] <= a || src[0] <= 0) aa = 0x1000;
+	else if (a < 0) aa = a = 0;
+	else aa = (a << 12) / src[0];
+	dst[0] = a;
+	dst[1] = src[1] * aa >> 12;
+	dst[2] = src[2] * aa >> 12;
+	dst[3] = src[3];
+}
 )");
 #pragma endregion
 

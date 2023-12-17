@@ -423,6 +423,9 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_BLUR
 			patch::fast::Blur.init();
 		#endif
+		#ifdef PATCH_SWITCH_FAST_CONVEXEDGE
+			patch::fast::ConvexEdge.init();
+		#endif
 		#ifdef PATCH_SWITCH_FAST_EXTRACTEDGE
 			patch::fast::ExtractEdge.init();
 		#endif
@@ -471,6 +474,9 @@ void init_t::InitAtExeditLoad() {
 					#endif
 					#ifdef PATCH_SWITCH_FAST_LENSBLUR
 						patch::fast::LensBlur.init();
+					#endif
+					#ifdef PATCH_SWITCH_FAST_CONVEXEDGE_CL
+						patch::fast::ConvexEdgeCL.init();
 					#endif
 				}
 			}

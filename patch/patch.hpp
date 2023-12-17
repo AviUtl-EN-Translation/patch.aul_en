@@ -145,3 +145,4 @@
 #include "patch_exa_camera.hpp"
 #include "patch_trackbar.hpp"
 #include "patch_obj_scene_audio.hpp"
+#include "patch_fast_convexedge.hpp"

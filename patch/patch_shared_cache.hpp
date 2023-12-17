@@ -24,6 +24,12 @@
 
 #include "config_rw.hpp"
 
+
+#ifdef PATCH_SWITCH_SCENE_CACHE
+#include "patch_scene_cache.hpp"
+#endif // ifdef PATCH_SWITCH_SCENE_CACHE
+
+
 namespace patch {
 
     // init at exedit load
@@ -66,6 +72,12 @@ namespace patch {
             }
             cache_count = 0;
             priority_count = 1;
+
+#ifdef PATCH_SWITCH_SCENE_CACHE
+            if (scene_cache.is_enabled_i()) {
+                scene_cache_t::delete_scene_cache();
+            }
+#endif // ifdef PATCH_SWITCH_SCENE_CACHE
         }
 
         inline static SharedCacheInfo* GetOrCreateSharedCacheInfo() {

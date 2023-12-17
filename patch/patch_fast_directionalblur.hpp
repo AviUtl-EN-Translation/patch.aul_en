@@ -28,7 +28,7 @@ namespace patch::fast {
     // 必要以上に領域拡張されるのを修正
     inline class DirectionalBlur_t {
         static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-        static void __cdecl filter_mt_wrap00cae8(AviUtl::MultiThreadFunc func, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+        static BOOL filter_mt_func(AviUtl::MultiThreadFunc func, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
         bool enabled = true;
         bool enabled_i;
@@ -55,7 +55,7 @@ namespace patch::fast {
 
             OverWriteOnProtectHelper h(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_Filter_mt_func_call, 6);
             h.store_i16(0, '\x90\xe8'); // nop; call (rel32)
-            h.replaceNearJmp(2, &filter_mt_wrap00cae8);
+            h.replaceNearJmp(2, &filter_mt_func);
 
 
         }

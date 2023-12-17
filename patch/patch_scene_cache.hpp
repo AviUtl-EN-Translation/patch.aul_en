@@ -39,7 +39,6 @@ namespace patch {
 
 		static void* __cdecl get_scene_image_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int scene_idx, int frame, int subframe, int* w, int* h);
 		static void* __cdecl get_scene_image_mask_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int scene_idx, int frame, int subframe, int* w, int* h);
-		static void delete_scene_cache();
 
 		inline static void* (__cdecl* get_scene_image)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int, int, int, int*, int*);
 
@@ -51,6 +50,7 @@ namespace patch {
 		inline static const char key[] = "scene_cache";
 
 	public:
+		static void delete_scene_cache();
 
 		void init() {
 			enabled_i = enabled;
@@ -74,6 +74,8 @@ namespace patch {
 				h.store_i8(0, '\xe9'); // jmp
 				h.replaceNearJmp(1, &delete_scene_cache);
 			}
+
+			// shared_cache.hppにて キャッシュを破棄 に対応
 		}
 
 		void switching(bool flag) {

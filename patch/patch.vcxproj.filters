@@ -461,6 +461,9 @@
     <ClInclude Include="patch_obj_scene_audio.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_convexedge.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -711,6 +714,9 @@
     </ClCompile>
     <ClCompile Include="patch_trackbar.cpp">
       <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_convexedge.cpp">
+      <Filter>feature\fast</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
