@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_45
+patch.aul r43_ss_46
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -266,6 +266,9 @@ https://scrapbox.io/nazosauna/patch.aul
     "fast_text" : { ; テキストの軽量化について
         "release_time" : number ; キャッシュデータの寿命[秒] (既定値: 120)
     },
+    "fast_border" : { ; 縁取りの軽量化について
+        "use_space" : boolean ; 画像の周囲が透明度0の余白の場合に画像サイズを広げず活用するようにする (既定値: true)
+    },
     "scene_cache" : { ; シーンキャッシュ機能について
         "threshold_time" : number ; キャッシュをとるしきい値。シーン描画にかかった時間[ミリ秒] (既定値: 64)
     },
@@ -399,7 +402,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_45" のような文字列が格納されている
+        例として "patch.aul r43_ss_46" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
