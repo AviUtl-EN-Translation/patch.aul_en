@@ -230,6 +230,7 @@
 	#define PATCH_SWITCH_FAST_CONVEXEDGE fast_convexedge
 	#define PATCH_SWITCH_FAST_EXTRACTEDGE fast_extractedge
 	#define PATCH_SWITCH_FAST_GLOW fast_glow
+	#define PATCH_SWITCH_FAST_LIGHTEMISSION fast_lightemisson
 	#define PATCH_SWITCH_FAST_COLORDRIFT fast_colordrift
 	#define PATCH_SWITCH_FAST_COLORKEY fast_colorkey
 	#define PATCH_SWITCH_FAST_CHROMAKEY fast_chromakey

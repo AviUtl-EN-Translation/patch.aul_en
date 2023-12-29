@@ -97,9 +97,169 @@ namespace patch::fast {
     }
 
 
-    void blur_yc_fb_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+    void Blur_t::blur_yc_fb_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
         int blur_range = blur_size * 2 + 1;
-        int loop3 = obj_size - blur_range;
+        int loop[5];
+        if (blur_range < obj_size) {
+            loop[0] = blur_size;
+            loop[1] = blur_size + 1;
+            loop[2] = obj_size - blur_range;
+            loop[3] = 0;
+            loop[4] = blur_size;
+        } else {
+            blur_size = min(blur_size, obj_size - 1);
+            loop[0] = blur_size;
+            loop[1] = obj_size - blur_size;
+            loop[2] = 0;
+            loop[3] = blur_range - obj_size;
+            loop[4] = obj_size - blur_size - 1;
+        }
+        int offset = n_begin * buf_step2;
+
+        float f_inv_range = 1.0f / (float)blur_range;
+        int n = n_end - n_begin;
+        if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
+            fastBlurYCfb256 fb256;
+            fb256.range = _mm256_set1_epi32(blur_range);
+            fb256.invrange = _mm256_set1_ps(f_inv_range);
+            fb256.halfrange = _mm256_set1_epi32(blur_size);
+            fb256.offset = _mm256_mullo_epi32(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _mm256_set1_epi32(buf_step2));
+
+            for (; 8 <= n; n -= 8) {
+                auto dst = (PixelYC_fbb*)((int)buf_dst + offset);
+                auto src1 = (PixelYC_fbb*)((int)buf_src + offset);
+                auto src2 = src1;
+                offset += buf_step2 * 8;
+
+                fb256.y = _mm256_setzero_ps();
+                fb256.cb = fb256.cr = _mm256_setzero_si256();
+                for (int i = loop[0]; 0 < i; i--) {
+                    ycfb256_add(&fb256, src1);
+                    src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
+                }
+                for (int i = loop[1]; 0 < i; i--) {
+                    ycfb256_add(&fb256, src1);
+                    src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
+
+                    ycfb256_put_average(&fb256, dst, buf_step2);
+                    dst = (PixelYC_fbb*)((int)dst + buf_step1);
+                }
+                for (int i = loop[2]; 0 < i; i--) {
+                    ycfb256_sub(&fb256, src2);
+                    src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
+                    ycfb256_add(&fb256, src1);
+                    src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
+
+                    ycfb256_put_average(&fb256, dst, buf_step2);
+                    dst = (PixelYC_fbb*)((int)dst + buf_step1);
+                }
+                if (0 < loop[3]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (PixelYC_fbb*)((int)dst1 + j * buf_step2);
+                        auto yca = *(PixelYC_fbb*)((int)dst - buf_step1);
+                        for (int i = loop[3]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (PixelYC_fbb*)((int)dst + buf_step1);
+                        }
+                    }
+                }
+                for (int i = loop[4]; 0 < i; i--) {
+                    ycfb256_sub(&fb256, src2);
+                    src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
+
+                    ycfb256_put_average(&fb256, dst, buf_step2);
+                    dst = (PixelYC_fbb*)((int)dst + buf_step1);
+                }
+            }
+        }
+
+        for (; 0 < n; n--) {
+            auto dst = (PixelYC_fbb*)((int)buf_dst + offset);
+            auto src1 = (PixelYC_fbb*)((int)buf_src + offset);
+            auto src2 = src1;
+            offset += buf_step2;
+
+            float cnv_y = 0.0f;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            for (int i = loop[0]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
+            }
+            for (int i = loop[1]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
+
+                dst->y = cnv_y * f_inv_range;
+                int round_c0 = blur_size;
+                int round_c1 = round_c0;
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / blur_range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / blur_range);
+                dst = (PixelYC_fbb*)((int)dst + buf_step1);
+            }
+            for (int i = loop[2]; 0 < i; i--) {
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
+                src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
+                src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
+
+                dst->y = cnv_y * f_inv_range;
+                int round_c0 = blur_size;
+                int round_c1 = round_c0;
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / blur_range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / blur_range);
+                dst = (PixelYC_fbb*)((int)dst + buf_step1);
+            }
+            if (0 < loop[3]) {
+                auto yca = *(PixelYC_fbb*)((int)dst - buf_step1);
+                for (int i = loop[3]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (PixelYC_fbb*)((int)dst + buf_step1);
+                }
+            }
+            for (int i = loop[4]; 0 < i; i--) {
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
+                src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
+
+                dst->y = cnv_y * f_inv_range;
+                int round_c0 = blur_size;
+                int round_c1 = round_c0;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / blur_range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / blur_range);
+                dst = (PixelYC_fbb*)((int)dst + buf_step1);
+            }
+        }
+    }
+
+    void Blur_t::blur_yc_fb_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        int loop[5];
+        if (blur_size * 2 < obj_size) {
+            loop[0] = blur_size;
+            loop[1] = blur_size + 1;
+            loop[2] = obj_size - blur_size * 2 - 1;
+            loop[3] = 0;
+            loop[4] = blur_size;
+        } else {
+            blur_size = min(blur_size, obj_size - 1);
+            loop[0] = blur_size;
+            loop[1] = obj_size - blur_size;
+            loop[2] = 0;
+            loop[3] = blur_size * 2 + 1 - obj_size;
+            loop[4] = obj_size - blur_size - 1;
+        }
         int offset = n_begin * buf_step2;
 
         int n = n_end - n_begin;
@@ -115,13 +275,12 @@ namespace patch::fast {
 
                 fb256.y = _mm256_setzero_ps();
                 fb256.cb = fb256.cr = _mm256_setzero_si256();
-                for (int i = blur_size; 0 < i; i--) {
+                for (int i = loop[0]; 0 < i; i--) {
                     ycfb256_add(&fb256, src1);
                     src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
                 }
-
-                int range = blur_size;
-                for (int i = blur_size; 0 <= i; i--) {
+                int range = loop[0];
+                for (int i = loop[1]; 0 < i; i--) {
                     ycfb256_add(&fb256, src1);
                     src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
 
@@ -130,8 +289,7 @@ namespace patch::fast {
                     ycfb256_put_average(&fb256, dst, buf_step2);
                     dst = (PixelYC_fbb*)((int)dst + buf_step1);
                 }
-
-                for (int i = loop3; 0 < i; i--) {
+                for (int i = loop[2]; 0 < i; i--) {
                     ycfb256_sub(&fb256, src2);
                     src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
                     ycfb256_add(&fb256, src1);
@@ -140,8 +298,18 @@ namespace patch::fast {
                     ycfb256_put_average(&fb256, dst, buf_step2);
                     dst = (PixelYC_fbb*)((int)dst + buf_step1);
                 }
-
-                for (int i = blur_size; 0 < i; i--) {
+                if (0 < loop[3]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (PixelYC_fbb*)((int)dst1 + j * buf_step2);
+                        auto yca = *(PixelYC_fbb*)((int)dst - buf_step1);
+                        for (int i = loop[3]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (PixelYC_fbb*)((int)dst + buf_step1);
+                        }
+                    }
+                }
+                for (int i = loop[4]; 0 < i; i--) {
                     ycfb256_sub(&fb256, src2);
                     src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
 
@@ -153,84 +321,88 @@ namespace patch::fast {
             }
         }
 
-        float f_inv_range = 1.0f / (float)blur_range;
-        int half_range = blur_range >> 1;
+        float f_inv_range = 1.0f / (float)(blur_size * 2 + 1);
+        int half_range = (blur_size * 2 + 1) >> 1;
         for (; 0 < n; n--) {
             auto dst = (PixelYC_fbb*)((int)buf_dst + offset);
             auto src1 = (PixelYC_fbb*)((int)buf_src + offset);
             auto src2 = src1;
             offset += buf_step2;
 
-            float sum_y = 0.0f;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
+            float cnv_y = 0.0f;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            for (int i = loop[0]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
                 src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
             }
-
-            int range = blur_size;
-            for (int i = blur_size; 0 <= i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
+            int range = loop[0];
+            for (int i = loop[1]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
                 src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
 
                 range++;
-                dst->y = sum_y / (float)range;
+                dst->y = cnv_y / (float)range;
                 int round_c0 = range >> 1;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / range);
                 dst = (PixelYC_fbb*)((int)dst + buf_step1);
             }
-
-            for (int i = loop3; 0 < i; i--) {
-                sum_y += src1->y - src2->y;
-                sum_cb += src1->cb - src2->cb;
-                sum_cr += src1->cr - src2->cr;
+            for (int i = loop[2]; 0 < i; i--) {
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
                 src1 = (PixelYC_fbb*)((int)src1 + buf_step1);
                 src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
 
-                dst->y = sum_y * f_inv_range;
+                dst->y = cnv_y * f_inv_range;
                 int round_c0 = half_range;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / range);
                 dst = (PixelYC_fbb*)((int)dst + buf_step1);
             }
-
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
+            if (0 < loop[3]) {
+                auto yca = *(PixelYC_fbb*)((int)dst - buf_step1);
+                for (int i = loop[3]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (PixelYC_fbb*)((int)dst + buf_step1);
+                }
+            }
+            for (int i = loop[4]; 0 < i; i--) {
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
                 src2 = (PixelYC_fbb*)((int)src2 + buf_step1);
 
                 range--;
-                dst->y = sum_y / (float)range;
+                dst->y = cnv_y / (float)range;
                 int round_c0 = range >> 1;
                 int round_c1 = round_c0;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
+                dst->cb = (int8_t)((cnv_cb + round_c1) / range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / range);
                 dst = (PixelYC_fbb*)((int)dst + buf_step1);
             }
         }
     }
-    void __cdecl Blur_t::vertical_yc_fb_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // 11400
+    void __cdecl Blur_t::vertical_yc_fb_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // 11400
         auto blur = (efBlur_var*)(GLOBAL::exedit_base + OFS::ExEdit::efBlur_var_ptr);
-        blur_yc_fb_mt(thread_id * efpip->scene_w / thread_num, (thread_id + 1) * efpip->scene_w / thread_num, efpip->frame_temp, efpip->frame_edit,
+        blur_yc_fb_csa_mt(thread_id * efpip->scene_w / thread_num, (thread_id + 1) * efpip->scene_w / thread_num, efpip->frame_temp, efpip->frame_edit,
             efpip->scene_line * sizeof(ExEdit::PixelYC), sizeof(ExEdit::PixelYC), efpip->scene_h, blur->h);
     }
-    void __cdecl Blur_t::horizontal_yc_fb_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // 116d0
+    void __cdecl Blur_t::horizontal_yc_fb_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // 116d0
         auto blur = (efBlur_var*)(GLOBAL::exedit_base + OFS::ExEdit::efBlur_var_ptr);
-        blur_yc_fb_mt(thread_id * efpip->scene_h / thread_num, (thread_id + 1) * efpip->scene_h / thread_num, efpip->frame_temp, efpip->frame_edit,
+        blur_yc_fb_csa_mt(thread_id * efpip->scene_h / thread_num, (thread_id + 1) * efpip->scene_h / thread_num, efpip->frame_temp, efpip->frame_edit,
             sizeof(ExEdit::PixelYC), efpip->scene_line * sizeof(ExEdit::PixelYC), efpip->scene_w, blur->w);
     }
 
@@ -288,18 +460,18 @@ namespace patch::fast {
         }
     }
 
-    void blur_yca_fb_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_range) {
+    void Blur_t::blur_yca_fb_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        int blur_range = blur_size * 2 + 1;
         int loop2 = obj_size - blur_range;
         int offset = n_begin * buf_step2;
 
         float f_inv_range = 1.0f / (float)blur_range;
-        int half_range = blur_range >> 1;
         int n = n_end - n_begin;
         if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
             fastBlurYCAfbs256 fb256;
             fb256.range = _mm256_set1_epi32(blur_range);
             fb256.invrange = _mm256_set1_ps(f_inv_range);
-            fb256.halfrange = _mm256_set1_epi32(half_range);
+            fb256.halfrange = _mm256_set1_epi32(blur_size);
             fb256.offset = _mm256_mullo_epi32(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _mm256_set1_epi32(buf_step2));
             for (; 8 <= n; n -= 8) {
                 auto dst = (PixelYCA_fbbs*)((int)buf_dst + offset);
@@ -340,222 +512,90 @@ namespace patch::fast {
             auto src2 = src1;
             offset += buf_step2;
 
-            float sum_y = 0.0f;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            int sum_a = 0;
+            float cnv_y = 0.0f;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            int cnv_a = 0;
             for (int i = blur_range; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                cnv_a += src1->a;
                 src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
 
-                dst->y = sum_y * f_inv_range;
-                int round_c0 = half_range;
+                dst->y = cnv_y * f_inv_range;
+                int round_c0 = blur_size;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / blur_range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / blur_range);
-                dst->a = (int16_t)(sum_a / blur_range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / blur_range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / blur_range);
+                dst->a = (int16_t)(cnv_a / blur_range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
             for (int i = loop2; 0 < i; i--) {
-                sum_y += src1->y - src2->y;
-                sum_cb += src1->cb - src2->cb;
-                sum_cr += src1->cr - src2->cr;
-                sum_a += src1->a - src2->a;
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
+                cnv_a += src1->a - src2->a;
                 src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
                 src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
 
-                dst->y = sum_y * f_inv_range;
-                int round_c0 = half_range;
+                dst->y = cnv_y * f_inv_range;
+                int round_c0 = blur_size;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / blur_range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / blur_range);
-                dst->a = (int16_t)(sum_a / blur_range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / blur_range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / blur_range);
+                dst->a = (int16_t)(cnv_a / blur_range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
             for (int i = blur_range - 1; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
-                sum_a -= src2->a;
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
+                cnv_a -= src2->a;
                 src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
 
-                dst->y = sum_y * f_inv_range;
-                int round_c0 = half_range;
+                dst->y = cnv_y * f_inv_range;
+                int round_c0 = blur_size;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / blur_range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / blur_range);
-                dst->a = (int16_t)(sum_a / blur_range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / blur_range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / blur_range);
+                dst->a = (int16_t)(cnv_a / blur_range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
         }
     }
 
-    void __cdecl vertical_yca_fb_mt(int thread_id, int thread_num, int blur_range, ExEdit::FilterProcInfo* efpip) { // 10190
-        blur_yca_fb_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
-            efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, blur_range);
-    }
-    void __cdecl horizontal_yca_fb_mt(int thread_id, int thread_num, int blur_range, ExEdit::FilterProcInfo* efpip) { // 105e0
-        blur_yca_fb_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
-            sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, blur_range);
-    }
-
-
-    void blur_yca_fb_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
-        int blur_range = blur_size * 2 + 1;
-        int loop3 = obj_size - blur_range;
-        int offset = n_begin * buf_step2;
-
-        int n = n_end - n_begin;
-        if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
-            fastBlurYCAfbs256 fb256;
-            fb256.offset = _mm256_mullo_epi32(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _mm256_set1_epi32(buf_step2));
-            for (; 8 <= n; n -= 8) {
-                auto dst = (PixelYCA_fbbs*)((int)buf_dst + offset);
-                auto src1 = (PixelYCA_fbbs*)((int)buf_src + offset);
-                auto src2 = src1;
-                offset += buf_step2 * 8;
-
-                fb256.y = _mm256_setzero_ps();
-                fb256.cb = fb256.cr = fb256.a = _mm256_setzero_si256();
-                for (int i = blur_size; 0 < i; i--) {
-                    ycafbs256_add(&fb256, src1);
-                    src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
-                }
-                int range = blur_size;
-                for (int i = blur_size; 0 <= i; i--) {
-                    ycafbs256_add(&fb256, src1);
-                    src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
-
-                    range++;
-                    ycfb256_new_range((fastBlurYCfb256*)&fb256, range);
-                    ycafbs256_put_average(&fb256, dst, buf_step2);
-                    dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
-                }
-                for (int i = loop3; 0 < i; i--) {
-                    ycafbs256_sub(&fb256, src2);
-                    src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
-                    ycafbs256_add(&fb256, src1);
-                    src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
-
-                    ycafbs256_put_average(&fb256, dst, buf_step2);
-                    dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
-                }
-
-                for (int i = blur_size; 0 < i; i--) {
-                    ycafbs256_sub(&fb256, src2);
-                    src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
-
-                    range--;
-                    ycfb256_new_range((fastBlurYCfb256*)&fb256, range);
-                    ycafbs256_put_average(&fb256, dst, buf_step2);
-                    dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
-                }
-            }
-        }
-
-        float f_inv_range = 1.0f / (float)blur_range;
-        int half_range = blur_range >> 1;
-        for (; 0 < n; n--) {
-            auto dst = (PixelYCA_fbbs*)((int)buf_dst + offset);
-            auto src1 = (PixelYCA_fbbs*)((int)buf_src + offset);
-            auto src2 = src1;
-            offset += buf_step2;
-
-            float sum_y = 0.0f;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            int sum_a = 0;
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
-                src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
-            }
-            int range = blur_size;
-            for (int i = blur_size; 0 <= i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
-                src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
-
-                range++;
-                dst->y = sum_y / (float)range;
-                int round_c0 = range >> 1;
-                int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
-                dst->a = (int16_t)(sum_a / range);
-                dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
-            }
-            for (int i = loop3; 0 < i; i--) {
-                sum_y += src1->y - src2->y;
-                sum_cb += src1->cb - src2->cb;
-                sum_cr += src1->cr - src2->cr;
-                sum_a += src1->a - src2->a;
-                src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
-                src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
-
-                dst->y = sum_y * f_inv_range;
-                int round_c0 = half_range;
-                int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
-                dst->a = (int16_t)(sum_a / range);
-                dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
-            }
-
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
-                sum_a -= src2->a;
-                src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
-
-                range--;
-                dst->y = sum_y / (float)range;
-                int round_c0 = range >> 1;
-                int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
-                dst->a = (int16_t)(sum_a / range);
-                dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
-            }
-        }
-    }
-    void __cdecl vertical_yca_fb_cs_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 10a30
-        blur_yca_fb_cs_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
+    void __cdecl vertical_yca_fb_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 10190
+        Blur_t::blur_yca_fb_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
             efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, blur_size);
     }
-    void __cdecl horizontal_yca_fb_cs_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 10f20
-        blur_yca_fb_cs_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
+    void __cdecl horizontal_yca_fb_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 105e0
+        Blur_t::blur_yca_fb_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
             sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, blur_size);
     }
 
 
-    void blur_yca_fb_cs_mt1(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
-        int loop2 = obj_size - blur_size;
-        int loop3 = blur_size * 2 - obj_size;
-        int prev3 = 0;
-        if (loop2 == 0 && 0 < loop3) {
-            loop3--;
-            prev3++;
+    void Blur_t::blur_yca_fb_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        int loop[5];
+        if (blur_size * 2 < obj_size) {
+            loop[0] = blur_size;
+            loop[1] = blur_size + 1;
+            loop[2] = obj_size - blur_size * 2 - 1;
+            loop[3] = 0;
+            loop[4] = blur_size;
+        } else {
+            blur_size = min(blur_size, obj_size - 1);
+            loop[0] = blur_size;
+            loop[1] = obj_size - blur_size;
+            loop[2] = 0;
+            loop[3] = blur_size * 2 + 1 - obj_size;
+            loop[4] = obj_size - blur_size - 1;
         }
         int offset = n_begin * buf_step2;
 
@@ -571,12 +611,12 @@ namespace patch::fast {
 
                 fb256.y = _mm256_setzero_ps();
                 fb256.cb = fb256.cr = fb256.a = _mm256_setzero_si256();
-                for (int i = blur_size; 0 < i; i--) {
+                for (int i = loop[0]; 0 < i; i--) {
                     ycafbs256_add(&fb256, src1);
                     src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
                 }
-                int range = blur_size;
-                for (int i = loop2; 0 < i; i--) {
+                int range = loop[0];
+                for (int i = loop[1]; 0 < i; i--) {
                     ycafbs256_add(&fb256, src1);
                     src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
 
@@ -585,22 +625,27 @@ namespace patch::fast {
                     ycafbs256_put_average(&fb256, dst, buf_step2);
                     dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
                 }
-                if (prev3) {
-                    ycfb256_new_range((fastBlurYCfb256*)&fb256, range);
+                for (int i = loop[2]; 0 < i; i--) {
+                    ycafbs256_sub(&fb256, src2);
+                    src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
+                    ycafbs256_add(&fb256, src1);
+                    src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
+
                     ycafbs256_put_average(&fb256, dst, buf_step2);
                     dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
                 }
-                auto dst1 = dst;
-                for (int j = 7; 0 <= j; j--) {
-                    dst = (PixelYCA_fbbs*)((int)dst1 + j * buf_step2);
-                    auto yca = *(PixelYCA_fbbs*)((int)dst - buf_step1);
-                    for (int i = loop3; 0 < i; i--) {
-                        *dst = yca;
-                        dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
+                if (0 < loop[3]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (PixelYCA_fbbs*)((int)dst1 + j * buf_step2);
+                        auto yca = *(PixelYCA_fbbs*)((int)dst - buf_step1);
+                        for (int i = loop[3]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
+                        }
                     }
                 }
-
-                for (int i = loop2; 0 < i; i--) {
+                for (int i = loop[4]; 0 < i; i--) {
                     ycafbs256_sub(&fb256, src2);
                     src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
 
@@ -612,86 +657,95 @@ namespace patch::fast {
             }
         }
 
+        float f_inv_range = 1.0f / (float)(blur_size * 2 + 1);
+        int half_range = (blur_size * 2 + 1) >> 1;
         for (; 0 < n; n--) {
             auto dst = (PixelYCA_fbbs*)((int)buf_dst + offset);
             auto src1 = (PixelYCA_fbbs*)((int)buf_src + offset);
             auto src2 = src1;
             offset += buf_step2;
 
-            float sum_y = 0.0f;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            int sum_a = 0;
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
+            float cnv_y = 0.0f;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            int cnv_a = 0;
+            for (int i = loop[0]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                cnv_a += src1->a;
                 src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
             }
-            int range = blur_size;
-            for (int i = loop2; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
+            int range = loop[0];
+            for (int i = loop[1]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                cnv_a += src1->a;
                 src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
 
                 range++;
-                dst->y = sum_y / (float)range;
+                dst->y = cnv_y / (float)range;
                 int round_c0 = range >> 1;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
-                dst->a = (int16_t)(sum_a / range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / range);
+                dst->a = (int16_t)(cnv_a / range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
+            for (int i = loop[2]; 0 < i; i--) {
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
+                cnv_a += src1->a - src2->a;
+                src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
+                src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
 
-            if (prev3) {
-                dst->y = sum_y / (float)range;
-                int round_c0 = range >> 1;
+                dst->y = cnv_y * f_inv_range;
+                int round_c0 = half_range;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
-                dst->a = (int16_t)(sum_a / range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / range);
+                dst->a = (int16_t)(cnv_a / range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
-            auto yca = *(PixelYCA_fbbs*)((int)dst - buf_step1);
-            for (int i = loop3; 0 < i; i--) {
-                *dst = yca;
-                dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
+            if (0 < loop[3]) {
+                auto yca = *(PixelYCA_fbbs*)((int)dst - buf_step1);
+                for (int i = loop[3]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
+                }
             }
-
-            for (int i = loop2; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
-                sum_a -= src2->a;
+            for (int i = loop[4]; 0 < i; i--) {
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
+                cnv_a -= src2->a;
                 src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
 
                 range--;
-                dst->y = sum_y / (float)range;
+                dst->y = cnv_y / (float)range;
                 int round_c0 = range >> 1;
                 int round_c1 = round_c0;
-                if (sum_cb < 0)round_c1 = -round_c1;
-                dst->cb = (int8_t)((sum_cb + round_c1) / range);
-                if (sum_cr < 0)round_c0 = -round_c0;
-                dst->cr = (int8_t)((sum_cr + round_c0) / range);
-                dst->a = (int16_t)(sum_a / range);
+                if (cnv_cb < 0)round_c1 = -round_c1;
+                dst->cb = (int8_t)((cnv_cb + round_c1) / range);
+                if (cnv_cr < 0)round_c0 = -round_c0;
+                dst->cr = (int8_t)((cnv_cr + round_c0) / range);
+                dst->a = (int16_t)(cnv_a / range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
         }
     }
-    void __cdecl vertical_yca_fb_cs_mt1(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 10a30
-        blur_yca_fb_cs_mt1(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
+    void __cdecl vertical_yca_fb_csa_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 10a30
+        Blur_t::blur_yca_fb_csa_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
             efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, blur_size);
     }
-    void __cdecl horizontal_yca_fb_cs_mt1(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 10f20
-        blur_yca_fb_cs_mt1(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
+    void __cdecl horizontal_yca_fb_csa_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // 10f20
+        Blur_t::blur_yca_fb_csa_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
             sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, blur_size);
     }
 
@@ -765,8 +819,152 @@ namespace patch::fast {
         }
     }
 
-    void blur_yc_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
-        int loop3 = obj_size - (blur_size * 2 + 1);
+    void Blur_t::blur_yc_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        int blur_range = blur_size * 2 + 1;
+        int loop[5];
+        if (blur_range < obj_size) {
+            loop[0] = blur_size;
+            loop[1] = blur_size + 1;
+            loop[2] = obj_size - blur_range;
+            loop[3] = 0;
+            loop[4] = blur_size;
+        } else {
+            blur_size = min(blur_size, obj_size - 1);
+            loop[0] = blur_size;
+            loop[1] = obj_size - blur_size;
+            loop[2] = 0;
+            loop[3] = blur_range - obj_size;
+            loop[4] = obj_size - blur_size - 1;
+        }
+        int offset = n_begin * buf_step2;
+
+        int n = n_end - n_begin;
+        if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
+            Blur_t::fastBlurYC256 fb256;
+            fb256.range = _mm256_set1_epi32(blur_range);
+            fb256.offset = _mm256_mullo_epi32(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _mm256_set1_epi32(buf_step2));
+            for (; 8 <= n; n -= 8) {
+                auto dst = (ExEdit::PixelYC*)((int)buf_dst + offset);
+                auto src1 = (ExEdit::PixelYC*)((int)buf_src + offset);
+                auto src2 = src1;
+                offset += buf_step2 * 8;
+
+                fb256.y = fb256.cb = fb256.cr = _mm256_setzero_si256();
+                for (int i = loop[0]; 0 < i; i--) {
+                    Blur_t::yc256_add(&fb256, src1);
+                    src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
+                }
+                for (int i = loop[1]; 0 < i; i--) {
+                    Blur_t::yc256_add(&fb256, src1);
+                    src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
+
+                    Blur_t::yc256_put_average(&fb256, dst, buf_step2);
+                    dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+                }
+                for (int i = loop[2]; 0 < i; i--) {
+                    Blur_t::yc256_sub(&fb256, src2);
+                    src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
+                    Blur_t::yc256_add(&fb256, src1);
+                    src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
+
+                    Blur_t::yc256_put_average(&fb256, dst, buf_step2);
+                    dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+                }
+                if (0 < loop[3]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (ExEdit::PixelYC*)((int)dst1 + j * buf_step2);
+                        auto yca = *(ExEdit::PixelYC*)((int)dst - buf_step1);
+                        for (int i = loop[3]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+                        }
+                    }
+                }
+                for (int i = loop[4]; 0 < i; i--) {
+                    Blur_t::yc256_sub(&fb256, src2);
+                    src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
+
+                    Blur_t::yc256_put_average(&fb256, dst, buf_step2);
+                    dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+                }
+            }
+        }
+
+        for (; 0 < n; n--) {
+            auto dst = (ExEdit::PixelYC*)((int)buf_dst + offset);
+            auto src1 = (ExEdit::PixelYC*)((int)buf_src + offset);
+            auto src2 = src1;
+            offset += buf_step2;
+
+            int cnv_y = 0;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            for (int i = loop[0]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
+            }
+            for (int i = loop[1]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
+
+                dst->y = (short)(cnv_y / blur_range);
+                dst->cb = (short)(cnv_cb / blur_range);
+                dst->cr = (short)(cnv_cr / blur_range);
+                dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+            }
+            for (int i = loop[2]; 0 < i; i--) {
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
+                src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
+                src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
+
+                dst->y = (short)(cnv_y / blur_range);
+                dst->cb = (short)(cnv_cb / blur_range);
+                dst->cr = (short)(cnv_cr / blur_range);
+                dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+            }
+            if (0 < loop[3]) {
+                auto yca = *(ExEdit::PixelYC*)((int)dst - buf_step1);
+                for (int i = loop[3]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+                }
+            }
+            for (int i = loop[4]; 0 < i; i--) {
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
+                src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
+
+                dst->y = (short)(cnv_y / blur_range);
+                dst->cb = (short)(cnv_cb / blur_range);
+                dst->cr = (short)(cnv_cr / blur_range);
+                dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+            }
+        }
+    }
+    void Blur_t::blur_yc_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        int loop[5];
+        if (blur_size * 2 < obj_size) {
+            loop[0] = blur_size;
+            loop[1] = blur_size + 1;
+            loop[2] = obj_size - blur_size * 2 - 1;
+            loop[3] = 0;
+            loop[4] = blur_size;
+        } else {
+            blur_size = min(blur_size, obj_size - 1);
+            loop[0] = blur_size;
+            loop[1] = obj_size - blur_size;
+            loop[2] = 0;
+            loop[3] = blur_size * 2 + 1 - obj_size;
+            loop[4] = obj_size - blur_size - 1;
+        }
         int offset = n_begin * buf_step2;
 
         int n = n_end - n_begin;
@@ -780,12 +978,12 @@ namespace patch::fast {
                 offset += buf_step2 * 8;
 
                 fb256.y = fb256.cb = fb256.cr = _mm256_setzero_si256();
-                for (int i = blur_size; 0 < i; i--) {
+                for (int i = loop[0]; 0 < i; i--) {
                     Blur_t::yc256_add(&fb256, src1);
                     src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
                 }
-                int range = blur_size;
-                for (int i = blur_size; 0 <= i; i--) {
+                int range = loop[0];
+                for (int i = loop[1]; 0 < i; i--) {
                     Blur_t::yc256_add(&fb256, src1);
                     src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
 
@@ -794,7 +992,7 @@ namespace patch::fast {
                     Blur_t::yc256_put_average(&fb256, dst, buf_step2);
                     dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
                 }
-                for (int i = loop3; 0 < i; i--) {
+                for (int i = loop[2]; 0 < i; i--) {
                     Blur_t::yc256_sub(&fb256, src2);
                     src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
                     Blur_t::yc256_add(&fb256, src1);
@@ -803,7 +1001,18 @@ namespace patch::fast {
                     Blur_t::yc256_put_average(&fb256, dst, buf_step2);
                     dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
                 }
-                for (int i = blur_size; 0 < i; i--) {
+                if (0 < loop[3]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (ExEdit::PixelYC*)((int)dst1 + j * buf_step2);
+                        auto yca = *(ExEdit::PixelYC*)((int)dst - buf_step1);
+                        for (int i = loop[3]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+                        }
+                    }
+                }
+                for (int i = loop[4]; 0 < i; i--) {
                     Blur_t::yc256_sub(&fb256, src2);
                     src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
 
@@ -821,62 +1030,69 @@ namespace patch::fast {
             auto src2 = src1;
             offset += buf_step2;
 
-            int sum_y = 0;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
+            int cnv_y = 0;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            for (int i = loop[0]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
                 src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
             }
-            int range = blur_size;
-            for (int i = blur_size; 0 <= i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
+            int range = loop[0];
+            for (int i = loop[1]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
                 src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
 
                 range++;
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
+                dst->y = (short)(cnv_y / range);
+                dst->cb = (short)(cnv_cb / range);
+                dst->cr = (short)(cnv_cr / range);
                 dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
             }
-            for (int i = loop3; 0 < i; i--) {
-                sum_y += src1->y - src2->y;
-                sum_cb += src1->cb - src2->cb;
-                sum_cr += src1->cr - src2->cr;
+            for (int i = loop[2]; 0 < i; i--) {
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
                 src1 = (ExEdit::PixelYC*)((int)src1 + buf_step1);
                 src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
 
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
+                dst->y = (short)(cnv_y / range);
+                dst->cb = (short)(cnv_cb / range);
+                dst->cr = (short)(cnv_cr / range);
                 dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
             }
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
+            if (0 < loop[3]) {
+                auto yca = *(ExEdit::PixelYC*)((int)dst - buf_step1);
+                for (int i = loop[3]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
+                }
+            }
+            for (int i = loop[4]; 0 < i; i--) {
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
                 src2 = (ExEdit::PixelYC*)((int)src2 + buf_step1);
 
                 range--;
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
+                dst->y = (short)(cnv_y / range);
+                dst->cb = (short)(cnv_cb / range);
+                dst->cr = (short)(cnv_cr / range);
                 dst = (ExEdit::PixelYC*)((int)dst + buf_step1);
             }
         }
     }
-    void __cdecl Blur_t::vertical_yc_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // fcb0
+    void __cdecl Blur_t::vertical_yc_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // fcb0
         auto blur = (efBlur_var*)(GLOBAL::exedit_base + OFS::ExEdit::efBlur_var_ptr);
-        blur_yc_mt(thread_id * efpip->scene_w / thread_num, (thread_id + 1) * efpip->scene_w / thread_num, efpip->frame_temp, efpip->frame_edit,
+        blur_yc_csa_mt(thread_id * efpip->scene_w / thread_num, (thread_id + 1) * efpip->scene_w / thread_num, efpip->frame_temp, efpip->frame_edit,
             efpip->scene_line * sizeof(ExEdit::PixelYC), sizeof(ExEdit::PixelYC), efpip->scene_h, blur->h);
     }
-    void __cdecl Blur_t::horizontal_yc_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // ff40
+    void __cdecl Blur_t::horizontal_yc_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) { // ff40
         auto blur = (efBlur_var*)(GLOBAL::exedit_base + OFS::ExEdit::efBlur_var_ptr);
-        blur_yc_mt(thread_id * efpip->scene_h / thread_num, (thread_id + 1) * efpip->scene_h / thread_num, efpip->frame_temp, efpip->frame_edit,
+        blur_yc_csa_mt(thread_id * efpip->scene_h / thread_num, (thread_id + 1) * efpip->scene_h / thread_num, efpip->frame_temp, efpip->frame_edit,
             sizeof(ExEdit::PixelYC), efpip->scene_line * sizeof(ExEdit::PixelYC), efpip->scene_w, blur->w);
     }
 
@@ -927,7 +1143,8 @@ namespace patch::fast {
 
 
 
-    void blur_yca_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_range) {
+    void Blur_t::blur_yca_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        int blur_range = blur_size * 2 + 1;
         int loop2 = obj_size - blur_range;
         int offset = n_begin * buf_step2;
 
@@ -975,65 +1192,79 @@ namespace patch::fast {
             auto src2 = src1;
             offset += buf_step2;
 
-            int sum_y = 0;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            int sum_a = 0;
+            int cnv_y = 0;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            int cnv_a = 0;
             for (int i = blur_range; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                cnv_a += src1->a;
                 src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
 
-                dst->y = (short)(sum_y / blur_range);
-                dst->cb = (short)(sum_cb / blur_range);
-                dst->cr = (short)(sum_cr / blur_range);
-                dst->a = (short)(sum_a / blur_range);
+                dst->y = (short)(cnv_y / blur_range);
+                dst->cb = (short)(cnv_cb / blur_range);
+                dst->cr = (short)(cnv_cr / blur_range);
+                dst->a = (short)(cnv_a / blur_range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
             for (int i = loop2; 0 < i; i--) {
-                sum_y += src1->y - src2->y;
-                sum_cb += src1->cb - src2->cb;
-                sum_cr += src1->cr - src2->cr;
-                sum_a += src1->a - src2->a;
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
+                cnv_a += src1->a - src2->a;
                 src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
                 src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
 
-                dst->y = (short)(sum_y / blur_range);
-                dst->cb = (short)(sum_cb / blur_range);
-                dst->cr = (short)(sum_cr / blur_range);
-                dst->a = (short)(sum_a / blur_range);
+                dst->y = (short)(cnv_y / blur_range);
+                dst->cb = (short)(cnv_cb / blur_range);
+                dst->cr = (short)(cnv_cr / blur_range);
+                dst->a = (short)(cnv_a / blur_range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
             for (int i = blur_range - 1; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
-                sum_a -= src2->a;
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
+                cnv_a -= src2->a;
                 src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
 
-                dst->y = (short)(sum_y / blur_range);
-                dst->cb = (short)(sum_cb / blur_range);
-                dst->cr = (short)(sum_cr / blur_range);
-                dst->a = (short)(sum_a / blur_range);
+                dst->y = (short)(cnv_y / blur_range);
+                dst->cb = (short)(cnv_cb / blur_range);
+                dst->cr = (short)(cnv_cr / blur_range);
+                dst->a = (short)(cnv_a / blur_range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
         }
     }
-    void __cdecl vertical_yca_mt(int thread_id, int thread_num, int blur_range, ExEdit::FilterProcInfo* efpip) { // eae0
-        blur_yca_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
-            efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, blur_range);
+    void __cdecl vertical_yca_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // eae0
+        Blur_t::blur_yca_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
+            efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, blur_size);
     }
-    void __cdecl horizontal_yca_mt(int thread_id, int thread_num, int blur_range, ExEdit::FilterProcInfo* efpip) { // eef0
-        blur_yca_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
-            sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, blur_range);
+    void __cdecl horizontal_yca_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // eef0
+        Blur_t::blur_yca_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
+            sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, blur_size);
     }
 
 
 
-    void blur_yca_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
-        int loop3 = obj_size - (blur_size * 2 + 1);
+    void Blur_t::blur_yca_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        int loop[5];
+        if (blur_size * 2 < obj_size) {
+            loop[0] = blur_size;
+            loop[1] = blur_size + 1;
+            loop[2] = obj_size - blur_size * 2 - 1;
+            loop[3] = 0;
+            loop[4] = blur_size;
+        } else {
+            blur_size = min(blur_size, obj_size - 1);
+            loop[0] = blur_size;
+            loop[1] = obj_size - blur_size;
+            loop[2] = 0;
+            loop[3] = blur_size * 2 + 1 - obj_size;
+            loop[4] = obj_size - blur_size - 1;
+        }
         int offset = n_begin * buf_step2;
 
         int n = n_end - n_begin;
@@ -1047,12 +1278,12 @@ namespace patch::fast {
                 offset += buf_step2 * 8;
 
                 fb256.y = fb256.cb = fb256.cr = fb256.a = _mm256_setzero_si256();
-                for (int i = blur_size; 0 < i; i--) {
+                for (int i = loop[0]; 0 < i; i--) {
                     yca256_add(&fb256, src1);
                     src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
                 }
-                int range = blur_size;
-                for (int i = blur_size; 0 <= i; i--) {
+                int range = loop[0];
+                for (int i = loop[1]; 0 < i; i--) {
                     yca256_add(&fb256, src1);
                     src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
 
@@ -1061,7 +1292,7 @@ namespace patch::fast {
                     yca256_put_average(&fb256, dst, buf_step2);
                     dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
                 }
-                for (int i = loop3; 0 < i; i--) {
+                for (int i = loop[2]; 0 < i; i--) {
                     yca256_sub(&fb256, src2);
                     src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
                     yca256_add(&fb256, src1);
@@ -1070,7 +1301,18 @@ namespace patch::fast {
                     yca256_put_average(&fb256, dst, buf_step2);
                     dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
                 }
-                for (int i = blur_size; 0 < i; i--) {
+                if (0 < loop[3]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (ExEdit::PixelYCA*)((int)dst1 + j * buf_step2);
+                        auto yca = *(ExEdit::PixelYCA*)((int)dst - buf_step1);
+                        for (int i = loop[3]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
+                        }
+                    }
+                }
+                for (int i = loop[4]; 0 < i; i--) {
                     yca256_sub(&fb256, src2);
                     src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
 
@@ -1088,202 +1330,78 @@ namespace patch::fast {
             auto src2 = src1;
             offset += buf_step2;
 
-            int sum_y = 0;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            int sum_a = 0;
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
+            int cnv_y = 0;
+            int cnv_cb = 0;
+            int cnv_cr = 0;
+            int cnv_a = 0;
+            for (int i = loop[0]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                cnv_a += src1->a;
                 src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
             }
-            int range = blur_size;
-            for (int i = blur_size; 0 <= i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
+            int range = loop[0];
+            for (int i = loop[1]; 0 < i; i--) {
+                cnv_y += src1->y;
+                cnv_cb += src1->cb;
+                cnv_cr += src1->cr;
+                cnv_a += src1->a;
                 src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
 
                 range++;
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
-                dst->a = (short)(sum_a / range);
+                dst->y = (short)(cnv_y / range);
+                dst->cb = (short)(cnv_cb / range);
+                dst->cr = (short)(cnv_cr / range);
+                dst->a = (short)(cnv_a / range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
-            for (int i = loop3; 0 < i; i--) {
-                sum_y += src1->y - src2->y;
-                sum_cb += src1->cb - src2->cb;
-                sum_cr += src1->cr - src2->cr;
-                sum_a += src1->a - src2->a;
+            for (int i = loop[2]; 0 < i; i--) {
+                cnv_y += src1->y - src2->y;
+                cnv_cb += src1->cb - src2->cb;
+                cnv_cr += src1->cr - src2->cr;
+                cnv_a += src1->a - src2->a;
                 src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
                 src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
 
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
-                dst->a = (short)(sum_a / range);
+                dst->y = (short)(cnv_y / range);
+                dst->cb = (short)(cnv_cb / range);
+                dst->cr = (short)(cnv_cr / range);
+                dst->a = (short)(cnv_a / range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
-                sum_a -= src2->a;
+            if (0 < loop[3]) {
+                auto yca = *(ExEdit::PixelYCA*)((int)dst - buf_step1);
+                for (int i = loop[3]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
+                }
+            }
+            for (int i = loop[4]; 0 < i; i--) {
+                cnv_y -= src2->y;
+                cnv_cb -= src2->cb;
+                cnv_cr -= src2->cr;
+                cnv_a -= src2->a;
                 src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
 
                 range--;
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
-                dst->a = (short)(sum_a / range);
+                dst->y = (short)(cnv_y / range);
+                dst->cb = (short)(cnv_cb / range);
+                dst->cr = (short)(cnv_cr / range);
+                dst->a = (short)(cnv_a / range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
         }
     }
     void __cdecl vertical_yca_cs_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // f310
-        blur_yca_cs_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
+        Blur_t::blur_yca_csa_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
             efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, blur_size);
     }
     void __cdecl horizontal_yca_cs_mt(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) { // f7e0
-        blur_yca_cs_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
+        Blur_t::blur_yca_csa_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
             sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, blur_size);
     }
 
-
-    void blur_yca_cs_mt1(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
-        int loop2 = obj_size - blur_size;
-        int loop3 = blur_size * 2 - obj_size;
-        int prev3 = 0;
-        if (loop2 == 0 && 0 < loop3) {
-            loop3--;
-            prev3++;
-        }
-        int offset = n_begin * buf_step2;
-
-        int n = n_end - n_begin;
-        if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
-            fastBlurYCA256 fb256;
-            fb256.offset = _mm256_mullo_epi32(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _mm256_set1_epi32(buf_step2));
-            for (; 8 <= n; n -= 8) {
-                auto dst = (ExEdit::PixelYCA*)((int)buf_dst + offset);
-                auto src1 = (ExEdit::PixelYCA*)((int)buf_src + offset);
-                auto src2 = src1;
-                offset += buf_step2 * 8;
-
-                fb256.y = fb256.cb = fb256.cr = fb256.a = _mm256_setzero_si256();
-                for (int i = blur_size; 0 < i; i--) {
-                    yca256_add(&fb256, src1);
-                    src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
-                }
-                int range = blur_size;
-                for (int i = loop2; 0 < i; i--) {
-                    yca256_add(&fb256, src1);
-                    src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
-
-                    range++;
-                    fb256.range = _mm256_set1_epi32(range);
-                    yca256_put_average(&fb256, dst, buf_step2);
-                    dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-                }
-                if (prev3) {
-                    fb256.range = _mm256_set1_epi32(range);
-                    yca256_put_average(&fb256, dst, buf_step2);
-                    dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-                }
-                auto dst1 = dst;
-                for (int j = 7; 0 <= j; j--) {
-                    dst = (ExEdit::PixelYCA*)((int)dst1 + j * buf_step2);
-                    auto yca = *(ExEdit::PixelYCA*)((int)dst - buf_step1);
-                    for (int i = loop3; 0 < i; i--) {
-                        *dst = yca;
-                        dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-                    }
-                }
-                for (int i = loop2; 0 < i; i--) {
-                    yca256_sub(&fb256, src2);
-                    src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
-
-                    range--;
-                    fb256.range = _mm256_set1_epi32(range);
-                    yca256_put_average(&fb256, dst, buf_step2);
-                    dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-                }
-            }
-        }
-
-        for (; 0 < n; n--) {
-            auto dst = (ExEdit::PixelYCA*)((int)buf_dst + offset);
-            auto src1 = (ExEdit::PixelYCA*)((int)buf_src + offset);
-            auto src2 = src1;
-            offset += buf_step2;
-
-            int sum_y = 0;
-            int sum_cb = 0;
-            int sum_cr = 0;
-            int sum_a = 0;
-            for (int i = blur_size; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
-                src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
-            }
-            int range = blur_size;
-            for (int i = loop2; 0 < i; i--) {
-                sum_y += src1->y;
-                sum_cb += src1->cb;
-                sum_cr += src1->cr;
-                sum_a += src1->a;
-                src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
-
-                range++;
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
-                dst->a = (short)(sum_a / range);
-                dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-            }
-            if (prev3) {
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
-                dst->a = (short)(sum_a / range);
-                dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-            }
-            auto yca = *(ExEdit::PixelYCA*)((int)dst - buf_step1);
-            for (int i = loop3; 0 < i; i--) {
-                *dst = yca;
-                dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-            }
-            for (int i = loop2; 0 < i; i--) {
-                sum_y -= src2->y;
-                sum_cb -= src2->cb;
-                sum_cr -= src2->cr;
-                sum_a -= src2->a;
-                src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
-
-                range--;
-                dst->y = (short)(sum_y / range);
-                dst->cb = (short)(sum_cb / range);
-                dst->cr = (short)(sum_cr / range);
-                dst->a = (short)(sum_a / range);
-                dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
-            }
-        }
-    }
-
-    void __cdecl vertical_yca_cs_mt1(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) {
-        blur_yca_cs_mt1(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num, efpip->obj_temp, efpip->obj_edit,
-            efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, blur_size);
-    }
-    void __cdecl horizontal_yca_cs_mt1(int thread_id, int thread_num, int blur_size, ExEdit::FilterProcInfo* efpip) {
-        blur_yca_cs_mt1(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num, efpip->obj_temp, efpip->obj_edit,
-            sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, blur_size);
-    }
 
     void mt_calc_yc_ssss(int thread_id, int thread_num, void* n1, ExEdit::FilterProcInfo* efpip) {
         for (int y = thread_id; y < efpip->obj_h; y += thread_num) {
@@ -1360,45 +1478,37 @@ namespace patch::fast {
             efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)mt_calc_yc_fbbs, NULL, efpip);
             if (conv1_h) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_mt, (void*)(conv1_h * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_mt, (void*)conv1_h, efpip);
                     efpip->obj_h += conv1_h * 2;
-                } else if (conv1_h * 2 + 1 < efpip->obj_h) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_cs_mt, (void*)conv1_h, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_cs_mt1, (void*)min(conv1_h, efpip->obj_h), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_csa_mt, (void*)conv1_h, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
             }
             if (conv1_w) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_mt, (void*)(conv1_w * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_mt, (void*)conv1_w, efpip);
                     efpip->obj_w += conv1_w * 2;
-                } else if (conv1_w * 2 + 1 < efpip->obj_w) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_cs_mt, (void*)conv1_w, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_cs_mt1, (void*)min(conv1_w, efpip->obj_w), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_csa_mt, (void*)conv1_w, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
             }
             if (conv2_h) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_mt, (void*)(conv2_h * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_mt, (void*)conv2_h, efpip);
                     efpip->obj_h += conv2_h * 2;
-                } else if (conv2_h * 2 + 1 < efpip->obj_h) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_cs_mt, (void*)conv2_h, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_cs_mt1, (void*)min(conv2_h, efpip->obj_h), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_fb_csa_mt, (void*)conv2_h, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
             }
             if (conv2_w) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_mt, (void*)(conv2_w * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_mt, (void*)conv2_w, efpip);
                     efpip->obj_w += conv2_w * 2;
-                } else if (conv2_w * 2 + 1 < efpip->obj_w) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_cs_mt, (void*)conv2_w, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_cs_mt1, (void*)min(conv2_w, efpip->obj_w), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_fb_csa_mt, (void*)conv2_w, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
 
@@ -1409,48 +1519,40 @@ namespace patch::fast {
             efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)mt_calc_yc_ssss, NULL, efpip);
             if (conv1_h) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_mt, (void*)(conv1_h * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_mt, (void*)conv1_h, efpip);
                     efpip->obj_h += conv1_h * 2;
-                } else if (conv1_h * 2 + 1 < efpip->obj_h) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_cs_mt, (void*)conv1_h, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_cs_mt1, (void*)min(conv1_h, efpip->obj_h), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_cs_mt, (void*)conv1_h, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
 
             }
             if (conv1_w) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_mt, (void*)(conv1_w * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_mt, (void*)conv1_w, efpip);
                     efpip->obj_w += conv1_w * 2;
-                } else if (conv1_w * 2 + 1 < efpip->obj_w) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_cs_mt, (void*)conv1_w, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_cs_mt1, (void*)min(conv1_w, efpip->obj_w), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_cs_mt, (void*)conv1_w, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
 
             }
             if (conv2_h) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_mt, (void*)(conv2_h * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_mt, (void*)conv2_h, efpip);
                     efpip->obj_h += conv2_h * 2;
-                } else if (conv2_h * 2 + 1 < efpip->obj_h) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_cs_mt, (void*)conv2_h, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_cs_mt1, (void*)min(conv2_h, efpip->obj_h), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_yca_cs_mt, (void*)conv2_h, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
 
             }
             if (conv2_w) {
                 if (check0 == 0) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_mt, (void*)(conv2_w * 2 + 1), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_mt, (void*)conv2_w, efpip);
                     efpip->obj_w += conv2_w * 2;
-                } else if (conv2_w * 2 + 1 < efpip->obj_w) {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_cs_mt, (void*)conv2_w, efpip);
                 } else {
-                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_cs_mt1, (void*)min(conv2_w, efpip->obj_w), efpip);
+                    efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_yca_cs_mt, (void*)conv2_w, efpip);
                 }
                 std::swap(efpip->obj_edit, efpip->obj_temp);
             }

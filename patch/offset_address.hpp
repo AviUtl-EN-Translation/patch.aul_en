@@ -158,6 +158,7 @@ namespace OFS {
 		constexpr i32 efBlur_func_proc_ptr = 0x0a0750;
 		constexpr i32 efBlur_var_ptr = 0x11ec34;
 		constexpr i32 efGlow_var_ptr = 0x1b2010;
+		constexpr i32 efLightEmission_var_ptr = 0x1b1fdc;
 		constexpr i32 efPolarTransform_func_proc = 0x0748a0;
 		constexpr i32 efPolarTransform_func_proc_ptr = 0x0add30;
 		constexpr i32 efPolarTransform_mt_func_call = 0x074a62;

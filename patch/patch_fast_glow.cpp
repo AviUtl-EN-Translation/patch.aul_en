@@ -15,7 +15,9 @@
 
 #pragma once
 #include "patch_fast_glow.hpp"
+#include "patch_fast_blur.hpp"
 #ifdef PATCH_SWITCH_FAST_GLOW
+#ifdef PATCH_SWITCH_FAST_BLUR
 
 #include <numbers>
 
@@ -155,8 +157,11 @@ namespace patch::fast {
     }
 
 
-    void __cdecl Glow_t::vertical_convolution(int thi, int thn, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    void __cdecl Glow_t::vertical_convolution(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto glow = (efGlow_var*)(GLOBAL::exedit_base + OFS::ExEdit::efGlow_var_ptr);
+        Blur_t::blur_yc_cs_mt(thread_id * (glow->src_w + glow->diffusion_w * 2) / thread_num, (thread_id + 1) * (glow->src_w + glow->diffusion_w * 2) / thread_num,
+            glow->buf_temp2, glow->buf_temp, efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), glow->src_h + glow->diffusion_h * 2, min(glow->blur, (glow->src_h + glow->diffusion_h * 2 - 1) >> 1));
+        /*
 
         int w = glow->src_w + glow->diffusion_w * 2;
         int h = glow->src_h + glow->diffusion_h * 2;
@@ -164,13 +169,13 @@ namespace patch::fast {
         int range = blur * 2 + 1;
         int range_h = h - range;
         int linesize = efpip->obj_line * sizeof(struct ExEdit::PixelYCA);
-        int x_end = (thi + 1) * w / thn;
+        int x_end = (thread_id + 1) * w / thread_num;
 
         fastGlow256 fg256;
         fg256.data = _mm256_set1_epi32(range);
         fg256.offset = _mm256_set_epi32(7 * sizeof(struct ExEdit::PixelYCA), 6 * sizeof(struct ExEdit::PixelYCA), 5 * sizeof(struct ExEdit::PixelYCA), 4 * sizeof(struct ExEdit::PixelYCA), 3 * sizeof(struct ExEdit::PixelYCA), 2 * sizeof(struct ExEdit::PixelYCA), sizeof(struct ExEdit::PixelYCA), 0);
 
-        int x = thi * w / thn;
+        int x = thread_id * w / thread_num;
         int x_end256 = x_end - 7;
         for (; x < x_end256; x += 8) {
             auto pix1 = (ExEdit::PixelYCA*)((int)glow->buf_temp + x * sizeof(struct ExEdit::PixelYCA));
@@ -256,23 +261,27 @@ namespace patch::fast {
                 mem = (ExEdit::PixelYCA*)((int)mem + linesize);
             }
         }
+        */
     }
 
 
 
 
 
-    void __cdecl Glow_t::horizontal_convolution(int thi, int thn, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    void __cdecl Glow_t::horizontal_convolution(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto glow = (efGlow_var*)(GLOBAL::exedit_base + OFS::ExEdit::efGlow_var_ptr);
+        Blur_t::blur_yc_cs_mt(thread_id * (glow->src_h + glow->diffusion_h * 2) / thread_num, (thread_id + 1) * (glow->src_h + glow->diffusion_h * 2) / thread_num,
+            glow->buf_temp, glow->buf_temp2, sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), glow->src_w + glow->diffusion_w * 2, min(glow->blur, (glow->src_w + glow->diffusion_w * 2 - 1) >> 1));
 
+        /*
         int h = glow->src_h + glow->diffusion_h * 2;
         int w = glow->src_w + glow->diffusion_w * 2;
         int blur = min(glow->blur, (w - 1) / 2);
         int range = blur * 2 + 1;
         int range_w = w - range;
         int linesize = efpip->obj_line * sizeof(struct ExEdit::PixelYCA);
-        int y_begin = thi * h / thn;
-        int y_end = (thi + 1) * h / thn;
+        int y_begin = thread_id * h / thread_num;
+        int y_end = (thread_id + 1) * h / thread_num;
         int offset = y_begin * linesize;
 
         fastGlow256 fg256;
@@ -366,10 +375,11 @@ namespace patch::fast {
             }
             offset += linesize;
         }
+        */
     }
 
 
-    void __cdecl Glow_t::horizontal_convolution_intensity_blur(int thi, int thn, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    void __cdecl Glow_t::horizontal_convolution_intensity_blur(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto glow = (efGlow_var*)(GLOBAL::exedit_base + OFS::ExEdit::efGlow_var_ptr);
 
         int h = glow->src_h + glow->diffusion_h * 2;
@@ -377,8 +387,8 @@ namespace patch::fast {
         int range_w = glow->src_w + (glow->diffusion_w - blur) * 2 - 1;
         int intensity = glow->intensity;
         int linesize = efpip->obj_line * sizeof(struct ExEdit::PixelYCA);
-        int y_begin = thi * h / thn;
-        int y_end = (thi + 1) * h / thn;
+        int y_begin = thread_id * h / thread_num;
+        int y_end = (thread_id + 1) * h / thread_num;
         int offset = y_begin * linesize;
 
         fastGlow256 fg256;
@@ -476,7 +486,7 @@ namespace patch::fast {
 
 
 
-    void vertical_convolution_intensity_main(int thi, int thn, int n, ExEdit::FilterProcInfo* efpip) {
+    void vertical_convolution_intensity_main(int thread_id, int thread_num, int n, ExEdit::FilterProcInfo* efpip) {
         auto glow = (Glow_t::efGlow_var*)(GLOBAL::exedit_base + OFS::ExEdit::efGlow_var_ptr);
 
         int w = glow->src_w;
@@ -487,7 +497,7 @@ namespace patch::fast {
         int range = h - diff2 - 1;
         int linesize = efpip->obj_line * sizeof(struct ExEdit::PixelYCA);
         int intensity = glow->intensity * n;
-        int x_end = (thi + 1) * w / thn;
+        int x_end = (thread_id + 1) * w / thread_num;
 
         auto pix_temp = (ExEdit::PixelYCA*)((int)glow->buf_temp + (diff_h - diff) * linesize + glow->diffusion_w * sizeof(struct ExEdit::PixelYCA));
 
@@ -496,7 +506,7 @@ namespace patch::fast {
         fg256.data = _mm256_set1_epi32(intensity);
         fg256.offset = _mm256_set_epi32(7 * sizeof(struct ExEdit::PixelYCA), 6 * sizeof(struct ExEdit::PixelYCA), 5 * sizeof(struct ExEdit::PixelYCA), 4 * sizeof(struct ExEdit::PixelYCA), 3 * sizeof(struct ExEdit::PixelYCA), 2 * sizeof(struct ExEdit::PixelYCA), sizeof(struct ExEdit::PixelYCA), 0);
 
-        int x = thi * w / thn;
+        int x = thread_id * w / thread_num;
         int x_end256 = x_end - 7;
         for (; x < x_end256; x += 8) {
             auto mem1 = (ExEdit::PixelYCA*)((int)glow->buf_temp2 + x * sizeof(struct ExEdit::PixelYCA));
@@ -570,15 +580,15 @@ namespace patch::fast {
             }
         }
     }
-    void __cdecl Glow_t::vertical_convolution_intensity3(int thi, int thn, ExEdit::Filter * efp, ExEdit::FilterProcInfo * efpip) {
-        vertical_convolution_intensity_main(thi, thn, 1, efpip);
-        vertical_convolution_intensity_main(thi, thn, 2, efpip);
-        vertical_convolution_intensity_main(thi, thn, 4, efpip);
+    void __cdecl Glow_t::vertical_convolution_intensity3(int thread_id, int thread_num, ExEdit::Filter * efp, ExEdit::FilterProcInfo * efpip) {
+        vertical_convolution_intensity_main(thread_id, thread_num, 1, efpip);
+        vertical_convolution_intensity_main(thread_id, thread_num, 2, efpip);
+        vertical_convolution_intensity_main(thread_id, thread_num, 4, efpip);
     }
 
 
 
-    void horizontal_convolution_intensity_main(int thi, int thn, int n, ExEdit::FilterProcInfo* efpip) {
+    void horizontal_convolution_intensity_main(int thread_id, int thread_num, int n, ExEdit::FilterProcInfo* efpip) {
         auto glow = (Glow_t::efGlow_var*)(GLOBAL::exedit_base + OFS::ExEdit::efGlow_var_ptr);
 
         int w = glow->src_w;
@@ -589,8 +599,8 @@ namespace patch::fast {
         int range = w - diff2 - 1;
         int linesize = efpip->obj_line * sizeof(struct ExEdit::PixelYCA);
         int intensity = glow->intensity * n;
-        int y_begin = thi * h / thn;
-        int y_end = (thi + 1) * h / thn;
+        int y_begin = thread_id * h / thread_num;
+        int y_end = (thread_id + 1) * h / thread_num;
         int offset = y_begin * linesize;
 
         auto pix_temp = (ExEdit::PixelYCA*)((int)glow->buf_temp + glow->diffusion_h * linesize + (diff_w - diff) * sizeof(struct ExEdit::PixelYCA));
@@ -676,11 +686,12 @@ namespace patch::fast {
             offset += linesize;
         }
     }
-    void __cdecl Glow_t::horizontal_convolution_intensity3(int thi, int thn, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        horizontal_convolution_intensity_main(thi, thn, 1, efpip);
-        horizontal_convolution_intensity_main(thi, thn, 2, efpip);
-        horizontal_convolution_intensity_main(thi, thn, 4, efpip);
+    void __cdecl Glow_t::horizontal_convolution_intensity3(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        horizontal_convolution_intensity_main(thread_id, thread_num, 1, efpip);
+        horizontal_convolution_intensity_main(thread_id, thread_num, 2, efpip);
+        horizontal_convolution_intensity_main(thread_id, thread_num, 4, efpip);
     }
 
 }
+#endif // ifdef PATCH_SWITCH_FAST_BLUR
 #endif // ifdef PATCH_SWITCH_FAST_GLOW

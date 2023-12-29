@@ -432,6 +432,9 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_GLOW
 			patch::fast::Glow.init();
 		#endif
+		#ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
+			patch::fast::LightEmission.init();
+		#endif
 		#ifdef PATCH_SWITCH_FAST_MOTIONBLUR
 			patch::fast::MotionBlur.init();
 		#endif

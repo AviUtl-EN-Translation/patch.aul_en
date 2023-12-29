@@ -33,10 +33,10 @@ namespace patch::fast {
 
 		static BOOL __cdecl efBlur_effect_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		
-		static void __cdecl vertical_yc_fb_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // 11400
-		static void __cdecl horizontal_yc_fb_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // 116d0
-		static void __cdecl vertical_yc_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // fcb0
-		static void __cdecl horizontal_yc_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // ff40
+		static void __cdecl vertical_yc_fb_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // 11400
+		static void __cdecl horizontal_yc_fb_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // 116d0
+		static void __cdecl vertical_yc_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // fcb0
+		static void __cdecl horizontal_yc_csa_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip); // ff40
 
 		bool enabled = true;
 		bool enabled_i;
@@ -63,6 +63,16 @@ namespace patch::fast {
 		static void __declspec(noinline) __fastcall yc256_put_average(fastBlurYC256* fb256, ExEdit::PixelYC* dst, int buf_step2);
 
 
+		static void blur_yc_fb_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+		static void blur_yc_fb_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+		static void blur_yca_fb_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+		static void blur_yca_fb_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+		static void blur_yc_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+		static void blur_yc_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+		static void blur_yca_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+		static void blur_yca_csa_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size);
+
+
 		void init() {
 			enabled_i = enabled;
 			if (!enabled_i)return;
@@ -73,22 +83,22 @@ namespace patch::fast {
 			}
 			{ // filter
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0e5fe, 1204);
-				h.store_i32(0x0e5fe - 0x0e5fe, &vertical_yc_fb_mt_wrap);
-				h.store_i32(0x0e697 - 0x0e5fe, &horizontal_yc_fb_mt_wrap);
-				h.store_i32(0x0e738 - 0x0e5fe, &vertical_yc_fb_mt_wrap);
-				h.store_i32(0x0e7cd - 0x0e5fe, &horizontal_yc_fb_mt_wrap);
+				h.store_i32(0x0e5fe - 0x0e5fe, &vertical_yc_fb_csa_mt_wrap);
+				h.store_i32(0x0e697 - 0x0e5fe, &horizontal_yc_fb_csa_mt_wrap);
+				h.store_i32(0x0e738 - 0x0e5fe, &vertical_yc_fb_csa_mt_wrap);
+				h.store_i32(0x0e7cd - 0x0e5fe, &horizontal_yc_fb_csa_mt_wrap);
 
-				h.store_i32(0x0e8c7 - 0x0e5fe, &vertical_yc_mt_wrap);
-				h.store_i32(0x0e964 - 0x0e5fe, &horizontal_yc_mt_wrap);
-				h.store_i32(0x0ea0a - 0x0e5fe, &vertical_yc_mt_wrap);
-				h.store_i32(0x0eaae - 0x0e5fe, &horizontal_yc_mt_wrap);
+				h.store_i32(0x0e8c7 - 0x0e5fe, &vertical_yc_csa_mt_wrap);
+				h.store_i32(0x0e964 - 0x0e5fe, &horizontal_yc_csa_mt_wrap);
+				h.store_i32(0x0ea0a - 0x0e5fe, &vertical_yc_csa_mt_wrap);
+				h.store_i32(0x0eaae - 0x0e5fe, &horizontal_yc_csa_mt_wrap);
 			}
 			{ // scene change
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x11a1c, 113);
-				h.store_i32(0x11a1c - 0x11a1c, &vertical_yc_mt_wrap);
-				h.store_i32(0x11a4f - 0x11a1c, &horizontal_yc_mt_wrap);
-				h.store_i32(0x11a89 - 0x11a1c, &vertical_yc_mt_wrap);
-				h.store_i32(0x11abc - 0x11a1c, &horizontal_yc_mt_wrap);
+				h.store_i32(0x11a1c - 0x11a1c, &vertical_yc_csa_mt_wrap);
+				h.store_i32(0x11a4f - 0x11a1c, &horizontal_yc_csa_mt_wrap);
+				h.store_i32(0x11a89 - 0x11a1c, &vertical_yc_csa_mt_wrap);
+				h.store_i32(0x11abc - 0x11a1c, &horizontal_yc_csa_mt_wrap);
 			}
 			
 		}

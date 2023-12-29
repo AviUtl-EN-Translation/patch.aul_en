@@ -37,7 +37,7 @@ namespace patch::fast {
 　　縁取りのパターン画像ファイルを設定している時に表示位置が正常じゃないことがあるのを修正
 	最大画像サイズ+8まで広げられてしまい、不具合を起こすのを修正
 	*/
-	// use_space：画像に使える余白がある場合に画像サイズを広げず活用するようにする
+	// use_space：画像の周囲が透明度0の余白の場合に画像サイズを広げず活用するようにする
 
 	inline class Border_t {
 		static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
@@ -55,7 +55,7 @@ namespace patch::fast {
 			unsigned short* buf;
 			int range;
 			int inv_range;
-			int shift_x;
+			int shift_x; // 本来はシャドーのように位置をずらす機能の未実装
 			int shift_y;
 			int _undefined;
 			char _exdata_def[260]; // 1b1e48 - 1b1f4b

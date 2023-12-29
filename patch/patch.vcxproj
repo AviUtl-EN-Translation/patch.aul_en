@@ -64,6 +64,7 @@
     <ClInclude Include="patch_fast_drawfilter.hpp" />
     <ClInclude Include="patch_fast_exfunc_fill.hpp" />
     <ClInclude Include="patch_fast_extractedge.hpp" />
+    <ClInclude Include="patch_fast_lightemission.hpp" />
     <ClInclude Include="patch_fast_shadow.hpp" />
     <ClInclude Include="patch_fast_specialcolorconv.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />
@@ -208,6 +209,7 @@
     <ClCompile Include="patch_fast_convexedge.cpp" />
     <ClCompile Include="patch_fast_exfunc_fill.cpp" />
     <ClCompile Include="patch_fast_extractedge.cpp" />
+    <ClCompile Include="patch_fast_lightemission.cpp" />
     <ClCompile Include="patch_fast_shadow.cpp" />
     <ClCompile Include="patch_fast_specialcolorconv.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />

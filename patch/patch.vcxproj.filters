@@ -464,6 +464,9 @@
     <ClInclude Include="patch_fast_convexedge.hpp">
       <Filter>feature\fast</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_lightemission.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -716,6 +719,9 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_fast_convexedge.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_lightemission.cpp">
       <Filter>feature\fast</Filter>
     </ClCompile>
   </ItemGroup>
