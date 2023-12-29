@@ -37,6 +37,8 @@ namespace patch::fast {
 　　縁取りのパターン画像ファイルを設定している時に表示位置が正常じゃないことがあるのを修正
 	最大画像サイズ+8まで広げられてしまい、不具合を起こすのを修正
 	*/
+	// use_space：画像に使える余白がある場合に画像サイズを広げず活用するようにする
+
 	inline class Border_t {
 		static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
@@ -44,11 +46,14 @@ namespace patch::fast {
 		bool enabled_i;
 		inline static const char key[] = "fast.border";
 
+		inline static bool use_space = true;
+		inline static const char key_use_space[] = "use_space";
+
 	public:
 
 		struct efBorder_var { // 1b1e30
-			unsigned short* ExEditMemory;
-			int add_size;
+			unsigned short* buf;
+			int range;
 			int inv_range;
 			int shift_x;
 			int shift_y;
@@ -73,6 +78,16 @@ namespace patch::fast {
 
 		bool is_enabled() { return enabled; }
 		bool is_enabled_i() { return enabled_i; }
+
+		void config_load(ConfigReader& cr) {
+			cr.regist(key_use_space, [this](json_value_s* value) {
+				ConfigReader::load_variable(value, use_space);
+				});
+		}
+
+		void config_store(ConfigWriter& cw) {
+			cw.append(key_use_space, use_space);
+		}
 
 		void switch_load(ConfigReader& cr) {
 			cr.regist(key, [this](json_value_s* value) {

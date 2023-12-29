@@ -204,8 +204,9 @@ namespace patch::fast {
         }
         catch (const cl::Error& err) {
             debug_log("OpenCL Error\n({}) {}", err.err(), err.what());
-            efp->aviutl_exfunc->exec_multi_thread_func(func, efp, efpip);
+            return efp->aviutl_exfunc->exec_multi_thread_func(func, efp, efpip);
         }
+        return TRUE;
     }
 
 

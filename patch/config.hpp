@@ -495,6 +495,13 @@ public:
             cr.load();
         });
 #endif
+#ifdef PATCH_SWITCH_FAST_BORDER
+        cr.regist("fast_border", [](json_value_s* value) {
+            ConfigReader cr(value);
+        patch::fast::Border.config_load(cr);
+        cr.load();
+            });
+#endif
 #ifdef PATCH_SWITCH_SCENE_CACHE
         cr.regist("scene_cache", [](json_value_s* value) {
             ConfigReader cr(value);
@@ -594,6 +601,20 @@ public:
             fast_text.write(ss);
 
             cw.append("fast_text", ss.str());
+            --level;
+        }
+#endif
+
+#ifdef PATCH_SWITCH_FAST_BORDER
+        {
+            ConfigWriter fast_border(++level);
+
+            patch::fast::Border.config_store(fast_border);
+
+            std::stringstream ss;
+            fast_border.write(ss);
+
+            cw.append("fast_border", ss.str());
             --level;
         }
 #endif
