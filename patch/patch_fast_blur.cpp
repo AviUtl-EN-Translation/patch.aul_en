@@ -96,26 +96,24 @@ namespace patch::fast {
         }
     }
 
-
+    // 発光で使うとアーチファクトあり cnv_yをdoubleにすれば直るけど元の関数はfloatっぽいのでよく分からず
     void Blur_t::blur_yc_fb_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        blur_size = min(blur_size, obj_size - 1);
         int blur_range = blur_size * 2 + 1;
         int loop[5];
+        loop[0] = blur_size;
         if (blur_range < obj_size) {
-            loop[0] = blur_size;
             loop[1] = blur_size + 1;
             loop[2] = obj_size - blur_range;
             loop[3] = 0;
             loop[4] = blur_size;
         } else {
-            blur_size = min(blur_size, obj_size - 1);
-            loop[0] = blur_size;
             loop[1] = obj_size - blur_size;
             loop[2] = 0;
             loop[3] = blur_range - obj_size;
             loop[4] = obj_size - blur_size - 1;
         }
         int offset = n_begin * buf_step2;
-
         float f_inv_range = 1.0f / (float)blur_range;
         int n = n_end - n_begin;
         if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
@@ -236,6 +234,7 @@ namespace patch::fast {
                 dst->y = cnv_y * f_inv_range;
                 int round_c0 = blur_size;
                 int round_c1 = round_c0;
+                if (cnv_cb < 0)round_c1 = -round_c1;
                 dst->cb = (int8_t)((cnv_cb + round_c1) / blur_range);
                 if (cnv_cr < 0)round_c0 = -round_c0;
                 dst->cr = (int8_t)((cnv_cr + round_c0) / blur_range);
@@ -388,6 +387,7 @@ namespace patch::fast {
                 dst->y = cnv_y / (float)range;
                 int round_c0 = range >> 1;
                 int round_c1 = round_c0;
+                if (cnv_cb < 0)round_c1 = -round_c1;
                 dst->cb = (int8_t)((cnv_cb + round_c1) / range);
                 if (cnv_cr < 0)round_c0 = -round_c0;
                 dst->cr = (int8_t)((cnv_cr + round_c0) / range);
@@ -820,17 +820,16 @@ namespace patch::fast {
     }
 
     void Blur_t::blur_yc_cs_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
+        blur_size = min(blur_size, obj_size - 1);
         int blur_range = blur_size * 2 + 1;
         int loop[5];
+        loop[0] = blur_size;
         if (blur_range < obj_size) {
-            loop[0] = blur_size;
             loop[1] = blur_size + 1;
             loop[2] = obj_size - blur_range;
             loop[3] = 0;
             loop[4] = blur_size;
         } else {
-            blur_size = min(blur_size, obj_size - 1);
-            loop[0] = blur_size;
             loop[1] = obj_size - blur_size;
             loop[2] = 0;
             loop[3] = blur_range - obj_size;

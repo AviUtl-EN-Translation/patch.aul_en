@@ -375,6 +375,9 @@ public:
                 #ifdef PATCH_SWITCH_FAST_EXFUNC_FILL
                     patch::fast::exfunc_fill.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
+                    patch::fast::pixelformat_conv.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_DRAWFILTER
                     patch::fast::DrawFilter.switch_load(cr);
                 #endif
@@ -970,6 +973,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_EXFUNC_FILL
                     patch::fast::exfunc_fill.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
+                    patch::fast::pixelformat_conv.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_DRAWFILTER
                     patch::fast::DrawFilter.switch_store(switch_);

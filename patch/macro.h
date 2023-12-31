@@ -218,6 +218,7 @@
 	#define PATCH_SWITCH_FAST_SETTINGDIALOG fast_settingdialog
 	#define PATCH_SWITCH_FAST_EXEDITWINDOW fast_exeditwindow
 	// #define PATCH_SWITCH_FAST_EXFUNC_FILL exfunc_fill
+	// #define PATCH_SWITCH_FAST_PIXELFORMAT_CONV pixelformat_conv
 	#define PATCH_SWITCH_FAST_DRAWFILTER draw_filter
 	#define PATCH_SWITCH_FAST_TEXT fast_text
 	#define PATCH_SWITCH_FAST_TEXTBORDER fast_text_border

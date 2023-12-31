@@ -396,6 +396,9 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_EXFUNC_FILL
 			patch::fast::exfunc_fill.init();
 		#endif
+		#ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
+			patch::fast::pixelformat_conv.init();
+		#endif
 		#ifdef PATCH_SWITCH_FAST_DRAWFILTER
 			patch::fast::DrawFilter.init();
 		#endif

@@ -18,6 +18,7 @@
 
 #include <exedit.hpp>
 #include "config_rw.hpp"
+#include "util.hpp"
 
 #include "global.hpp"
 
@@ -25,32 +26,155 @@ namespace patch {
 
     // init at exedit load
     // n番目の中間点で再生速度を変化させるとnフレーム遅れて反映されるのを修正
+    // 中間点の途中で再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなるのを修正
+    // 中間点を動かした後に再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなることがあるのを修正
     inline class playback_speed_t {
         bool enabled = true;
         bool enabled_i;
         inline static const char key[] = "playback_speed";
+
+        inline static BOOL __cdecl calc_length_if(DWORD ret, ExEdit::Filter* efp) {
+            return (((int)efp->processing & 0xffff) - 1 == *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx));
+        }
     public:
         void init() {
             enabled_i = enabled;
 
             if (!enabled_i)return;
 
-            { // movie_file
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x005fd9, 1);
-                h.store_i8(0, '\x90');
-            }
-            { // audio_file
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08faab, 1);
-                h.store_i8(0, '\x90');
+            { // n番目の中間点で再生速度を変化させるとnフレーム遅れて反映されるのを修正
+                { // movie_file
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x005fd9, 1);
+                    h.store_i8(0, '\x90');
+                }
+                { // audio_file
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08faab, 1);
+                    h.store_i8(0, '\x90');
+                }
+
+                { // scene
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0836b3, 1);
+                    h.store_i8(0, '\x90');
+                }
+                { // scene_audio
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x084297, 1);
+                    h.store_i8(0, '\x90');
+                }
             }
 
-            { // scene
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0836b3, 1);
-                h.store_i8(0, '\x90');
+            { // 中間点の途中で再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなるのを修正
+                /*
+                    length = efp->frame_start - efp->frame_start_chain - objinfo.frame_begin + objinfo.frame_end;
+                    ↓
+                    length = 0 - objinfo.frame_begin + objinfo.frame_end;
+                */
+                { // audio_file
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x006973, 2);
+                    h.store_i16(0, '\x33\xc0');
+                }
+                { // audio_file
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x090343, 2);
+                    h.store_i16(0, '\x33\xc0');
+                }
+
+                { // scene
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x083d11, 2);
+                    h.store_i16(0, '\x33\xc0');
+                }
+                { // scene_audio
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x084921, 2);
+                    h.store_i16(0, '\x33\xc0');
+                }
             }
-            { // scene_audio
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x084297, 1);
-                h.store_i8(0, '\x90');
+            { // 中間点を動かした後に再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなるのを修正
+                auto& cursor = GLOBAL::executable_memory_cursor;
+                constexpr int addr[4] = { 0x06900, 0x902d0, 0x83cc0, 0x848d0 };
+                constexpr byte espsub[4] = { 0x6c, 0x6c, 0x30, 0x30 };
+                constexpr int vaddr[4] = { 0x0d7368, 0x24de58, 0x230980, 0x2309e0 };
+
+                for (int i = 0; i < 4; i++) {
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + addr[i], 13);
+                    h.store_i8(0, '\xe9');
+                    h.replaceNearJmp(1, cursor);
+                    h.store_i16(10, '\x83\xec');
+                    h.store_i8(12, espsub[i]);
+                    store_i8(cursor, '\xe8'); cursor++;
+                    store_i32(cursor, (int)&calc_length_if - (int)cursor - 4); cursor += 4;
+                    store_i32(cursor, '\x85\xc0\x75\x01'); cursor += 4;
+                    store_i32(cursor, '\xc3\xc7\x05\x00'); cursor += 3;
+                    store_i32(cursor, GLOBAL::exedit_base + vaddr[i]); cursor += 4;
+                    store_i32(cursor, 0); cursor += 4;
+                    store_i8(cursor, '\xe9'); cursor++;
+                    store_i32(cursor, GLOBAL::exedit_base + addr[i] + 10 - (int)cursor - 4); cursor += 4;
+                }
+                { // movie_file
+                    /*
+                        10006900 83ec6c               sub     esp,+6c
+                        10006903 c70568730d1000000000 mov     dword ptr [100d7368],00000000
+                        ↓
+                        10006900 e9XxXxXxXx           jmp     cursor
+                        10006905 8009231000           error
+                        1000690a 83ec6c               sub     esp,+6c
+
+                        00000000 e8XxXxXxXx           call    newfunc
+                        00000000 85c0                 test    eax,eax
+                        00000000 7501                 jnz     skip,+1
+                        00000000 c3                   ret
+                        00000000 c705XxXxXxXx00000000 mov     dword ptr [ee+d7368],00000000
+                        00000000 e9XxXxXxXx           jmp     ee+0690a
+                    */
+                }
+                { // audio_file
+                    /*
+                        100902d0 83ec6c               sub     esp,+6c
+                        100902d3 c70558de241000000000 mov     dword ptr [1024de58],00000000
+                        ↓
+                        100902d0 e9XxXxXxXx           jmp     cursor
+                        100902d5 8009231000           error
+                        100902da 83ec6c               sub     esp,+6c
+
+                        00000000 e8XxXxXxXx           call    newfunc
+                        00000000 85c0                 test    eax,eax
+                        00000000 7501                 jnz     skip,+1
+                        00000000 c3                   ret
+                        00000000 c705XxXxXxXx00000000 mov     dword ptr [ee+24de58],00000000
+                        00000000 e9XxXxXxXx           jmp     ee+902da
+                    */
+                }
+                { // scene
+                    /*
+                        10083cc0 83ec30               sub     esp,+30
+                        10083cc3 c7058009231000000000 mov     dword ptr [10230980],00000000
+                        ↓
+                        10083cc0 e9XxXxXxXx           jmp     cursor
+                        10083cc5 8009231000           error
+                        10083cca 83ec30               sub     esp,+30
+
+                        00000000 e8XxXxXxXx           call    newfunc
+                        00000000 85c0                 test    eax,eax
+                        00000000 7501                 jnz     skip,+1
+                        00000000 c3                   ret
+                        00000000 c705XxXxXxXx00000000 mov     dword ptr [ee+230980],00000000
+                        00000000 e9XxXxXxXx           jmp     ee+83cca
+                    */
+                }
+                { // scene_audio
+                    /*
+                        100848d0 83ec30               sub     esp,+30
+                        100848d3 c705e009231000000000 mov     dword ptr [102309e0],00000000
+                        ↓
+                        100848d0 e9XxXxXxXx           jmp     cursor
+                        100848d5 e009231000           error
+                        100848da 83ec30               sub     esp,+30
+
+                        00000000 e8XxXxXxXx           call    newfunc
+                        00000000 85c0                 test    eax,eax
+                        00000000 7501                 jnz     skip,+1
+                        00000000 c3                   ret
+                        00000000 c705XxXxXxXx00000000 mov     dword ptr [ee+2309e0],00000000
+                        00000000 e9XxXxXxXx           jmp     ee+848da
+                    */
+                }
             }
         }
 

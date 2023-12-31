@@ -29,12 +29,14 @@
 
 
 namespace patch::fast {
+    
     void __cdecl LightEmission_t::vertical_yc_fb_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto le = (efLightEmission_var*)(GLOBAL::exedit_base + OFS::ExEdit::efLightEmission_var_ptr);
         void* buf_ptr = *reinterpret_cast<void**>(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
         Blur_t::blur_yc_fb_cs_mt(thread_id * le->w / thread_num, (thread_id + 1) * le->w / thread_num, buf_ptr, efpip->frame_temp,
             efpip->scene_line * sizeof(ExEdit::PixelYC), sizeof(ExEdit::PixelYC), le->h, le->size_h);
     }
+    
     void __cdecl LightEmission_t::vertical_yc_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto le = (efLightEmission_var*)(GLOBAL::exedit_base + OFS::ExEdit::efLightEmission_var_ptr);
         void* buf_ptr = *reinterpret_cast<void**>(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);

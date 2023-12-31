@@ -65,6 +65,7 @@
     <ClInclude Include="patch_fast_exfunc_fill.hpp" />
     <ClInclude Include="patch_fast_extractedge.hpp" />
     <ClInclude Include="patch_fast_lightemission.hpp" />
+    <ClInclude Include="patch_fast_pixelformat_conv.hpp" />
     <ClInclude Include="patch_fast_shadow.hpp" />
     <ClInclude Include="patch_fast_specialcolorconv.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />

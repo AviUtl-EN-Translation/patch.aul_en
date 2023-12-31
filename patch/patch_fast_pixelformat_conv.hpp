@@ -15,10 +15,7 @@
 
 #pragma once
 #include "macro.h"
-#ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
-#ifdef PATCH_SWITCH_FAST_BLUR
-
-#include <exedit.hpp>
+#ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
 
 #include "global.hpp"
 #include "offset_address.hpp"
@@ -28,51 +25,49 @@
 
 namespace patch::fast {
 	// init at exedit load
-	// 発光の速度アップ
+	// PixelYC形式を変換する部分の速度アップ {short,short,short} <-> {float,byte,byte}
+	
+	// ほぼ変わらなかったためOFF。浮動小数や自然対数を使っている部分なのでSIMD処理すると速くなる可能性はあり
 
-	inline class LightEmission_t {
-
-		static void __cdecl vertical_yc_fb_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		static void __cdecl vertical_yc_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-
+	inline class pixelformat_conv_t {
 		bool enabled = true;
 		bool enabled_i;
-		inline static const char key[] = "fast.lightemission";
+		inline static const char key[] = "fast.pixelformat_conv";
 
-	public:
-
-		struct efLightEmission_var { // 1b1fdc
-			int h;
+		struct PixelFormatConv_var { // 1e42f4
+			void* pix;
+			int _other1;
+			int _other2;
 			int w;
-			int intensity;
-			int size_h;
-			int size_w;
-			int range_h;
-			short light_cb;
-			short _padding1;
-			int range_w;
-			short light_cr;
-			short _padding2;
-			int speed;
-			short light_y;
-			short _padding3;
-			int threshold;
-			int intensity_over;
+			int h;
+			void* _other3;
+			int _other4;
+			double inv_intensity;
+			double intensity;
 		};
 
+		inline static const double ln65536 = 11.090354888959124950675713943331;
+
+	public:
 
 		void init() {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			auto cpucmdset = get_CPUCmdSet();
-			if (!has_flag(cpucmdset, CPUCmdSet::F_AVX2))return;
-
-			constexpr int vp_begin = 0x53a8d;
-			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x53ac4 - vp_begin);
-			// h.store_i32(0x53a8d - vp_begin, &vertical_yc_fb_cs_mt_wrap); // アーチファクトでるためオフ
-			h.store_i32(0x53ac0 - vp_begin, &vertical_yc_cs_mt_wrap);
-
+			{ // ループ内で浮動小数掛け算を行っているのをループ外で済ませる
+				{ // yca
+					OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x704a0, 4).store_i32(0, &ln65536);
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x704f4, 8);
+					h.store_i16(0, '\xd9\xc1');
+					h.store_i16(6, '\x66\x90');
+				}
+				{ // yc
+					OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x707a3, 4).store_i32(0, &ln65536);
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x707f3, 8);
+					h.store_i16(0, '\xd9\xc1');
+					h.store_i16(6, '\x66\x90');
+				}
+			}
 		}
 
 		void switching(bool flag) { enabled = flag; }
@@ -90,7 +85,6 @@ namespace patch::fast {
 			cw.append(key, enabled);
 		}
 
-	} LightEmission;
+	} pixelformat_conv;
 } // namespace patch::fast
-#endif // ifdef PATCH_SWITCH_FAST_BLUR
-#endif // ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
+#endif // ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
