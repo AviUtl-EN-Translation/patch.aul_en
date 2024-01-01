@@ -1515,21 +1515,11 @@ namespace patch::fast {
             blur_h = min(blur_h, (*(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_h) - efpip->obj_h) / 2);
         }
 
-        int conv2_w = blur_w >> 1;
-        int conv2_h = blur_h >> 1;
-        int conv1_w = blur_w - conv2_w;
-        int conv1_h = blur_h - conv2_h;
-        /*
-        if (check0 == 0 && (efpip->obj_w <= conv1_w * 2 || efpip->obj_w <= conv2_w * 2 || efpip->obj_h <= conv1_h * 2 || efpip->obj_h <= conv2_h * 2)) {
-            int new_w = efpip->obj_w + (conv1_w + conv2_w) * 2;
-            int new_h = efpip->obj_h + (conv1_h + conv2_h) * 2;
-            check0 = 1;
-            efp->exfunc->fill(efpip->obj_temp, 0, 0, new_w, new_h, 0, 0, 0, 0, 2);
-            efp->exfunc->bufcpy(efpip->obj_temp, conv2_w + conv1_w, conv2_h + conv1_h, efpip->obj_edit, 0, 0, efpip->obj_w, efpip->obj_h, 0, 0x13000003);
-            std::swap(efpip->obj_edit, efpip->obj_temp);
-            efpip->obj_w = new_w;
-            efpip->obj_h = new_h;
-        }*/
+        int conv1_w = blur_w >> 1;
+        int conv1_h = blur_h >> 1;
+        int conv2_w = blur_w - conv1_w;
+        int conv2_h = blur_h - conv1_h;
+
         int intensity = efp->track[2];
         if (0 < intensity) {
             reinterpret_cast<void (__cdecl*)(void*, int, int, int)>(GLOBAL::exedit_base + OFS::ExEdit::PixelYCA_ssss2fbbs)(efpip->obj_edit, efpip->obj_w, efpip->obj_h, intensity);
