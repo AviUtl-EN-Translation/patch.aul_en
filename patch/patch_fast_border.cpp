@@ -676,6 +676,7 @@ namespace patch::fast {
                     *dst = *src3;
                 } else {
                     a = cnv_a * border->alpha >> border->_alpha_shift;
+                    a = min(a, 0x1000) * dst->a >> 12;
                     if (0x1000 <= a) {
                         dst->y += ((src3->y - dst->y) * src3->a) >> 12;
                         dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
@@ -704,6 +705,7 @@ namespace patch::fast {
                     *dst = *src3;
                 } else {
                     a = cnv_a * border->alpha >> border->_alpha_shift;
+                    a = min(a, 0x1000) * dst->a >> 12;
                     if (0x1000 <= a) {
                         dst->y += ((src3->y - dst->y) * src3->a) >> 12;
                         dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
@@ -727,6 +729,7 @@ namespace patch::fast {
             if (0 < loop[8]) {
                 int x = loop[8];
                 a = cnv_a * border->alpha >> border->_alpha_shift;
+                a = min(a, 0x1000) * dst->a >> 12;
                 if (0x1000 <= a) {
                     for (; 0 < x; x--) {
                         if (0x1000 <= src3->a) {
@@ -769,6 +772,7 @@ namespace patch::fast {
                     *dst = *src3;
                 } else {
                     a = cnv_a * border->alpha >> border->_alpha_shift;
+                    a = min(a, 0x1000) * dst->a >> 12;
                     if (0x1000 <= a) {
                         dst->y += ((src3->y - dst->y) * src3->a) >> 12;
                         dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
