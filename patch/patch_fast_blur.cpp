@@ -462,9 +462,20 @@ namespace patch::fast {
 
     void Blur_t::blur_yca_fb_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
         int blur_range = blur_size * 2 + 1;
-        int loop2 = obj_size - blur_range;
-        int offset = n_begin * buf_step2;
+        int loop[4];
+        if (blur_range < obj_size) {
+            loop[0] = blur_range;
+            loop[1] = obj_size - blur_range;
+            loop[2] = 0;
+            loop[3] = blur_range - 1;
+        } else {
+            loop[0] = obj_size;
+            loop[1] = 0;
+            loop[2] = blur_range - obj_size;
+            loop[3] = obj_size - 1;
+        }
 
+        int offset = n_begin * buf_step2;
         float f_inv_range = 1.0f / (float)blur_range;
         int n = n_end - n_begin;
         if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
@@ -481,14 +492,14 @@ namespace patch::fast {
 
                 fb256.y = _mm256_setzero_ps();
                 fb256.cb = fb256.cr = fb256.a = _mm256_setzero_si256();
-                for (int i = blur_range; 0 < i; i--) {
+                for (int i = loop[0]; 0 < i; i--) {
                     ycafbs256_add(&fb256, src1);
                     src1 = (PixelYCA_fbbs*)((int)src1 + buf_step1);
 
                     ycafbs256_put_average(&fb256, dst, buf_step2);
                     dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
                 }
-                for (int i = loop2; 0 < i; i--) {
+                for (int i = loop[1]; 0 < i; i--) {
                     ycafbs256_sub(&fb256, src2);
                     src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
                     ycafbs256_add(&fb256, src1);
@@ -497,7 +508,18 @@ namespace patch::fast {
                     ycafbs256_put_average(&fb256, dst, buf_step2);
                     dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
                 }
-                for (int i = blur_range - 1; 0 < i; i--) {
+                if (0 < loop[2]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (PixelYCA_fbbs*)((int)dst1 + j * buf_step2);
+                        auto yca = *(PixelYCA_fbbs*)((int)dst - buf_step1);
+                        for (int i = loop[2]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
+                        }
+                    }
+                }
+                for (int i = loop[3]; 0 < i; i--) {
                     ycafbs256_sub(&fb256, src2);
                     src2 = (PixelYCA_fbbs*)((int)src2 + buf_step1);
 
@@ -516,7 +538,7 @@ namespace patch::fast {
             int cnv_cb = 0;
             int cnv_cr = 0;
             int cnv_a = 0;
-            for (int i = blur_range; 0 < i; i--) {
+            for (int i = loop[0]; 0 < i; i--) {
                 cnv_y += src1->y;
                 cnv_cb += src1->cb;
                 cnv_cr += src1->cr;
@@ -533,7 +555,7 @@ namespace patch::fast {
                 dst->a = (int16_t)(cnv_a / blur_range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
-            for (int i = loop2; 0 < i; i--) {
+            for (int i = loop[1]; 0 < i; i--) {
                 cnv_y += src1->y - src2->y;
                 cnv_cb += src1->cb - src2->cb;
                 cnv_cr += src1->cr - src2->cr;
@@ -551,7 +573,14 @@ namespace patch::fast {
                 dst->a = (int16_t)(cnv_a / blur_range);
                 dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
             }
-            for (int i = blur_range - 1; 0 < i; i--) {
+            if (0 < loop[2]) {
+                auto yca = *(PixelYCA_fbbs*)((int)dst - buf_step1);
+                for (int i = loop[2]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (PixelYCA_fbbs*)((int)dst + buf_step1);
+                }
+            }
+            for (int i = loop[3]; 0 < i; i--) {
                 cnv_y -= src2->y;
                 cnv_cb -= src2->cb;
                 cnv_cr -= src2->cr;
@@ -1144,9 +1173,20 @@ namespace patch::fast {
 
     void Blur_t::blur_yca_mt(int n_begin, int n_end, void* buf_dst, void* buf_src, int buf_step1, int buf_step2, int obj_size, int blur_size) {
         int blur_range = blur_size * 2 + 1;
-        int loop2 = obj_size - blur_range;
-        int offset = n_begin * buf_step2;
+        int loop[4];
+        if (blur_range < obj_size) {
+            loop[0] = blur_range;
+            loop[1] = obj_size - blur_range;
+            loop[2] = 0;
+            loop[3] = blur_range - 1;
+        } else {
+            loop[0] = obj_size;
+            loop[1] = 0;
+            loop[2] = blur_range - obj_size;
+            loop[3] = obj_size - 1;
+        }
 
+        int offset = n_begin * buf_step2;
         int n = n_end - n_begin;
         if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
             fastBlurYCA256 fb256;
@@ -1159,14 +1199,14 @@ namespace patch::fast {
                 offset += buf_step2 * 8;
 
                 fb256.y = fb256.cb = fb256.cr = fb256.a = _mm256_setzero_si256();
-                for (int i = blur_range; 0 < i; i--) {
+                for (int i = loop[0]; 0 < i; i--) {
                     yca256_add(&fb256, src1);
                     src1 = (ExEdit::PixelYCA*)((int)src1 + buf_step1);
 
                     yca256_put_average(&fb256, dst, buf_step2);
                     dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
                 }
-                for (int i = loop2; 0 < i; i--) {
+                for (int i = loop[1]; 0 < i; i--) {
                     yca256_sub(&fb256, src2);
                     src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
                     yca256_add(&fb256, src1);
@@ -1175,7 +1215,18 @@ namespace patch::fast {
                     yca256_put_average(&fb256, dst, buf_step2);
                     dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
                 }
-                for (int i = blur_range - 1; 0 < i; i--) {
+                if (0 < loop[2]) {
+                    auto dst1 = dst;
+                    for (int j = 7; 0 <= j; j--) {
+                        dst = (ExEdit::PixelYCA*)((int)dst1 + j * buf_step2);
+                        auto yca = *(ExEdit::PixelYCA*)((int)dst - buf_step1);
+                        for (int i = loop[2]; 0 < i; i--) {
+                            *dst = yca;
+                            dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
+                        }
+                    }
+                }
+                for (int i = loop[3]; 0 < i; i--) {
                     yca256_sub(&fb256, src2);
                     src2 = (ExEdit::PixelYCA*)((int)src2 + buf_step1);
 
@@ -1195,7 +1246,7 @@ namespace patch::fast {
             int cnv_cb = 0;
             int cnv_cr = 0;
             int cnv_a = 0;
-            for (int i = blur_range; 0 < i; i--) {
+            for (int i = loop[0]; 0 < i; i--) {
                 cnv_y += src1->y;
                 cnv_cb += src1->cb;
                 cnv_cr += src1->cr;
@@ -1208,7 +1259,7 @@ namespace patch::fast {
                 dst->a = (short)(cnv_a / blur_range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
-            for (int i = loop2; 0 < i; i--) {
+            for (int i = loop[1]; 0 < i; i--) {
                 cnv_y += src1->y - src2->y;
                 cnv_cb += src1->cb - src2->cb;
                 cnv_cr += src1->cr - src2->cr;
@@ -1222,7 +1273,14 @@ namespace patch::fast {
                 dst->a = (short)(cnv_a / blur_range);
                 dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
             }
-            for (int i = blur_range - 1; 0 < i; i--) {
+            if (0 < loop[2]) {
+                auto yca = *(ExEdit::PixelYCA*)((int)dst - buf_step1);
+                for (int i = loop[2]; 0 < i; i--) {
+                    *dst = yca;
+                    dst = (ExEdit::PixelYCA*)((int)dst + buf_step1);
+                }
+            }
+            for (int i = loop[3]; 0 < i; i--) {
                 cnv_y -= src2->y;
                 cnv_cb -= src2->cb;
                 cnv_cr -= src2->cr;
@@ -1461,6 +1519,7 @@ namespace patch::fast {
         int conv2_h = blur_h >> 1;
         int conv1_w = blur_w - conv2_w;
         int conv1_h = blur_h - conv2_h;
+        /*
         if (check0 == 0 && (efpip->obj_w <= conv1_w * 2 || efpip->obj_w <= conv2_w * 2 || efpip->obj_h <= conv1_h * 2 || efpip->obj_h <= conv2_h * 2)) {
             int new_w = efpip->obj_w + (conv1_w + conv2_w) * 2;
             int new_h = efpip->obj_h + (conv1_h + conv2_h) * 2;
@@ -1470,7 +1529,7 @@ namespace patch::fast {
             std::swap(efpip->obj_edit, efpip->obj_temp);
             efpip->obj_w = new_w;
             efpip->obj_h = new_h;
-        }
+        }*/
         int intensity = efp->track[2];
         if (0 < intensity) {
             reinterpret_cast<void (__cdecl*)(void*, int, int, int)>(GLOBAL::exedit_base + OFS::ExEdit::PixelYCA_ssss2fbbs)(efpip->obj_edit, efpip->obj_w, efpip->obj_h, intensity);
