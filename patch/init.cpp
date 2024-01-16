@@ -104,6 +104,10 @@ void init_t::InitAtPatchLoaded() {
 	patch::fileinfo.init();
 #endif
 
+#ifdef PATCH_SWITCH_SET_FRAME
+	patch::set_frame.init();
+#endif
+
 #ifdef PATCH_SWITCH_READ_AUDIO
 	patch::read_audio.init();
 #endif
@@ -434,6 +438,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_GLOW
 			patch::fast::Glow.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_DIFFUSELIGHT
+			patch::fast::DiffuseLight.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
 			patch::fast::LightEmission.init();

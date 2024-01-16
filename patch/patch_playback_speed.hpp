@@ -28,6 +28,7 @@ namespace patch {
     // n番目の中間点で再生速度を変化させるとnフレーム遅れて反映されるのを修正
     // 中間点の途中で再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなるのを修正
     // 中間点を動かした後に再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなることがあるのを修正
+    // オブジェクトの長さを変えた後に元に戻すをして再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなることがあるのを修正
     inline class playback_speed_t {
         bool enabled = true;
         bool enabled_i;
@@ -36,12 +37,12 @@ namespace patch {
         inline static BOOL __cdecl calc_length_if(DWORD ret, ExEdit::Filter* efp) {
             return (((int)efp->processing & 0xffff) - 1 == *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx));
         }
+
     public:
         void init() {
             enabled_i = enabled;
 
             if (!enabled_i)return;
-
             { // n番目の中間点で再生速度を変化させるとnフレーム遅れて反映されるのを修正
                 { // movie_file
                     OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x005fd9, 1);
@@ -88,9 +89,9 @@ namespace patch {
             }
             { // 中間点を動かした後に再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなるのを修正
                 auto& cursor = GLOBAL::executable_memory_cursor;
-                constexpr int addr[4] = { 0x06900, 0x902d0, 0x83cc0, 0x848d0 };
-                constexpr byte espsub[4] = { 0x6c, 0x6c, 0x30, 0x30 };
-                constexpr int vaddr[4] = { 0x0d7368, 0x24de58, 0x230980, 0x2309e0 };
+                int addr[4] = { 0x06900, 0x902d0, 0x83cc0, 0x848d0 };
+                byte espsub[4] = { 0x6c, 0x6c, 0x30, 0x30 };
+                int vaddr[4] = { 0x0d7368, 0x24de58, 0x230980, 0x2309e0 };
 
                 for (int i = 0; i < 4; i++) {
                     OverWriteOnProtectHelper h(GLOBAL::exedit_base + addr[i], 13);
@@ -174,6 +175,93 @@ namespace patch {
                         00000000 c705XxXxXxXx00000000 mov     dword ptr [ee+2309e0],00000000
                         00000000 e9XxXxXxXx           jmp     ee+848da
                     */
+                }
+            }
+            { // オブジェクトの長さを変えて元に戻して再生速度を変えるとオブジェクトの長さがおかしくなるのを修正
+                auto& cursor = GLOBAL::executable_memory_cursor;
+
+                { // movie_file audio_file
+                    /* movie_file
+                        100060d3 0f87b3000000       ja      1000618c
+                        ↓
+                        100060d3 0f87XxXxXxXx       ja      cursor
+
+                        00000000 83f812             cmp     eax,+12
+                        00000000 750a               jnz     skip,+0a
+                        00000000 57                 push    edi
+                        00000000 56                 push    esi
+                        00000000 e8XxXxXxXx         call    ee+06900
+                        00000000 83c408             add     esp,+08
+                        00000000 e9XxXxXxXx         jmp     ee+0618c
+                    */
+                    int addr[2] = { 0x060d5, 0x8fb3b };
+                    int calcaddr[2] = { 0x06900, 0x902d0 };
+                    int retaddr[2] = { 0x0618c, 0x8fbf8 };
+
+                    for (int i = 0; i < 2; i++) {
+                        ReplaceNearJmp(GLOBAL::exedit_base + addr[i], cursor);
+                        store_i32(cursor, '\x83\xf8\x12\x75'); cursor += 4;
+                        store_i32(cursor, '\x0a\x57\x56\xe8'); cursor += 4;
+                        store_i32(cursor, GLOBAL::exedit_base + calcaddr[i] - (int)cursor - 4); cursor += 4;
+                        store_i32(cursor, '\x83\xc4\x08\xe9'); cursor += 4;
+                        store_i32(cursor, GLOBAL::exedit_base + retaddr[i] - (int)cursor - 4); cursor += 4;
+                    }
+                }
+                { // scene
+                    /*
+                        1008376b 83f80f             cmp     eax,+0f
+                        1008376e 7727               ja      10083797
+                        ↓
+                        1008376b e9XxXxXxXx         jmp     cursor
+
+                        00000000 83f80f             cmp     eax,+0f
+                        00000000 0f86XxXxXxXx       jna     ee+83770
+                        00000000 83f812             cmp     eax,+12
+                        00000000 750a               jnz     skip,+09
+                        00000000 56                 push    esi
+                        00000000 e8XxXxXxXx         call    ee+83cc0
+                        00000000 83c404             add     esp,+04
+                        00000000 e9XxXxXxXx         jmp     ee+83797
+                    */
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x8376b, 5);
+                    h.store_i8(0, '\xe9');
+                    h.replaceNearJmp(1, cursor);
+                    store_i32(cursor, '\x83\xf8\x0f\x0f'); cursor += 4;
+                    store_i8(cursor, '\x86'); cursor++;
+                    store_i32(cursor, GLOBAL::exedit_base + 0x83770 - (int)cursor - 4); cursor += 4;
+                    store_i32(cursor, '\x83\xf8\x12\x75'); cursor += 4;
+                    store_i32(cursor, '\x0a\x56\xe8\x00'); cursor += 3;
+                    store_i32(cursor, GLOBAL::exedit_base + 0x83cc0 - (int)cursor - 4); cursor += 4;
+                    store_i32(cursor, '\x83\xc4\x04\xe9'); cursor += 4;
+                    store_i32(cursor, GLOBAL::exedit_base + 0x83797 - (int)cursor - 4); cursor += 4;
+                }
+                { // scene_audio
+                    /*
+                        1008432d 83ff0f             cmp     edi,+0f
+                        10084330 7727               ja      10084359
+                        ↓
+                        1008432d e9XxXxXxXx         jmp     cursor
+
+                        00000000 83ff0f             cmp     edi,+0f
+                        00000000 0f86XxXxXxXx       jna     ee+84332
+                        00000000 83ff12             cmp     edi,+12
+                        00000000 750a               jnz     skip,+09
+                        00000000 56                 push    esi
+                        00000000 e8XxXxXxXx         call    ee+848d0
+                        00000000 83c404             add     esp,+04
+                        00000000 e9XxXxXxXx         jmp     ee+84359
+                    */
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x8432d, 5);
+                    h.store_i8(0, '\xe9');
+                    h.replaceNearJmp(1, cursor);
+                    store_i32(cursor, '\x83\xff\x0f\x0f'); cursor += 4;
+                    store_i8(cursor, '\x86'); cursor++;
+                    store_i32(cursor, GLOBAL::exedit_base + 0x84332 - (int)cursor - 4); cursor += 4;
+                    store_i32(cursor, '\x83\xff\x12\x75'); cursor += 4;
+                    store_i32(cursor, '\x0a\x56\xe8\x00'); cursor += 3;
+                    store_i32(cursor, GLOBAL::exedit_base + 0x848d0 - (int)cursor - 4); cursor += 4;
+                    store_i32(cursor, '\x83\xc4\x04\xe9'); cursor += 4;
+                    store_i32(cursor, GLOBAL::exedit_base + 0x84359 - (int)cursor - 4); cursor += 4;
                 }
             }
         }

@@ -37,13 +37,12 @@ namespace OFS {
 		constexpr i32 filter_change_framerate_ptr = 0x080b28;
 		constexpr i32 filter_clipping_and_resize_ptr = 0x07ad58;
 
+		constexpr i32 exfunc_set_select_frame = 0x021e30;
 
 		constexpr i32 ini_trackbarclick = 0x086270;
 		constexpr i32 trackbar_WndProc = 0x2daaf4;
 
 		constexpr i32 str_AviUtl = 0x0742a0; // "AviUtl"
-
-		
 
 		constexpr i32 str_dot_avi = 0x0745fc; // ".avi"
 		constexpr i32 str_asterisk_dot_aul = 0x075a10; // "*.aul"
@@ -158,6 +157,7 @@ namespace OFS {
 		constexpr i32 efBlur_func_proc_ptr = 0x0a0750;
 		constexpr i32 efBlur_var_ptr = 0x11ec34;
 		constexpr i32 efGlow_var_ptr = 0x1b2010;
+		constexpr i32 efDiffuseLight_var_ptr = 0x11efdc;
 		constexpr i32 efLightEmission_var_ptr = 0x1b1fdc;
 		constexpr i32 efPolarTransform_func_proc = 0x0748a0;
 		constexpr i32 efPolarTransform_func_proc_ptr = 0x0add30;
@@ -196,6 +196,7 @@ namespace OFS {
 		constexpr i32 ScriptProcessingFilter = 0x1b2b10;
 
 		constexpr i32 double_1000 = 0x09a3d0;
+		constexpr i32 double_1div65536 = 0x09a3f0;
 
 		constexpr i32 extract_extension = 0x04e1d0;
 		constexpr i32 ini_extension_buf = 0x14cb58;

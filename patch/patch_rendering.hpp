@@ -56,15 +56,7 @@ namespace patch {
         };
 
         static int __stdcall mid_render();
-
-        //static void __cdecl rendering_mt_wrap(int thread_id, int thread_num, int unuse1, int unuse2);
-        //static void __cdecl do_multi_thread_func_wrap(AviUtl::MultiThreadFunc func, BOOL is_multithread);
-
         static void __cdecl calc_xzuv_wrap(int poly_num, polydata_double* pd);
-        //static int __cdecl calc_xzuv_offset_range_wrap(polydata_double* pd, int p1, int p2, double* x_offset, double* x_range, double* u_offset, double* v_offset, double* u_range, double* v_range, double* z_offset, double* z_range);
-        
-        //static void __cdecl calc_xzuv_avx2(int poly_num, polydata_double* pd);
-        //static int __cdecl calc_xzuv_offset_range_avx2(polydata_double* pd, int p1, int p2, uvdata* uvd);
 
 
         bool enabled = true;
@@ -154,11 +146,6 @@ namespace patch {
                 h.store_i16(25, '\xeb\xed');
 
             }
-            /*
-            { // マルチスレッド処理を効率化
-                ReplaceNearJmp(GLOBAL::exedit_base + 0x7981a, do_multi_thread_func_wrap);
-            }
-            */
 
             { // 回転45、obj.w==obj.h、obj.y==-obj.screen、(他条件有り)　の時の描画が正常ではないのを修正
                 calc_xzuv_offset_range = reinterpret_cast<decltype(calc_xzuv_offset_range)>(GLOBAL::exedit_base + OFS::ExEdit::calc_xzuv_offset_range);
@@ -167,7 +154,110 @@ namespace patch {
                 ReplaceNearJmp(GLOBAL::exedit_base + 0x797dc, &calc_xzuv_wrap);
             }
             
+            { // 浮動小数掛け算部分の無駄をなくす
+                /* ; YC 
+                    100756d7 db442410           fild    dword ptr [esp+10]
+                    100756db d8c9               fmul    st,st(1)
+                    100756dd dc0df0a30910       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    100756e3 dec2               faddp   st(2),st
+                    100756e5 db442414           fild    dword ptr [esp+14]
+                    100756e9 d8c9               fmul    st,st(1)
+                    100756eb dc0df0a30910       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    100756f1 dec3               faddp   st(3),st
+                    100756f3 db442434           fild    dword ptr [esp+34]
+                    100756f7 d8c9               fmul    st,st(1)
+                    100756f9 dc0df0a30910       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    100756ff dec4               faddp   st(4),st
+                    10075701 ddd8               fstp    st(0)
+                    10075703 eb61               jmp     short 10075766
 
+                    1007574e eb16               jmp     short 10075766
+                    ↓
+
+                    100756d7 dc0dXxXxXxXx       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    100756dd db442410           fild    dword ptr [esp+10]
+                    100756e1 d8c9               fmul    st,st(1)
+                    100756e3 dec2               faddp   st(2),st
+                    100756e5 db442414           fild    dword ptr [esp+14]
+                    100756e9 d8c9               fmul    st,st(1)
+                    100756eb dec3               faddp   st(3),st
+                    100756ed db442434           fild    dword ptr [esp+34]
+                    100756f1 d8c9               fmul    st,st(1)
+                    100756f3 dec4               faddp   st(4),st
+                    100756f5 ddd8               fstp    st(0)
+                    100756f7 eb6d               jmp     short 10075766
+                    100756f9
+
+                    10075742 eb22               jmp     short 10075766
+                    10075744
+                */
+                /*
+                char yc_bin[] = {
+                    "\xdc\x0dXXXX"             // fmul    dword ptr [ee+9a3f0] ; 1.0/65536.0
+                    "\xdb\x44\x24\x10"         // fild    dword ptr [esp+10]
+                    "\xd8\xc9"                 // fmul    st,st(1)
+                    "\xde\xc2"                 // faddp   st(2),st
+                    "\xdb\x44\x24\x14"         // fild    dword ptr [esp+14]
+                    "\xd8\xc9"                 // fmul    st,st(1)
+                    "\xde\xc3"                 // faddp   st(3),st
+                    "\xdb\x44\x24\x34"         // fild    dword ptr [esp+34]
+                    "\xd8\xc9"                 // fmul    st,st(1)
+                    "\xde\xc4"                 // faddp   st(4),st
+                    "\xdd\xd8"                 // fstp    st(0)
+                    "\xeb\x6d"                 // jmp     short 10075766
+                };
+                store_i32(yc_bin + 2, GLOBAL::exedit_base + OFS::ExEdit::double_1div65536);
+                constexpr int vp_begin = 0x756d7;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x75744 - vp_begin);
+                memcpy(reinterpret_cast<void*>(h.address()), yc_bin, sizeof(yc_bin) - 1);
+                memcpy(reinterpret_cast<void*>(h.address(0x75722 - vp_begin)), yc_bin, sizeof(yc_bin) - 2);
+                h.store_i8(0x75743 - vp_begin, 0x22);
+                */
+                /* ; YCA
+                    10075cfe db442418           fild    dword ptr [esp+18]
+                    10075d02 db442410           fild    dword ptr [esp+10]
+                    10075d06 d8c9               fmul    st,st(1)
+                    10075d08 dc0df0a30910       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    10075d0e dec2               faddp   st(2),st
+                    10075d10 db442414           fild    dword ptr [esp+14]
+                    10075d14 d8c9               fmul    st,st(1)
+                    10075d16 dc0df0a30910       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    10075d1c dec3               faddp   st(3),st
+                    10075d1e db44243c           fild    dword ptr [esp+3c]
+                    10075d22 d8c9               fmul    st,st(1)
+                    10075d24 dc0df0a30910       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    10075d2a dec4               faddp   st(4),st
+                    10075d2c db442450           fild    dword ptr [esp+50]
+                    10075d30 d8c9               fmul    st,st(1)
+                    10075d32 dc0df0a30910       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    10075d38 dec5               faddp   st(5),st
+                    10075d3a ddd8               fstp    st(0)
+                    10075d3c eb71               jmp     short 10075daf
+
+                    10075d91 eb1c               jmp     short 10075daf
+                    ↓
+                    10075cfe db442418           fild    dword ptr [esp+18]
+                    10075d02 dc0dXxXxXxXx       fmul    dword ptr [1009a3f0] ; 1.0/65536.0
+                    10075d08 db442410           fild    dword ptr [esp+10]
+                    10075d0c d8c9               fmul    st,st(1)
+                    10075d0e dec2               faddp   st(2),st
+                    10075d10 db442414           fild    dword ptr [esp+14]
+                    10075d14 d8c9               fmul    st,st(1)
+                    10075d16 dec3               faddp   st(3),st
+                    10075d18 db44243c           fild    dword ptr [esp+3c]
+                    10075d1c d8c9               fmul    st,st(1)
+                    10075d1e dec4               faddp   st(4),st
+                    10075d20 db442450           fild    dword ptr [esp+50]
+                    10075d24 d8c9               fmul    st,st(1)
+                    10075d26 dec5               faddp   st(5),st
+                    10075d28 ddd8               fstp    st(0)
+                    10075d2a e980000000         jmp     10075daf
+                    10075d2f
+
+                    10075d7f eb2e               jmp     short 10075daf
+                    10075d81
+                */
+            }
         }
         void switching(bool flag) {
             enabled = flag;

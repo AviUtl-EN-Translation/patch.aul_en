@@ -24,7 +24,7 @@ namespace patch::fast {
     void __cdecl Waveform_t::normal_wrap(wf_var* wf, ExEdit::FilterProcInfo* efpip) {
         short* audio_data = (short*)wf->audio_data;
         for (int i = wf->audio_n; 0 < i; i--) {
-            audio_data[i] = audio_data[i - 1] * wf->res_h / 65536 + wf->res_h / 2;
+            audio_data[i] = (audio_data[i - 1] * wf->res_h / 32768 + wf->res_h) / 2;
         }
         audio_data[0] = audio_data[1];
         audio_data[wf->audio_n + 1] = audio_data[wf->audio_n + 2] = audio_data[wf->audio_n];

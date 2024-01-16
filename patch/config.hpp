@@ -71,6 +71,9 @@ public:
             #ifdef PATCH_SWITCH_FILEINFO
                 patch::fileinfo.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_SET_FRAME
+                patch::set_frame.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_READ_AUDIO
                 patch::read_audio.switch_load(cr);
             #endif
@@ -414,6 +417,9 @@ public:
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_DIFFUSELIGHT
+                    patch::fast::DiffuseLight.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
                     patch::fast::LightEmission.switch_load(cr);
                 #endif
@@ -669,6 +675,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_FILEINFO
                 patch::fileinfo.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SET_FRAME
+                patch::set_frame.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_READ_AUDIO
                 patch::read_audio.switch_store(switch_);
@@ -1012,6 +1021,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_GLOW
                     patch::fast::Glow.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_DIFFUSELIGHT
+                    patch::fast::DiffuseLight.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
                     patch::fast::LightEmission.switch_store(switch_);

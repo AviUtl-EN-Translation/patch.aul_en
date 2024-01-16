@@ -232,8 +232,8 @@ namespace patch::fast {
         auto border = static_cast<Border_t::efBorder_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
         ExEdit::PixelYCA color = { border->color_y, border->color_cb, border->color_cr,0 };
-        unsigned int cnv_w = sizeof(unsigned short) * efpip->obj_w * thread_num;
-        auto src0 = (unsigned short*)border->buf + thread_id * efpip->obj_w;
+        int cnv_w = sizeof(unsigned short) * efpip->obj_w * (thread_num - 1);
+        auto src1 = (unsigned short*)border->buf + thread_id * efpip->obj_w;
         auto pix_line = sizeof(ExEdit::PixelYCA) * efpip->obj_line * thread_num;
         auto dst0 = (ExEdit::PixelYCA*)efpip->obj_temp + thread_id * efpip->obj_line;
 
@@ -278,173 +278,81 @@ namespace patch::fast {
             }
         }
 
-        int y_end2 = efpip->obj_h + size;
-        int y_end3 = y_end2 + size;
-        int y;
-        for (y = thread_id; y < size; y += thread_num) {
-            auto src1 = src0;
-            auto src2 = src0;
-            src0 = (unsigned short*)((int)src0 + cnv_w);
-            auto dst = dst0;
-            dst0 = (ExEdit::PixelYCA*)((int)dst0 + pix_line);
+        int yend[4] = { size, size + efpip->obj_h, size * 2 + efpip->obj_h, 0 };
+        int* yep = yend;
+        int y = thread_id;
+        for (int i = 2; 0 < i; i--) {
+            for (; y < *yep; y += thread_num) {
+                auto src2 = src1;
+                auto dst = dst0;
+                dst0 = (ExEdit::PixelYCA*)((int)dst0 + pix_line);
 
-            unsigned int cnv_a = 0;
-            for (int x = loop[0]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
-            for (int x = loop[1]; 0 < x; x--) {
-                cnv_a += *src1 - *src2;
-                src1++;
-                src2++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
-            for (int x = loop[2]; 0 < x; x--) {
-                *dst = color;
-                dst++;
-            }
-            for (int x = loop[3]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
-        }
-        auto src = (ExEdit::PixelYCA*)efpip->obj_edit + (y - size + border->shift_y) * efpip->obj_line + border->shift_x;
-        for (; y < y_end2; y += thread_num) {
-            auto src1 = src0;
-            auto src2 = src0;
-            src0 = (unsigned short*)((int)src0 + cnv_w);
-            auto src3 = src;
-            src = (ExEdit::PixelYCA*)((int)src + pix_line);
-            auto dst = dst0;
-            dst0 = (ExEdit::PixelYCA*)((int)dst0 + pix_line);
-
-            unsigned int a;
-            unsigned int cnv_a = 0;
-            for (int x = loop[4]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
-            if (0 < loop[5]) {
-                for (int x = loop[5]; 0 < x; x--) {
+                unsigned int cnv_a = 0;
+                for (int x = loop[0]; 0 < x; x--) {
+                    cnv_a += *src1;
+                    src1++;
+                    color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
                     *dst = color;
                     dst++;
                 }
+                for (int x = loop[1]; 0 < x; x--) {
+                    cnv_a += *src1 - *src2;
+                    src1++;
+                    src2++;
+                    color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
+                    *dst = color;
+                    dst++;
+                }
+                for (int x = loop[2]; 0 < x; x--) {
+                    *dst = color;
+                    dst++;
+                }
+                for (int x = loop[3]; 0 < x; x--) {
+                    cnv_a -= *src2;
+                    src2++;
+                    color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
+                    *dst = color;
+                    dst++;
+                }
+                src1 = (unsigned short*)((int)src1 + cnv_w);
             }
-            for (int x = loop[6]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                if (0x1000 <= src3->a) {
-                    *dst = *src3;
-                } else {
-                    a = cnv_a * border->alpha >> border->_alpha_shift;
-                    if (0x1000 <= a) {
-                        dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
-                        dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
-                        dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
-                        dst->a = 0x1000;
-                    } else if (a <= 0) {
-                        *dst = *src3;
-                    } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
-                        int dst_a = (0x1000 - src3->a) * a / new_a;
-                        int src_a = (src3->a << 12) / new_a;
-                        dst->y = (color.y * dst_a + src3->y * src_a) >> 12;
-                        dst->cb = (color.cb * dst_a + src3->cb * src_a) >> 12;
-                        dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
-                        dst->a = new_a;
+            auto src = (ExEdit::PixelYCA*)efpip->obj_edit + (y - *yep + border->shift_y) * efpip->obj_line + border->shift_x;
+            yep++;
+            for (; y < *yep; y += thread_num) {
+                auto src2 = src1;
+                auto src3 = src;
+                src = (ExEdit::PixelYCA*)((int)src + pix_line);
+                auto dst = dst0;
+                dst0 = (ExEdit::PixelYCA*)((int)dst0 + pix_line);
+
+                unsigned int a;
+                unsigned int cnv_a = 0;
+                for (int x = loop[4]; 0 < x; x--) {
+                    cnv_a += *src1;
+                    src1++;
+                    color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
+                    *dst = color;
+                    dst++;
+                }
+                if (0 < loop[5]) {
+                    for (int x = loop[5]; 0 < x; x--) {
+                        *dst = color;
+                        dst++;
                     }
                 }
-                dst++;
-                src3++;
-            }
-            for (int x = loop[7]; 0 < x; x--) {
-                cnv_a += *src1 - *src2;
-                src1++;
-                src2++;
-                if (0x1000 <= src3->a) {
-                    *dst = *src3;
-                } else {
-                    a = cnv_a * border->alpha >> border->_alpha_shift;
-                    if (0x1000 <= a) {
-                        dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
-                        dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
-                        dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
-                        dst->a = 0x1000;
-                    } else if (a <= 0) {
+                for (int x = loop[6]; 0 < x; x--) {
+                    cnv_a += *src1;
+                    src1++;
+                    if (0x1000 <= src3->a) {
                         *dst = *src3;
                     } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
-                        int dst_a = (0x1000 - src3->a) * a / new_a;
-                        int src_a = (src3->a << 12) / new_a;
-                        dst->y = (color.y * dst_a + src3->y * src_a) >> 12;
-                        dst->cb = (color.cb * dst_a + src3->cb * src_a) >> 12;
-                        dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
-                        dst->a = new_a;
-                    }
-                }
-                dst++;
-                src3++;
-            }
-            /*
-            for (int x = loop[8]; 0 < x; x--) {
-                if (0x1000 <= src3->a) {
-                    *dst = *src3;
-                } else {
-                    if (0x1000 <= a) {
-                        dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
-                        dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
-                        dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
-                        dst->a = 0x1000;
-                    } else if (a <= 0) {
-                        *dst = *src3;
-                    } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
-                        int dst_a = (0x1000 - src3->a) * a / new_a;
-                        int src_a = (src3->a << 12) / new_a;
-                        dst->y = (color.y * dst_a + src3->y * src_a) >> 12;
-                        dst->cb = (color.cb * dst_a + src3->cb * src_a) >> 12;
-                        dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
-                        dst->a = new_a;
-                    }
-                }
-                dst++;
-                src3++;
-            }
-            */
-            if (0 < loop[8]) {
-                int x = loop[8];
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (0x1000 <= a) {
-                    for (; 0 < x; x--) {
-                        if (0x1000 <= src3->a) {
-                            *dst = *src3;
-                        } else {
+                        a = cnv_a * border->alpha >> border->_alpha_shift;
+                        if (0x1000 <= a) {
                             dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
                             dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
                             dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
                             dst->a = 0x1000;
-                        }
-                        dst++;
-                        src3++;
-                    }
-                } else if (a <= 0) {
-                    memcpy(dst, src3, x * sizeof(ExEdit::PixelYCA));
-                    dst += x;
-                    src3 += x;
-                } else {
-                    for (; 0 < x; x--) {
-                        if (0x1000 <= src3->a) {
+                        } else if (a <= 0) {
                             *dst = *src3;
                         } else {
                             int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
@@ -455,96 +363,128 @@ namespace patch::fast {
                             dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
                             dst->a = new_a;
                         }
-                        dst++;
-                        src3++;
                     }
+                    dst++;
+                    src3++;
                 }
-            }
-            for (int x = loop[9]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                if (0x1000 <= src3->a) {
-                    *dst = *src3;
-                } else {
-                    a = cnv_a * border->alpha >> border->_alpha_shift;
-                    if (0x1000 <= a) {
-                        dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
-                        dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
-                        dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
-                        dst->a = 0x1000;
-                    } else if (a <= 0) {
+                for (int x = loop[7]; 0 < x; x--) {
+                    cnv_a += *src1 - *src2;
+                    src1++;
+                    src2++;
+                    if (0x1000 <= src3->a) {
                         *dst = *src3;
                     } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
-                        int dst_a = (0x1000 - src3->a) * a / new_a;
-                        int src_a = (src3->a << 12) / new_a;
-                        dst->y = (color.y * dst_a + src3->y * src_a) >> 12;
-                        dst->cb = (color.cb * dst_a + src3->cb * src_a) >> 12;
-                        dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
-                        dst->a = new_a;
+                        a = cnv_a * border->alpha >> border->_alpha_shift;
+                        if (0x1000 <= a) {
+                            dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
+                            dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
+                            dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
+                            dst->a = 0x1000;
+                        } else if (a <= 0) {
+                            *dst = *src3;
+                        } else {
+                            int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
+                            int dst_a = (0x1000 - src3->a) * a / new_a;
+                            int src_a = (src3->a << 12) / new_a;
+                            dst->y = (color.y * dst_a + src3->y * src_a) >> 12;
+                            dst->cb = (color.cb * dst_a + src3->cb * src_a) >> 12;
+                            dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
+                            dst->a = new_a;
+                        }
+                    }
+                    dst++;
+                    src3++;
+                }
+                if (0 < loop[8]) {
+                    int x = loop[8];
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (0x1000 <= a) {
+                        for (; 0 < x; x--) {
+                            if (0x1000 <= src3->a) {
+                                *dst = *src3;
+                            } else {
+                                dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
+                                dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
+                                dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
+                                dst->a = 0x1000;
+                            }
+                            dst++;
+                            src3++;
+                        }
+                    } else if (a <= 0) {
+                        memcpy(dst, src3, x * sizeof(ExEdit::PixelYCA));
+                        dst += x;
+                        src3 += x;
+                    } else {
+                        for (; 0 < x; x--) {
+                            if (0x1000 <= src3->a) {
+                                *dst = *src3;
+                            } else {
+                                int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
+                                int dst_a = (0x1000 - src3->a) * a / new_a;
+                                int src_a = (src3->a << 12) / new_a;
+                                dst->y = (color.y * dst_a + src3->y * src_a) >> 12;
+                                dst->cb = (color.cb * dst_a + src3->cb * src_a) >> 12;
+                                dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
+                                dst->a = new_a;
+                            }
+                            dst++;
+                            src3++;
+                        }
                     }
                 }
-                dst++;
-                src3++;
-            }
-            if (0 < loop[10]) {
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                for (int x = loop[10]; 0 < x; x--) {
+                for (int x = loop[9]; 0 < x; x--) {
+                    cnv_a -= *src2;
+                    src2++;
+                    if (0x1000 <= src3->a) {
+                        *dst = *src3;
+                    } else {
+                        a = cnv_a * border->alpha >> border->_alpha_shift;
+                        if (0x1000 <= a) {
+                            dst->y = (((src3->y - color.y) * src3->a) >> 12) + color.y;
+                            dst->cb = (((src3->cb - color.cb) * src3->a) >> 12) + color.cb;
+                            dst->cr = (((src3->cr - color.cr) * src3->a) >> 12) + color.cr;
+                            dst->a = 0x1000;
+                        } else if (a <= 0) {
+                            *dst = *src3;
+                        } else {
+                            int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
+                            int dst_a = (0x1000 - src3->a) * a / new_a;
+                            int src_a = (src3->a << 12) / new_a;
+                            dst->y = (color.y * dst_a + src3->y * src_a) >> 12;
+                            dst->cb = (color.cb * dst_a + src3->cb * src_a) >> 12;
+                            dst->cr = (color.cr * dst_a + src3->cr * src_a) >> 12;
+                            dst->a = new_a;
+                        }
+                    }
+                    dst++;
+                    src3++;
+                }
+                if (0 < loop[10]) {
+                    color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
+                    for (int x = loop[10]; 0 < x; x--) {
+                        *dst = color;
+                        dst++;
+                    }
+                }
+                for (int x = loop[11]; 0 < x; x--) {
+                    cnv_a -= *src2;
+                    src2++;
+                    color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
                     *dst = color;
                     dst++;
                 }
+                src1 = (unsigned short*)((int)src1 + cnv_w);
             }
-            for (int x = loop[11]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
-        }
-
-        for (; y < y_end3; y += thread_num) {
-            auto src1 = src0;
-            auto src2 = src0;
-            src0 = (unsigned short*)((int)src0 + cnv_w);
-            auto dst = dst0;
-            dst0 = (ExEdit::PixelYCA*)((int)dst0 + pix_line);
-
-            unsigned int cnv_a = 0;
-            for (int x = loop[0]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
-            for (int x = loop[1]; 0 < x; x--) {
-                cnv_a += *src1 - *src2;
-                src1++;
-                src2++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
-            for (int x = loop[2]; 0 < x; x--) {
-                *dst = color;
-                dst++;
-            }
-            for (int x = loop[3]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                color.a = min(cnv_a * border->alpha >> border->_alpha_shift, 0x1000);
-                *dst = color;
-                dst++;
-            }
+            yep++;
         }
     }
 
     void horizontal_convolution_alpha_image(int thread_id, int thread_num, void* param1, void* param2) {
         auto border = static_cast<Border_t::efBorder_var*>(param1);
         auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-        unsigned int cnv_w = sizeof(unsigned short) * efpip->obj_w * thread_num;
-        auto src0 = (unsigned short*)border->buf + thread_id * efpip->obj_w;
+        int cnv_w = sizeof(unsigned short) * efpip->obj_w * (thread_num - 1);
+        auto src1 = (unsigned short*)border->buf + thread_id * efpip->obj_w;
         auto pix_line = sizeof(ExEdit::PixelYCA) * efpip->obj_line * thread_num;
         auto dst0 = &((ExEdit::PixelYCA*)efpip->obj_temp + thread_id * efpip->obj_line)->a;
 
@@ -588,168 +528,108 @@ namespace patch::fast {
                 loop[11] = efpip->obj_w - 1;
             }
         }
-        int y_end2 = efpip->obj_h + size;
-        int y_end3 = y_end2 + size;
-        int y;
-        for (y = thread_id; y < size; y += thread_num) {
-            auto src1 = src0;
-            auto src2 = src0;
-            src0 = (unsigned short*)((int)src0 + cnv_w);
-            auto dst = dst0;
-            dst0 = (short*)((int)dst0 + pix_line);
+        int yend[4] = { size, size + efpip->obj_h, size * 2 + efpip->obj_h, 0 };
+        int* yep = yend;
+        int y = thread_id;
+        for (int i = 2; 0 < i; i--) {
+            for (; y < *yep; y += thread_num) {
+                auto src2 = src1;
+                auto dst = dst0;
+                dst0 = (short*)((int)dst0 + pix_line);
 
-            unsigned int a;
-            unsigned int cnv_a = 0;
-            for (int x = loop[0]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    *dst = *dst * a >> 12;
-                }
-                dst += 4;
-            }
-            for (int x = loop[1]; 0 < x; x--) {
-                cnv_a += *src1 - *src2;
-                src1++;
-                src2++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    *dst = *dst * a >> 12;
-                }
-                dst += 4;
-            }
-            if (a < 0x1000) {
-                for (int x = loop[2]; 0 < x; x--) {
-                    *dst = *dst * a >> 12;
+                unsigned int a;
+                unsigned int cnv_a = 0;
+                for (int x = loop[0]; 0 < x; x--) {
+                    cnv_a += *src1;
+                    src1++;
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (a < 0x1000) {
+                        *dst = *dst * a >> 12;
+                    }
                     dst += 4;
                 }
-            } else {
-                dst += loop[2] * 4;
-            }
-            for (int x = loop[3]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    *dst = *dst * a >> 12;
+                for (int x = loop[1]; 0 < x; x--) {
+                    cnv_a += *src1 - *src2;
+                    src1++;
+                    src2++;
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (a < 0x1000) {
+                        *dst = *dst * a >> 12;
+                    }
+                    dst += 4;
                 }
-                dst += 4;
+                if (0 < loop[2]) {
+                    int x = loop[2];
+                    if (a < 0x1000) {
+                        for (; 0 < x; x--) {
+                            *dst = *dst * a >> 12;
+                            dst += 4;
+                        }
+                    } else {
+                        dst += x * 4;
+                    }
+                }
+                for (int x = loop[3]; 0 < x; x--) {
+                    cnv_a -= *src2;
+                    src2++;
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (a < 0x1000) {
+                        *dst = *dst * a >> 12;
+                    }
+                    dst += 4;
+                }
+                src1 = (unsigned short*)((int)src1 + cnv_w);
             }
-        }
-        dst0 -= 3;
-        auto src = (ExEdit::PixelYCA*)efpip->obj_edit + (y - size + border->shift_y) * efpip->obj_line + border->shift_x;
-        for (; y < y_end2; y += thread_num) {
-            auto src1 = src0;
-            auto src2 = src0;
-            src0 = (unsigned short*)((int)src0 + cnv_w);
-            auto src3 = src;
-            src = (ExEdit::PixelYCA*)((int)src + pix_line);
-            auto dst = (ExEdit::PixelYCA*)dst0;
-            dst0 = (short*)((int)dst0 + pix_line);
+            dst0 -= 3;
+            auto src = (ExEdit::PixelYCA*)efpip->obj_edit + (y - *yep + border->shift_y) * efpip->obj_line + border->shift_x;
+            yep++;
+            for (; y < *yep; y += thread_num) {
+                auto src2 = src1;
+                auto src3 = src;
+                src = (ExEdit::PixelYCA*)((int)src + pix_line);
+                auto dst = (ExEdit::PixelYCA*)dst0;
+                dst0 = (short*)((int)dst0 + pix_line);
 
-            unsigned int a;
-            unsigned int cnv_a = 0;
-            for (int x = loop[4]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    dst->a = dst->a * a >> 12;
-                }
-                dst++;
-            }
-            if (0 < loop[5]) {
-                if (a < 0x1000) {
-                    for (int x = loop[5]; 0 < x; x--) {
+                unsigned int a;
+                unsigned int cnv_a = 0;
+                for (int x = loop[4]; 0 < x; x--) {
+                    cnv_a += *src1;
+                    src1++;
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (a < 0x1000) {
                         dst->a = dst->a * a >> 12;
-                        dst++;
                     }
-                } else {
-                    dst += loop[5];
+                    dst++;
                 }
-            }
-            for (int x = loop[6]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                if (0x1000 <= src3->a) {
-                    *dst = *src3;
-                } else {
-                    a = cnv_a * border->alpha >> border->_alpha_shift;
-                    a = min(a, 0x1000) * dst->a >> 12;
-                    if (0x1000 <= a) {
-                        dst->y += ((src3->y - dst->y) * src3->a) >> 12;
-                        dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
-                        dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
-                        dst->a = 0x1000;
-                    } else if (a <= 0) {
+                if (0 < loop[5]) {
+                    int x = loop[5];
+                    if (a < 0x1000) {
+                        for (; 0 < x; x--) {
+                            dst->a = dst->a * a >> 12;
+                            dst++;
+                        }
+                    } else {
+                        dst += x;
+                    }
+                }
+                for (int x = loop[6]; 0 < x; x--) {
+                    cnv_a += *src1;
+                    src1++;
+                    if (0x1000 <= src3->a) {
                         *dst = *src3;
                     } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
-                        int dst_a = (0x1000 - src3->a) * a / new_a;
-                        int src_a = (src3->a << 12) / new_a;
-                        dst->y = (dst->y * dst_a + src3->y * src_a) >> 12;
-                        dst->cb = (dst->cb * dst_a + src3->cb * src_a) >> 12;
-                        dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
-                        dst->a = new_a;
-                    }
-                }
-                dst++;
-                src3++;
-            }
-            for (int x = loop[7]; 0 < x; x--) {
-                cnv_a += *src1 - *src2;
-                src1++;
-                src2++;
-                if (0x1000 <= src3->a) {
-                    *dst = *src3;
-                } else {
-                    a = cnv_a * border->alpha >> border->_alpha_shift;
-                    a = min(a, 0x1000) * dst->a >> 12;
-                    if (0x1000 <= a) {
-                        dst->y += ((src3->y - dst->y) * src3->a) >> 12;
-                        dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
-                        dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
-                        dst->a = 0x1000;
-                    } else if (a <= 0) {
-                        *dst = *src3;
-                    } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
-                        int dst_a = (0x1000 - src3->a) * a / new_a;
-                        int src_a = (src3->a << 12) / new_a;
-                        dst->y = (dst->y * dst_a + src3->y * src_a) >> 12;
-                        dst->cb = (dst->cb * dst_a + src3->cb * src_a) >> 12;
-                        dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
-                        dst->a = new_a;
-                    }
-                }
-                dst++;
-                src3++;
-            }
-            if (0 < loop[8]) {
-                int x = loop[8];
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                a = min(a, 0x1000) * dst->a >> 12;
-                if (0x1000 <= a) {
-                    for (; 0 < x; x--) {
-                        if (0x1000 <= src3->a) {
-                            *dst = *src3;
+                        a = cnv_a * border->alpha >> border->_alpha_shift;
+                        if (a < 0x1000) {
+                            a = a * dst->a >> 12;
                         } else {
+                            a = dst->a;
+                        }
+                        if (0x1000 <= a) {
                             dst->y += ((src3->y - dst->y) * src3->a) >> 12;
                             dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
                             dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
                             dst->a = 0x1000;
-                        }
-                        dst++;
-                        src3++;
-                    }
-                } else if (a <= 0) {
-                    memcpy(dst, src3, x * sizeof(ExEdit::PixelYCA));
-                    dst += x;
-                    src3 += x;
-                } else {
-                    for (; 0 < x; x--) {
-                        if (0x1000 <= src3->a) {
+                        } else if (a <= 0) {
                             *dst = *src3;
                         } else {
                             int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
@@ -760,404 +640,157 @@ namespace patch::fast {
                             dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
                             dst->a = new_a;
                         }
-                        dst++;
-                        src3++;
                     }
+                    dst++;
+                    src3++;
                 }
-            }
-            for (int x = loop[9]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                if (0x1000 <= src3->a) {
-                    *dst = *src3;
-                } else {
-                    a = cnv_a * border->alpha >> border->_alpha_shift;
-                    a = min(a, 0x1000) * dst->a >> 12;
-                    if (0x1000 <= a) {
-                        dst->y += ((src3->y - dst->y) * src3->a) >> 12;
-                        dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
-                        dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
-                        dst->a = 0x1000;
-                    } else if (a <= 0) {
+                for (int x = loop[7]; 0 < x; x--) {
+                    cnv_a += *src1 - *src2;
+                    src1++;
+                    src2++;
+                    if (0x1000 <= src3->a) {
                         *dst = *src3;
                     } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
-                        int dst_a = (0x1000 - src3->a) * a / new_a;
-                        int src_a = (src3->a << 12) / new_a;
-                        dst->y = (dst->y * dst_a + src3->y * src_a) >> 12;
-                        dst->cb = (dst->cb * dst_a + src3->cb * src_a) >> 12;
-                        dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
-                        dst->a = new_a;
+                        a = cnv_a * border->alpha >> border->_alpha_shift;
+                        if (a < 0x1000) {
+                            a = a * dst->a >> 12;
+                        } else {
+                            a = dst->a;
+                        }
+                        if (0x1000 <= a) {
+                            dst->y += ((src3->y - dst->y) * src3->a) >> 12;
+                            dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
+                            dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
+                            dst->a = 0x1000;
+                        } else if (a <= 0) {
+                            *dst = *src3;
+                        } else {
+                            int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
+                            int dst_a = (0x1000 - src3->a) * a / new_a;
+                            int src_a = (src3->a << 12) / new_a;
+                            dst->y = (dst->y * dst_a + src3->y * src_a) >> 12;
+                            dst->cb = (dst->cb * dst_a + src3->cb * src_a) >> 12;
+                            dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
+                            dst->a = new_a;
+                        }
+                    }
+                    dst++;
+                    src3++;
+                }
+                if (0 < loop[8]) {
+                    int x = loop[8];
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (a < 0x1000) {
+                        for (; 0 < x; x--) {
+                            if (0x1000 <= src3->a) {
+                                *dst = *src3;
+                            } else {
+                                int da = a * dst->a >> 12;
+                                if (0x1000 <= da) {
+                                    dst->y += ((src3->y - dst->y) * src3->a) >> 12;
+                                    dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
+                                    dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
+                                    dst->a = 0x1000;
+                                } else if (da <= 0) {
+                                    *dst = *src3;
+                                } else {
+                                    int new_a = (0x1000800 - (0x1000 - da) * (0x1000 - src3->a)) >> 12;
+                                    int dst_a = (0x1000 - src3->a) * da / new_a;
+                                    int src_a = (src3->a << 12) / new_a;
+                                    dst->y = (dst->y * dst_a + src3->y * src_a) >> 12;
+                                    dst->cb = (dst->cb * dst_a + src3->cb * src_a) >> 12;
+                                    dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
+                                    dst->a = new_a;
+                                }
+                            }
+                            dst++;
+                            src3++;
+                        }
+                    } else {
+                        for (; 0 < x; x--) {
+                            if (0x1000 <= src3->a) {
+                                *dst = *src3;
+                            } else {
+                                if (0x1000 <= dst->a) {
+                                    dst->y += ((src3->y - dst->y) * src3->a) >> 12;
+                                    dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
+                                    dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
+                                } else if (dst->a <= 0) {
+                                    *dst = *src3;
+                                } else {
+                                    int new_a = (0x1000800 - (0x1000 - dst->a) * (0x1000 - src3->a)) >> 12;
+                                    int dst_a = (0x1000 - src3->a) * dst->a / new_a;
+                                    int src_a = (src3->a << 12) / new_a;
+                                    dst->y = (dst->y * dst_a + src3->y * src_a) >> 12;
+                                    dst->cb = (dst->cb * dst_a + src3->cb * src_a) >> 12;
+                                    dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
+                                    dst->a = new_a;
+                                }
+                            }
+                            dst++;
+                            src3++;
+                        }
                     }
                 }
-                dst++;
-                src3++;
-            }
-            if (0 < loop[10]) {
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    for (int x = loop[10]; 0 < x; x--) {
+                for (int x = loop[9]; 0 < x; x--) {
+                    cnv_a -= *src2;
+                    src2++;
+                    if (0x1000 <= src3->a) {
+                        *dst = *src3;
+                    } else {
+                        a = cnv_a * border->alpha >> border->_alpha_shift;
+                        if (a < 0x1000) {
+                            a = a * dst->a >> 12;
+                        } else {
+                            a = dst->a;
+                        }
+                        if (0x1000 <= a) {
+                            dst->y += ((src3->y - dst->y) * src3->a) >> 12;
+                            dst->cb += ((src3->cb - dst->cb) * src3->a) >> 12;
+                            dst->cr += ((src3->cr - dst->cr) * src3->a) >> 12;
+                            dst->a = 0x1000;
+                        } else if (a <= 0) {
+                            *dst = *src3;
+                        } else {
+                            int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - src3->a)) >> 12;
+                            int dst_a = (0x1000 - src3->a) * a / new_a;
+                            int src_a = (src3->a << 12) / new_a;
+                            dst->y = (dst->y * dst_a + src3->y * src_a) >> 12;
+                            dst->cb = (dst->cb * dst_a + src3->cb * src_a) >> 12;
+                            dst->cr = (dst->cr * dst_a + src3->cr * src_a) >> 12;
+                            dst->a = new_a;
+                        }
+                    }
+                    dst++;
+                    src3++;
+                }
+                if (0 < loop[10]) {
+                    int x = loop[10];
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (a < 0x1000) {
+                        for (; 0 < x; x--) {
+                            dst->a = dst->a * a >> 12;
+                            dst++;
+                        }
+                    } else {
+                        dst += x;
+                    }
+                }
+                for (int x = loop[11]; 0 < x; x--) {
+                    cnv_a -= *src2;
+                    src2++;
+                    a = cnv_a * border->alpha >> border->_alpha_shift;
+                    if (a < 0x1000) {
                         dst->a = dst->a * a >> 12;
-                        dst++;
                     }
-                } else {
-                    dst += loop[10];
+                    dst++;
                 }
+                src1 = (unsigned short*)((int)src1 + cnv_w);
             }
-            for (int x = loop[11]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    dst->a = dst->a * a >> 12;
-                }
-                dst++;
-            }
-        }
-        dst0 += 3;
-        for (; y < y_end3; y += thread_num) {
-            auto src1 = src0;
-            auto src2 = src0;
-            src0 = (unsigned short*)((int)src0 + cnv_w);
-            auto dst = dst0;
-            dst0 = (short*)((int)dst0 + pix_line);
-
-            unsigned int a;
-            unsigned int cnv_a = 0;
-            for (int x = loop[0]; 0 < x; x--) {
-                cnv_a += *src1;
-                src1++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    *dst = *dst * a >> 12;
-                }
-                dst += 4;
-            }
-            for (int x = loop[1]; 0 < x; x--) {
-                cnv_a += *src1 - *src2;
-                src1++;
-                src2++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    *dst = *dst * a >> 12;
-                }
-                dst += 4;
-            }
-            if (a < 0x1000) {
-                for (int x = loop[2]; 0 < x; x--) {
-                    *dst = *dst * a >> 12;
-                    dst += 4;
-                }
-            } else {
-                dst += loop[2] * 4;
-            }
-            for (int x = loop[3]; 0 < x; x--) {
-                cnv_a -= *src2;
-                src2++;
-                a = cnv_a * border->alpha >> border->_alpha_shift;
-                if (a < 0x1000) {
-                    *dst = *dst * a >> 12;
-                }
-                dst += 4;
-            }
+            dst0 += 3;
+            yep++;
         }
     }
-    /*
-    void vertical_convolution_alpha_and_put_color(int thread_id, int thread_num, void* param1, void* param2) {
-        auto border = static_cast<Border_t::efBorder_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-
-        ExEdit::PixelYCA color = { border->color_y, border->color_cb, border->color_cr,0 };
-
-        int obj_line = efpip->obj_line;
-        int border_size = border->range >> 1;
-        auto src1 = (unsigned short*)border->buf;
-        auto src2 = src1;
-        auto a_sum0 = (unsigned int*)(src1 + efpip->obj_h * obj_line) + (efpip->obj_w + border->range) * thread_id / thread_num + thread_id;
-        auto dst = (ExEdit::PixelYCA*)efpip->obj_temp;
-        auto edit = (ExEdit::PixelYCA*)efpip->obj_edit;
-
-        memset(a_sum0, 0, ((efpip->obj_w + border->range) / thread_num + 1) * sizeof(unsigned int));
-
-        int loop[8];
-        if (border->range < efpip->obj_h) {
-            loop[0] = border_size;
-            loop[1] = 0;
-            loop[2] = border_size + 1;
-            loop[3] = 0;
-            loop[4] = efpip->obj_h - border->range - 1;
-            loop[5] = border_size;
-            loop[6] = 0;
-            loop[7] = border_size;
-        } else if (border_size < efpip->obj_h) {
-            loop[0] = border_size;
-            loop[1] = 0;
-            loop[2] = efpip->obj_h - border_size;
-            loop[3] = border->range - efpip->obj_h + 1;
-            loop[4] = 0;
-            loop[5] = efpip->obj_h - border_size - 1;
-            loop[6] = 0;
-            loop[7] = border_size;
-        } else {
-            loop[0] = efpip->obj_h;
-            loop[1] = border_size - efpip->obj_h;
-            loop[2] = 0;
-            loop[3] = efpip->obj_h;
-            loop[4] = 0;
-            loop[5] = 0;
-            loop[6] = border_size - efpip->obj_h + 1;
-            loop[7] = efpip->obj_h - 1;
-        }
-        int new_w = efpip->obj_w + border->range;
-        int w1 = efpip->obj_w + border_size;
-
-        for (int y = loop[0]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            for (int x = thread_id; x < new_w; x += thread_num) {
-                *a_sum += src1[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            src1 += obj_line;
-            dst += obj_line;
-        }
-        for (int y = loop[1]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            for (int x = thread_id; x < new_w; x += thread_num) {
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            dst += obj_line;
-        }
-        for (int y = loop[2]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            int x;
-            for (x = thread_id; x < border_size; x += thread_num) {
-                *a_sum += src1[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            for (; x < w1; x += thread_num) {
-                auto dstx = &dst[x];
-                auto editx = &edit[x - border_size];
-                *a_sum += src1[x];
-                if (0x1000 <= editx->a) {
-                    dstx->y = editx->y;
-                    dstx->cb = editx->cb;
-                    dstx->cr = editx->cr;
-                    dstx->a = 0x1000;
-                } else {
-                    int a = *a_sum * border->alpha >> border->_alpha_shift;
-                    if (0x1000 <= a) {
-                        dstx->y = ((editx->y - border->color_y) * editx->a >> 12) + border->color_y;
-                        dstx->cb = ((editx->cb - border->color_cb) * editx->a >> 12) + border->color_cb;
-                        dstx->cr = ((editx->cr - border->color_cr) * editx->a >> 12) + border->color_cr;
-                        dstx->a = 0x1000;
-                    } else if (a <= 0) {
-                        dstx->y = editx->y;
-                        dstx->cb = editx->cb;
-                        dstx->cr = editx->cr;
-                        dstx->a = editx->a;
-                    } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - editx->a)) >> 12;
-                        int new_dst_a = (0x1000 - editx->a) * a / new_a;
-                        int new_src_a = (editx->a << 12) / new_a;
-                        dstx->y = (border->color_y * new_dst_a + editx->y * new_src_a) >> 12;
-                        dstx->cb = (border->color_cb * new_dst_a + editx->cb * new_src_a) >> 12;
-                        dstx->cr = (border->color_cr * new_dst_a + editx->cr * new_src_a) >> 12;
-                        dstx->a = new_a;
-                    }
-                }
-                a_sum++;
-            }
-            for (; x < new_w; x += thread_num) {
-                *a_sum += src1[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            src1 += obj_line;
-            dst += obj_line;
-            edit += obj_line;
-        }
-        for (int y = loop[3]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            int x;
-            for (x = thread_id; x < border_size; x += thread_num) {
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            for (; x < w1; x += thread_num) {
-                auto dstx = &dst[x];
-                auto editx = &edit[x - border_size];
-                if (0x1000 <= editx->a) {
-                    dstx->y = editx->y;
-                    dstx->cb = editx->cb;
-                    dstx->cr = editx->cr;
-                    dstx->a = 0x1000;
-                } else {
-                    int a = *a_sum * border->alpha >> border->_alpha_shift;
-                    if (0x1000 <= a) {
-                        dstx->y = ((editx->y - border->color_y) * editx->a >> 12) + border->color_y;
-                        dstx->cb = ((editx->cb - border->color_cb) * editx->a >> 12) + border->color_cb;
-                        dstx->cr = ((editx->cr - border->color_cr) * editx->a >> 12) + border->color_cr;
-                        dstx->a = 0x1000;
-                    } else if (a <= 0) {
-                        dstx->y = editx->y;
-                        dstx->cb = editx->cb;
-                        dstx->cr = editx->cr;
-                        dstx->a = editx->a;
-                    } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - editx->a)) >> 12;
-                        int new_dst_a = (0x1000 - editx->a) * a / new_a;
-                        int new_src_a = (editx->a << 12) / new_a;
-                        dstx->y = (border->color_y * new_dst_a + editx->y * new_src_a) >> 12;
-                        dstx->cb = (border->color_cb * new_dst_a + editx->cb * new_src_a) >> 12;
-                        dstx->cr = (border->color_cr * new_dst_a + editx->cr * new_src_a) >> 12;
-                        dstx->a = new_a;
-                    }
-                }
-                a_sum++;
-            }
-            for (; x < new_w; x += thread_num) {
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            dst += obj_line;
-            edit += obj_line;
-        }
-        for (int y = loop[4]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            int x;
-            for (x = thread_id; x < border_size; x += thread_num) {
-                *a_sum += src1[x] - src2[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            for (; x < w1; x += thread_num) {
-                auto dstx = &dst[x];
-                auto editx = &edit[x - border_size];
-                *a_sum += src1[x] - src2[x];
-                if (0x1000 <= editx->a) {
-                    dstx->y = editx->y;
-                    dstx->cb = editx->cb;
-                    dstx->cr = editx->cr;
-                    dstx->a = 0x1000;
-                } else {
-                    int a = *a_sum * border->alpha >> border->_alpha_shift;
-                    if (0x1000 <= a) {
-                        dstx->y = ((editx->y - border->color_y) * editx->a >> 12) + border->color_y;
-                        dstx->cb = ((editx->cb - border->color_cb) * editx->a >> 12) + border->color_cb;
-                        dstx->cr = ((editx->cr - border->color_cr) * editx->a >> 12) + border->color_cr;
-                        dstx->a = 0x1000;
-                    } else if (a <= 0) {
-                        dstx->y = editx->y;
-                        dstx->cb = editx->cb;
-                        dstx->cr = editx->cr;
-                        dstx->a = editx->a;
-                    } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - editx->a)) >> 12;
-                        int new_dst_a = (0x1000 - editx->a) * a / new_a;
-                        int new_src_a = (editx->a << 12) / new_a;
-                        dstx->y = (border->color_y * new_dst_a + editx->y * new_src_a) >> 12;
-                        dstx->cb = (border->color_cb * new_dst_a + editx->cb * new_src_a) >> 12;
-                        dstx->cr = (border->color_cr * new_dst_a + editx->cr * new_src_a) >> 12;
-                        dstx->a = new_a;
-                    }
-                }
-                a_sum++;
-            }
-            for (; x < new_w; x += thread_num) {
-                *a_sum += src1[x] - src2[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            src1 += obj_line;
-            src2 += obj_line;
-            dst += obj_line;
-            edit += obj_line;
-        }
-        for (int y = loop[5]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            int x;
-            for (x = thread_id; x < border_size; x += thread_num) {
-                *a_sum -= src2[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            for (; x < w1; x += thread_num) {
-                auto dstx = &dst[x];
-                auto editx = &edit[x - border_size];
-                *a_sum -= src2[x];
-                if (0x1000 <= editx->a) {
-                    dstx->y = editx->y;
-                    dstx->cb = editx->cb;
-                    dstx->cr = editx->cr;
-                    dstx->a = 0x1000;
-                } else {
-                    int a = *a_sum * border->alpha >> border->_alpha_shift;
-                    if (0x1000 <= a) {
-                        dstx->y = ((editx->y - border->color_y) * editx->a >> 12) + border->color_y;
-                        dstx->cb = ((editx->cb - border->color_cb) * editx->a >> 12) + border->color_cb;
-                        dstx->cr = ((editx->cr - border->color_cr) * editx->a >> 12) + border->color_cr;
-                        dstx->a = 0x1000;
-                    } else if (a <= 0) {
-                        dstx->y = editx->y;
-                        dstx->cb = editx->cb;
-                        dstx->cr = editx->cr;
-                        dstx->a = editx->a;
-                    } else {
-                        int new_a = (0x1000800 - (0x1000 - a) * (0x1000 - editx->a)) >> 12;
-                        int new_dst_a = (0x1000 - editx->a) * a / new_a;
-                        int new_src_a = (editx->a << 12) / new_a;
-                        dstx->y = (border->color_y * new_dst_a + editx->y * new_src_a) >> 12;
-                        dstx->cb = (border->color_cb * new_dst_a + editx->cb * new_src_a) >> 12;
-                        dstx->cr = (border->color_cr * new_dst_a + editx->cr * new_src_a) >> 12;
-                        dstx->a = new_a;
-                    }
-                }
-                a_sum++;
-            }
-            for (; x < new_w; x += thread_num) {
-                *a_sum -= src2[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            src2 += obj_line;
-            dst += obj_line;
-            edit += obj_line;
-        }
-        for (int y = loop[6]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            for (int x = thread_id; x < new_w; x += thread_num) {
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            dst += obj_line;
-        }
-        for (int y = loop[7]; 0 < y; y--) {
-            auto a_sum = a_sum0;
-            for (int x = thread_id; x < new_w; x += thread_num) {
-                *a_sum -= src2[x];
-                color.a = min(*a_sum * border->alpha >> border->_alpha_shift, 0x1000);
-                dst[x] = color;
-                a_sum++;
-            }
-            src2 += obj_line;
-            dst += obj_line;
-        }
-    }
-    */
 }
 
 #endif // ifdef PATCH_SWITCH_FAST_BORDER

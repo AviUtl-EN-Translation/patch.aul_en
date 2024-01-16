@@ -61,6 +61,7 @@
     <ClInclude Include="patch_fast_colordrift.hpp" />
     <ClInclude Include="patch_fast_colorkey.hpp" />
     <ClInclude Include="patch_fast_convexedge.hpp" />
+    <ClInclude Include="patch_fast_diffuselight.hpp" />
     <ClInclude Include="patch_fast_drawfilter.hpp" />
     <ClInclude Include="patch_fast_exfunc_fill.hpp" />
     <ClInclude Include="patch_fast_extractedge.hpp" />
@@ -100,6 +101,7 @@
     <ClInclude Include="patch_script_sort.hpp" />
     <ClInclude Include="patch_setting_dialog_add_filter.hpp" />
     <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
+    <ClInclude Include="patch_set_frame.hpp" />
     <ClInclude Include="patch_shared_cache.hpp" />
     <ClInclude Include="patch_exception_history.hpp" />
     <ClInclude Include="patch_exception_log.hpp" />
@@ -208,6 +210,7 @@
     <ClCompile Include="patch_fast_colordrift.cpp" />
     <ClCompile Include="patch_fast_colorkey.cpp" />
     <ClCompile Include="patch_fast_convexedge.cpp" />
+    <ClCompile Include="patch_fast_diffuselight.cpp" />
     <ClCompile Include="patch_fast_exfunc_fill.cpp" />
     <ClCompile Include="patch_fast_extractedge.cpp" />
     <ClCompile Include="patch_fast_lightemission.cpp" />
@@ -223,6 +226,7 @@
     <ClCompile Include="patch_obj_glow.cpp" />
     <ClCompile Include="patch_obj_portionfilter.cpp" />
     <ClCompile Include="patch_obj_text.cpp" />
+    <ClCompile Include="patch_obj_waveform.cpp" />
     <ClCompile Include="patch_paste_pos.cpp" />
     <ClCompile Include="patch_playback_pos.cpp" />
     <ClCompile Include="patch_read_audio.cpp" />
@@ -230,6 +234,7 @@
     <ClCompile Include="patch_scene_vram.cpp" />
     <ClCompile Include="patch_setting_dialog_add_filter.cpp" />
     <ClCompile Include="patch_setting_dialog_chromakey.cpp" />
+    <ClCompile Include="patch_set_frame.cpp" />
     <ClCompile Include="patch_shared_cache.cpp" />
     <ClCompile Include="patch_exception_log.cpp" />
     <ClCompile Include="patch_exception_log_dialog.cpp" />

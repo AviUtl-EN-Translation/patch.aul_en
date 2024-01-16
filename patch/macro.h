@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_46"
+#define PATCH_VERSION_STR "r43_ss_47"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -104,6 +104,7 @@
 #define PATCH_SWITCH_COLORPALETTE_CACHE colorpalette_cache
 #define PATCH_SWITCH_TRACKBAR trackbar
 #define PATCH_SWITCH_FILEINFO file_info
+#define PATCH_SWITCH_SET_FRAME set_frame
 #define PATCH_SWITCH_READ_AUDIO read_audio
 #define PATCH_SWITCH_WAVE_FILE_READER wave_file_reader
 // #define PATCH_SWITCH_ADJUST_VMEM adjust_vmem
@@ -231,6 +232,7 @@
 	#define PATCH_SWITCH_FAST_CONVEXEDGE fast_convexedge
 	#define PATCH_SWITCH_FAST_EXTRACTEDGE fast_extractedge
 	#define PATCH_SWITCH_FAST_GLOW fast_glow
+	#define PATCH_SWITCH_FAST_DIFFUSELIGHT fast_diffuselight
 	#define PATCH_SWITCH_FAST_LIGHTEMISSION fast_lightemisson
 	#define PATCH_SWITCH_FAST_COLORDRIFT fast_colordrift
 	#define PATCH_SWITCH_FAST_COLORKEY fast_colorkey

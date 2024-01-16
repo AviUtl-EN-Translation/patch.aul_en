@@ -470,6 +470,12 @@
     <ClInclude Include="patch_fast_pixelformat_conv.hpp">
       <Filter>feature\fast</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_diffuselight.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_set_frame.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -726,6 +732,15 @@
     </ClCompile>
     <ClCompile Include="patch_fast_lightemission.cpp">
       <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_obj_waveform.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_diffuselight.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_set_frame.cpp">
+      <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
