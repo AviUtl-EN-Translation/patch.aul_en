@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_47
+patch.aul r43_ss_48
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -177,6 +177,10 @@ https://scrapbox.io/nazosauna/patch.aul
     ・オブジェクトの長さを変えた後に元に戻すをして再生速度トラックバーを動かした時にオブジェクトの長さがおかしくなることがあるのを修正
     ・選択フレームが総フレーム数以上の値になっている場合に調整する
     ・拡散光で強さ・拡散を負の値にすることでエラーが起こるのを修正
+    ・一部入力欄での数値読み込みで全角文字も対象にする
+    ・一部入力欄での数値読み込みで先頭にある空白を無視して読めるように変更
+    ・編集プロジェクト読み込み時、最大フレーム数が足りない場合のメッセージを追加
+    ・編集プロジェクト読み込み時、最大フレーム数が足りず失敗した後、拡張編集などにオブジェクトが置けてしまうのを修正
 
     追加
     ・コンソールの表示
@@ -273,7 +277,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "release_time" : number ; キャッシュデータの寿命[秒] (既定値: 120)
     },
     "fast_border" : { ; 縁取りの軽量化について
-        "use_space" : boolean ; 画像の周囲が透明度0の余白の場合に画像サイズを広げず活用するようにする (既定値: true)
+        "use_space" : boolean ; 画像の周囲が透明度0の余白の場合に画像サイズを広げず活用するようにする。スクリプトから実行されるときは強制falseです (既定値: true)
     },
     "scene_cache" : { ; シーンキャッシュ機能について
         "threshold_time" : number ; キャッシュをとるしきい値。シーン描画にかかった時間[ミリ秒] (既定値: 64)
@@ -284,6 +288,7 @@ https://scrapbox.io/nazosauna/patch.aul
     "switch" : { ; どのパッチを有効にするかを選択するものです trueなら有効、falseなら無効
         "keyconfig" : boolean, ; メニューの[編集]の文字列が変わるとaviutl.keyの設定を反映できないのを修正 (既定値: true)
         "access_key" : boolean, ; アクセスキーを付加するか (既定値: false)
+        "failed_max_frame" : boolean, ; 編集プロジェクト読み込み時、最大フレーム数が足りない場合のメッセージを追加 (既定値: true)
         "colorpalette_cache" : boolean, ; bmpのキャッシュが作られる際に、カラーパレット分のデータ容量を取り忘れているのを修正 (既定値: true)
         "trackbar" : boolean, ; マウスホイールでトラックバーが動くのを修正・トラックバーでクリックした位置に直接移動するの設定にて-1への移動が正常でないのを修正 (既定値: true)
         "fileinfo" : boolean, ; ファイルの情報を開くと落ちる/ファイル制御情報が正しくないことがあるのを修正 (既定値: true)
@@ -303,6 +308,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "exo_fold_gui" : boolean, ; exa,exo生成時、設定ダイアログの▼（折り畳み）とマウスマーク（GUI表示）の情報を追加する (既定値: true)
         "exa_camera" : boolean, ; エイリアスでオブジェクトにフィルタ効果を付与するときにカメラ制御の対象が外れるのを修正 (既定値: true)
         "str_minusval" : boolean, ; オブジェクトファイルの入力、スクリプトファイルの読み込みで、トラックバーの -0.99～-0.01 が正になるのを修正 (既定値: true)
+        "str2int" : boolean, ; 一部入力欄での数値読み込みで先頭にある空白を無視し、全角文字も読み込めるようにする (既定値: true)
         "tra_aviutlfilter" : boolean, ; 拡張編集以外のフィルタのトラックバーにトラックバー変化方法スクリプトを適用していると例外になる問題 (既定値: true)
         "tra_change_drawfilter" : boolean, ; 標準描画-拡張描画-パーティクルの切り替え時にトラックバーの設定値(移動フレーム間隔)が0になるのを修正 (既定値: true)
         "tra_change_mode" : boolean, ; 移動無しから変更するときに右トラックバーの値を左と同じにする (既定値: true)
@@ -411,7 +417,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_47" のような文字列が格納されている
+        例として "patch.aul r43_ss_48" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
