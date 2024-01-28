@@ -85,7 +85,7 @@ namespace patch::fast {
 			100162e6 83c40c             add     esp,+0c
 			100162e9 8b4208             mov     eax,dword ptr [edx+08]
 			100162ec 85c0               test    eax,eax
-			100162ee 7441               jz      skip,+41 (10016331)
+			100162ee 7e41               jle     skip,+41 (10016331)
 			100162f0 a338ed1110         mov     [1011ed38],eax
 			100162f5 8d440001           lea     eax,dword ptr [eax+eax+01]
 			100162f9 a334ed1110         mov     [1011ed34],eax
@@ -111,12 +111,14 @@ namespace patch::fast {
 
 			*/
 
-			OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0162d9, 0x016331 - 0x0162d9);
-			h.store_i32(0, &main_mt);
-			h.store_i16(0x0162fe - 0x0162d9, '\xeb\x0e');
-			h.store_i32(0x016314 - 0x0162d9, &conv1_mt);
-			h.store_i32(0x016324 - 0x0162d9, &conv2_mt);
-			h.store_i8(0x016330 - 0x0162d9, '\x18');
+			constexpr int vp_begin = 0x162d9;
+			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x016331 - vp_begin);
+			h.store_i32(0x0162d9 - vp_begin, &main_mt);
+			h.store_i8(0x0162ee - vp_begin, '\x7e');
+			h.store_i16(0x0162fe - vp_begin, '\xeb\x0e');
+			h.store_i32(0x016314 - vp_begin, &conv1_mt);
+			h.store_i32(0x016324 - vp_begin, &conv2_mt);
+			h.store_i8(0x016330 - vp_begin, '\x18');
 		}
 
 		void switching(bool flag) { enabled = flag; }

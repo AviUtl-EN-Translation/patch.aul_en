@@ -42,11 +42,13 @@ namespace patch {
         static void* __cdecl create_audio_shared_mem(AviUtl::AviFileHandle* afh, int start);
         static int __cdecl exfunc_avi_file_read_audio_sample_wrap(AviUtl::AviFileHandle* afh, int start, int length, short* buf);
 
-
+        static int get_WaveFileReader_idx();
+        inline static int WaveFileReader_idx = -1;
+        
 #define CACHEINFO_N 256
         inline static struct AudioCacheInfo {
             AviUtl::SharedMemoryInfo* smi;
-            void* input_handle_info;
+            void* input_plugin_info;
             unsigned int audio_rate;
             unsigned short audio_ch;
             unsigned short n;
@@ -61,7 +63,7 @@ namespace patch {
         void init() {
             enabled_i = enabled;
             if (!enabled_i)return;
-
+            
             (exfunc_avi_file_read_audio_sample_org) = reinterpret_cast<decltype(exfunc_avi_file_read_audio_sample_org)>(*(int*)(GLOBAL::aviutl_base + 0x2d0fe));
             OverWriteOnProtectHelper(GLOBAL::aviutl_base + 0x2d0fe, 4).store_i32(0, &exfunc_avi_file_read_audio_sample_wrap);
 

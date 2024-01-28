@@ -37,6 +37,9 @@ namespace OFS {
 		constexpr i32 filter_change_framerate_ptr = 0x080b28;
 		constexpr i32 filter_clipping_and_resize_ptr = 0x07ad58;
 
+		constexpr i32 input_wave_file_reader_ptr = 0x07cf80;
+		constexpr i32 InputPluginArray = 0x0b8cb0;
+
 		constexpr i32 exfunc_set_select_frame = 0x021e30;
 
 		constexpr i32 ini_trackbarclick = 0x086270;

@@ -27,10 +27,16 @@ namespace patch {
 #define AUDIO_SMEM_PART_SIZE (1 << AUDIO_SMEM_PART_SHL)
 
 #define AVI_FILE_HANDLE_WAVEFORMATEX 0x38
-#define AVI_FILE_HANDLE_INPUT_INFO 0x4c
+#define AVI_FILE_HANDLE_INPUT_PLUGIN_INFO 0x4c
 #define AVI_FILE_HANDLE_AUDIO_N 0xc3b8
 #define AVI_FILE_HANDLE_AUDIO_CURRENT_POS 0xc3c0
 #define AVI_FILE_HANDLE_WAVEFORMATEX2 8624
+
+	struct InputPluginInfo {
+		AviUtl::InputHandle* ih;
+		int idx;
+	};
+
 
 	int __fastcall read_audio_t::update_waveformat_wrap(AviUtl::AviFileHandle* afh, WAVEFORMATEX* wfe) {
 		if (memcmp((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX), wfe, 16)) {
@@ -45,9 +51,9 @@ namespace patch {
 		AudioCacheInfo* aci = cache_info;
 		for (int i = CACHEINFO_N; 0 < i; i--) {
 			if (aci->smi != NULL) {
-				if (aci->input_handle_info == *(void**)((int)afh + AVI_FILE_HANDLE_INPUT_INFO) && aci->audio_rate == wfe->nSamplesPerSec && aci->audio_ch == wfe->nChannels && aci->n == n) {
+				if (aci->input_plugin_info == *(void**)((int)afh + AVI_FILE_HANDLE_INPUT_PLUGIN_INFO) && aci->audio_rate == wfe->nSamplesPerSec && aci->audio_ch == wfe->nChannels && aci->n == n) {
 					auto exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
-					return exfunc->get_shared_mem((int)aci->input_handle_info, ~n, aci->smi); // key2の0～は動画に使われるためマイナスにして-1
+					return exfunc->get_shared_mem((int)aci->input_plugin_info, ~n, aci->smi); // key2の0～は動画に使われるためマイナスにして-1
 				}
 			}
 			aci++;
@@ -71,15 +77,15 @@ namespace patch {
 			aci++;
 		}
 		if (min_priority_aci->smi != NULL) {
-			exfunc->delete_shared_mem(*(int*)((int)afh + AVI_FILE_HANDLE_INPUT_INFO), min_priority_aci->smi);
+			exfunc->delete_shared_mem((int)*(void**)((int)afh + AVI_FILE_HANDLE_INPUT_PLUGIN_INFO), min_priority_aci->smi);
 		}
 		WAVEFORMATEX* wfe = (WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX);
 
-		min_priority_aci->input_handle_info = *(void**)((int)afh + AVI_FILE_HANDLE_INPUT_INFO);
+		min_priority_aci->input_plugin_info = *(void**)((int)afh + AVI_FILE_HANDLE_INPUT_PLUGIN_INFO);
 		min_priority_aci->audio_rate = wfe->nSamplesPerSec;
 		min_priority_aci->audio_ch = wfe->nChannels;
 		min_priority_aci->n = n;
-		return exfunc->create_shared_mem((int)min_priority_aci->input_handle_info, ~n, AUDIO_SMEM_SIZE * wfe->nBlockAlign, &min_priority_aci->smi); // key2の0～は動画に使われるためマイナスにして-1
+		return exfunc->create_shared_mem((int)min_priority_aci->input_plugin_info, ~n, AUDIO_SMEM_SIZE * wfe->nBlockAlign, &min_priority_aci->smi); // key2の0～は動画に使われるためマイナスにして-1
 	}
 
 
@@ -115,7 +121,9 @@ namespace patch {
 			if (length <= 0) return 0;
 		}
 		int length0 = length;
-		while (0 < length) {
+		if ((*(InputPluginInfo**)((int)afh + AVI_FILE_HANDLE_INPUT_PLUGIN_INFO))->idx == get_WaveFileReader_idx()) { // WaveFileReaderではキャッシュを取らない
+			exfunc_avi_file_read_audio_sample_org(afh, start, length, buf);
+		} else while (0 < length) { // WaveFileReader以外はキャッシュを取る
 			short* ptr = (short*)get_audio_shared_mem(afh, start >> AUDIO_SMEM_SHL);
 			if (ptr == NULL) {
 				ptr = (short*)create_audio_shared_mem(afh, start >> AUDIO_SMEM_SHL);
@@ -153,8 +161,8 @@ namespace patch {
 			buf = (short*)((int)buf + smem_right * audio_blocksize);
 			start += smem_right;
 			length -= smem_right;
-
 		}
+		
 		if (rev) {
 			short audio_ch = ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nChannels;
 			int p1 = 0;
@@ -262,5 +270,23 @@ namespace patch {
 		return length0;
 	}
 	*/
+
+	int __cdecl read_audio_t::get_WaveFileReader_idx() {
+		if (0 <= WaveFileReader_idx) {
+			return WaveFileReader_idx;
+		}
+		char* wfr_name = (char*)reinterpret_cast<AviUtl::InputPluginDLL*>(GLOBAL::aviutl_base + OFS::AviUtl::input_wave_file_reader_ptr)->name;
+		AviUtl::InputPlugin* InputPluginArray = reinterpret_cast<AviUtl::InputPlugin*>(GLOBAL::aviutl_base + OFS::AviUtl::InputPluginArray);
+		for (int i = 0; i < 32; i++) {
+			if (wfr_name == InputPluginArray[i].name) {
+				WaveFileReader_idx = i;
+				return i;
+			}
+		}
+		WaveFileReader_idx = 32;
+		return 32;
+	}
+
+
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_READ_AUDIO

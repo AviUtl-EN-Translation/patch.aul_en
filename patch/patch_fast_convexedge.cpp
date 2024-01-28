@@ -23,20 +23,28 @@ namespace patch::fast {
 
 #ifdef PATCH_SWITCH_FAST_CONVEXEDGE
     void __cdecl ConvexEdge_t::mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+
+        if (0 < *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::luastateidx)) {
+            mt_org(thread_id, thread_num, efp, efpip);
+            return;
+        }
+
         auto ce = reinterpret_cast<efConvexEdge_var*>(GLOBAL::exedit_base + OFS::ExEdit::efConvexEdge_var_ptr);
-        int maxx = ce->width * abs(ce->step_x16) >> 16;
-        int maxy = ce->width * abs(ce->step_y16) >> 16;
+        int absx = abs(ce->step_x16);
+        int maxx = ce->width * absx >> 16;
+        int absy = abs(ce->step_y16);
+        int maxy = ce->width * absy >> 16;
         for (int y = thread_id; y < efpip->obj_h; y += thread_num) {
             int y1, y2;
             if (maxy <= y) {
                 y1 = ce->width;
             } else {
-                y1 = ((y << 16) + 0xffff) / abs(ce->step_y16);
+                y1 = ((y << 16) + 0xffff) / absy;
             }
             if (maxy <= efpip->obj_h - y - 1) {
                 y2 = ce->width;
             } else {
-                y2 = (((efpip->obj_h - y - 1) << 16) + 0xffff) / abs(ce->step_y16);
+                y2 = (((efpip->obj_h - y - 1) << 16) + 0xffff) / absy;
             }
             if (ce->step_y16 < 0) {
                 std::swap(y1, y2);
@@ -50,12 +58,12 @@ namespace patch::fast {
                     if (maxx <= x) {
                         x1 = ce->width;
                     } else {
-                        x1 = ((x << 16) + 0xffff) / abs(ce->step_x16);
+                        x1 = ((x << 16) + 0xffff) / absx;
                     }
                     if (maxx <= efpip->obj_w - x - 1) {
                         x2 = ce->width;
                     } else {
-                        x2 = (((efpip->obj_w - x - 1) << 16) + 0xffff) / abs(ce->step_x16);
+                        x2 = (((efpip->obj_w - x - 1) << 16) + 0xffff) / absx;
                     }
                     if (ce->step_x16 < 0) {
                         std::swap(x1, x2);

@@ -94,13 +94,14 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_47"
+#define PATCH_VERSION_STR "r43_ss_48"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
 
 #define PATCH_SWITCH_ACCESS_KEY access_key
 #define PATCH_SWITCH_KEYCONFIG key_config
+#define PATCH_SWITCH_FAILED_MAX_FRAME failed_max_frame
 #define PATCH_SWITCH_COLORPALETTE_CACHE colorpalette_cache
 #define PATCH_SWITCH_TRACKBAR trackbar
 #define PATCH_SWITCH_FILEINFO file_info
@@ -126,6 +127,7 @@
 #define PATCH_SWITCH_EXO_FOLD_GUI exo_fold_gui
 #define PATCH_SWITCH_EXA_CAMERA exa_camera
 #define PATCH_SWITCH_STR_MINUSVAL str_minusval
+#define PATCH_SWITCH_STR2INT str2int
 #define PATCH_SWITCH_TEXT_OP_SIZE text_op_size
 #define PATCH_SWITCH_IGNORE_MEDIA_PARAM_RESET ignore_media_param_reset
 #define PATCH_SWITCH_THEME_CC theme_cc

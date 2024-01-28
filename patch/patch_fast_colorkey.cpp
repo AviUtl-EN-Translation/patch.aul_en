@@ -56,46 +56,43 @@ namespace patch::fast {
         int loop3 = efpip->obj_h - border_size * 2 - 1;
         int x = efpip->obj_w * thread_id / thread_num;
         int* dst0 = (int*)efpip->obj_temp + x;
-        int* cnv0 = (int*)dst0 + efpip->obj_w * efpip->obj_h;
         short* src0 = (short*)((ExEdit::PixelYCA*)efpip->obj_edit + x) + 3;
+        auto src1 = src0;
         int w = efpip->obj_w * (thread_id + 1) / thread_num - x;
 
-        memset(cnv0, 0, w * sizeof(int));
+        memset(dst0, 0, w * sizeof(int));
 
-        auto src1 = src0;
-        auto dst = dst0;
-        for (int y = border_size; 0 < y; y--) {
+        for (int y = border_size + 1; 0 < y; y--) {
             auto src2 = src0;
-            auto cnv = cnv0;
+            auto dst = dst0;
             for (x = w; 0 < x; x--) {
-                *cnv += *src2;
+                *dst += *src2;
                 src2 += 4;
-                cnv++;
+                dst++;
             }
             src0 += efpip->obj_line * 4;
         }
-        for (int y = border_size; 0 <= y; y--) {
+        for (int y = border_size - 1; 0 <= y; y--) {
             auto src2 = src0;
+            auto cnv = dst0;
+            dst0 += efpip->obj_w;
             auto dst = dst0;
-            auto cnv = cnv0;
             for (x = w; 0 < x; x--) {
-                *cnv += *src2;
-                *dst = *cnv;
+                *dst = *cnv + *src2;
                 src2 += 4;
                 dst++;
                 cnv++;
             }
             src0 += efpip->obj_line * 4;
-            dst0 += efpip->obj_w;
         }
         for (int y = loop3; 0 < y; y--) {
             auto src2 = src0;
             auto src3 = src1;
+            auto cnv = dst0;
+            dst0 += efpip->obj_w;
             auto dst = dst0;
-            auto cnv = cnv0;
             for (x = w; 0 < x; x--) {
-                *cnv += *src2 - *src3;
-                *dst = *cnv;
+                *dst = *cnv - *src3 + *src2;
                 src2 += 4;
                 src3 += 4;
                 dst++;
@@ -103,21 +100,19 @@ namespace patch::fast {
             }
             src0 += efpip->obj_line * 4;
             src1 += efpip->obj_line * 4;
-            dst0 += efpip->obj_w;
         }
         for (int y = border_size; 0 < y; y--) {
             auto src3 = src1;
+            auto cnv = dst0;
+            dst0 += efpip->obj_w;
             auto dst = dst0;
-            auto cnv = cnv0;
             for (x = w; 0 < x; x--) {
-                *cnv -= *src3;
-                *dst = *cnv;
+                *dst = *cnv - *src3;
                 src3 += 4;
                 dst++;
                 cnv++;
             }
             src1 += efpip->obj_line * 4;
-            dst0 += efpip->obj_w;
         }
 
     }

@@ -37,6 +37,7 @@ namespace patch {
                 0x1b2b4c, // sScriptFolderName
                 0x1b28d4, // obj_layer_ptr
                 0x1baca4, // script_objectp
+                0x1b2b10, // efp_g
                 0x1b2b20, // efpip_g
                 0x1b2368, // textbuffer_pointer
                 0x1b28b4, // textbuffer_max
@@ -53,6 +54,7 @@ namespace patch {
                 0x1b24b4, // sScriptFolderName
                 0x1bac94, // obj_layer_ptr
                 0x1b2b08, // script_objectp
+                0x1b2b3c, // efp_g
                 0x1b24b8, // efpip_g
                 0x1b28bc, // textbuffer_pointer
                 0x1b29f4, // textbuffer_max

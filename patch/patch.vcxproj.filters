@@ -476,6 +476,12 @@
     <ClInclude Include="patch_set_frame.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_str2int.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_failed_max_frame.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -740,6 +746,12 @@
       <Filter>feature\fast</Filter>
     </ClCompile>
     <ClCompile Include="patch_set_frame.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_str2int.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_failed_max_frame.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

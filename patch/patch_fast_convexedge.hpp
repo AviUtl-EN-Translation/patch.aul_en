@@ -31,6 +31,8 @@ namespace patch::fast {
 	// 凸エッジの速度を少しだけ改善
 	inline class ConvexEdge_t {
 		static void __cdecl mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		
+		inline static void(__cdecl* mt_org)(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
 		bool enabled = true;
 		bool enabled_i;
@@ -51,6 +53,8 @@ namespace patch::fast {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
+
+			mt_org = reinterpret_cast<decltype(mt_org)>(*(DWORD*)(GLOBAL::exedit_base + 0x7b3f));
 			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x7b3f, 4).store_i32(0, &mt);
 		}
 

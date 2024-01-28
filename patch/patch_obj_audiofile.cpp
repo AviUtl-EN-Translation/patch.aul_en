@@ -224,12 +224,14 @@ namespace patch {
         ObjectInfo objinfo;
 
         double audio_rate = (double)efpip->audio_rate;
-        int milliframe;
+        int milliframe, currentframe;
         if (efpip->audio_speed) {
             milliframe = efpip->audio_milliframe + (efpip->frame - efpip->frame_num) * 1000;
             audio_rate *= 1000000.0 / (double)efpip->audio_speed;
+            currentframe = (int)round((double)milliframe * 1000 / (double)efpip->audio_speed);
         } else {
             milliframe = efpip->frame * 1000;
+            currentframe = efpip->frame;
         }
 
         auto exdata = (Exdata_AudioFile*)efp->exdata_ptr;
@@ -359,7 +361,7 @@ namespace patch {
             fip->audio_rate = audio_rate_i;
             fip->audio_ch = efpip->audio_ch;
             fip->audio_n = efp->aviutl_exfunc->avi_file_set_audio_sample_rate(afh, audio_rate_i, efpip->audio_ch);
-            //exdata->current_frame = -1;
+            exdata->current_frame = -1;
         }
 
 
@@ -392,11 +394,18 @@ namespace patch {
         playback_s *= audio_rate * 0.01;
         playback_e *= audio_rate * 0.01;
 
-        double pos = pos_cs * audio_rate;
+        double pos;
+        if (exdata->current_frame == currentframe && currentframe != 0) {
+            pos = exdata->current_pos;
+        } else {
+            pos = pos_cs * audio_rate;
+        }
+        exdata->current_frame = currentframe + 1;
+        exdata->current_pos = pos + speed_sign * efpip->audio_n;
         if (loop) {
             double length = playback_e - playback_s;
             if (length <= 0.0) {
-                //exdata->current_frame = -1;
+                exdata->current_frame = -1;
                 return 0;
             }
             if (efp->check[CHECK_SYNC]) {
@@ -409,11 +418,10 @@ namespace patch {
                 pos -= length;
             }
         } else if ((double)pos < playback_s || playback_e < (double)pos) {
-            //exdata->current_frame = -1;
+            exdata->current_frame = -1;
             return 0;
         }
-
-        int read_size = efp->aviutl_exfunc->avi_file_read_audio_sample(afh, (int)round(pos), speed_sign * efpip->audio_n, efpip->audio_data);
+        int read_size = efp->aviutl_exfunc->avi_file_read_audio_sample(afh, (int)pos, speed_sign * efpip->audio_n, efpip->audio_data);
 
         if (read_size <= 0) {
             return 0;
@@ -421,7 +429,7 @@ namespace patch {
 
         if (loop) {
             while (read_size < efpip->audio_n) {
-                int n = efp->aviutl_exfunc->avi_file_read_audio_sample(afh, (int)round(playback_s), speed_sign * (efpip->audio_n - read_size), (short*)efpip->audio_data + efpip->audio_ch * read_size);
+                int n = efp->aviutl_exfunc->avi_file_read_audio_sample(afh, (int)playback_s, speed_sign * (efpip->audio_n - read_size), (short*)efpip->audio_data + efpip->audio_ch * read_size);
                 if (n <= 0) {
                     break;
                 }

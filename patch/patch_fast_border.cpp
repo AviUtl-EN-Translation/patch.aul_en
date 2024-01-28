@@ -38,12 +38,15 @@ namespace patch::fast {
         if (size <= 0 || obj_w <= 0 || obj_h <= 0) return TRUE;
         auto border = (reinterpret_cast<efBorder_var*>(GLOBAL::exedit_base + OFS::ExEdit::efBorder_var_ptr));
 
-        short* src01 = &((ExEdit::PixelYCA*)efpip->obj_edit)->a;
-        short* src02 = &((ExEdit::PixelYCA*)efpip->obj_edit + (efpip->obj_h - 1) * efpip->obj_line)->a;
+        short *src01, *src02;
         int max_space;
-        if (use_space) {
+        bool usespace = (use_space && 0 == *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::luastateidx));
+        if (usespace) {
             max_space = min((obj_h + 1) >> 1, size);
+            src01 = &((ExEdit::PixelYCA*)efpip->obj_edit)->a;
+            src02 = &((ExEdit::PixelYCA*)efpip->obj_edit + (efpip->obj_h - 1) * efpip->obj_line)->a;
         } else {
+            src01 = src02 = nullptr;
             max_space = 0;
         }
         int x, y;
@@ -59,17 +62,17 @@ namespace patch::fast {
         }
         border->shift_y = y;
         obj_h -= border->shift_y * 2;
-        if (obj_h <= 0) return TRUE;
-        int max_size = (*(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_h) - obj_h) >> 1;
+        if (obj_h <= 0) return TRUE; 
+        int max_size = (*reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::yca_max_h) - obj_h) >> 1;
         if (max_size <= 0) return TRUE;
         if (max_size < size) {
             size = max_size;
         }
 
-        src01 = &((ExEdit::PixelYCA*)efpip->obj_edit + border->shift_y * efpip->obj_line)->a;
-        src02 = &((ExEdit::PixelYCA*)efpip->obj_edit + border->shift_y * efpip->obj_line + efpip->obj_w - 1)->a;
-        if (use_space) {
+        if (usespace) {
             max_space = min((obj_w + 1) >> 1, size);
+            src01 = &((ExEdit::PixelYCA*)efpip->obj_edit + border->shift_y * efpip->obj_line)->a;
+            src02 = &((ExEdit::PixelYCA*)efpip->obj_edit + border->shift_y * efpip->obj_line + efpip->obj_w - 1)->a;
         } else {
             max_space = 0;
         }
@@ -86,7 +89,7 @@ namespace patch::fast {
         border->shift_x = x;
         obj_w -= border->shift_x * 2;
         if (obj_w <= 0) return TRUE;
-        max_size = (*(int*)(GLOBAL::exedit_base + OFS::ExEdit::yca_max_w) - obj_w) >> 1;
+        max_size = (*reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::yca_max_w) - obj_w) >> 1;
         if (max_size <= 0) return TRUE;
         if (max_size < size) {
             size = max_size;

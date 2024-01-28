@@ -150,3 +150,5 @@
 #include "patch_fast_pixelformat_conv.hpp"
 #include "patch_fast_diffuselight.hpp"
 #include "patch_set_frame.hpp"
+#include "patch_str2int.hpp"
+#include "patch_failed_max_frame.hpp"

@@ -62,6 +62,9 @@ public:
             #ifdef PATCH_SWITCH_ACCESS_KEY
                 patch::access_key.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_FAILED_MAX_FRAME
+                patch::failed_max_frame.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
                 patch::colorpalette_cache.switch_load(cr);
             #endif
@@ -130,6 +133,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_STR_MINUSVAL
                 patch::str_minusval.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_STR2INT
+                patch::str2int.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
                 patch::tra_aviutlfilter.switch_load(cr);
@@ -667,6 +673,9 @@ public:
             #ifdef PATCH_SWITCH_ACCESS_KEY
                 patch::access_key.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_FAILED_MAX_FRAME
+                patch::failed_max_frame.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_COLORPALETTE_CACHE
                 patch::colorpalette_cache.switch_store(switch_);
             #endif
@@ -735,6 +744,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_STR_MINUSVAL
                 patch::str_minusval.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_STR2INT
+                patch::str2int.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
                 patch::tra_aviutlfilter.switch_store(switch_);

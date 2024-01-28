@@ -88,6 +88,10 @@ void init_t::InitAtPatchLoaded() {
 	patch::KeyConfig.init();
 #endif
 
+#ifdef PATCH_SWITCH_FAILED_MAX_FRAME
+	patch::failed_max_frame.init();
+#endif
+
 #ifdef PATCH_SWITCH_ACCESS_KEY
 	patch::access_key.init();
 #endif
@@ -192,6 +196,9 @@ void init_t::InitAtExeditLoad() {
 
 #ifdef PATCH_SWITCH_STR_MINUSVAL
 	patch::str_minusval.init();
+#endif
+#ifdef PATCH_SWITCH_STR2INT
+	patch::str2int.init();
 #endif
 
 #ifdef PATCH_SWITCH_CONSOLE
