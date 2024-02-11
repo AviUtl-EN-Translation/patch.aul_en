@@ -144,6 +144,6 @@ namespace patch {
         void switch_store(ConfigWriter& cw) {
             cw.append(key, enabled);
         }
-    } obj_specialcolorconv;
+    } SpecialColorConv;
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV

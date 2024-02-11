@@ -46,6 +46,40 @@ namespace patch {
 
             if (!enabled_i)return;
 
+            auto& cursor = GLOBAL::executable_memory_cursor;
+            { // 再生位置の最小値を変更する
+                // set_track_statusにて最小値0を-128に
+                OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x8f2c1, 1).store_i8(0, 0x80);
+
+                /* 0未満を無効化する処理を削除
+                    1008e2e9 0f8c2e080000       jl     1008eb1d
+                    ↓
+                    1008e2e9 660f1f440000       nop
+                */
+                OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x8e2e9, 4).store_i32(0, '\x66\x0f\x1f\x44');
+
+
+                /* タイムラインでオブジェクトの端をつまんで動かしたときなどの最小値を変更
+                    1008ee1c 7904               jns     1008ee22
+                    1008ee1e 33c0               xor     eax,eax
+                    1008ee20 eb0c               jmp     short 1008ee2e
+                    ↓
+                    1008ee1c 90                 nop
+                    1008ee1d e8XxXxXxXx         call    cursor
+                */
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x8ee1c, 6);
+                h.store_i16(0, '\x90\xe8');
+                h.replaceNearJmp(2, cursor);
+                static const char code_put[] = {
+                    "\x83\xf8\x80"             // cmp     eax,-80
+                    "\x7d\x05"                 // jnl     skip,05
+                    "\xb8\x80\xff\xff\xff"     // mov     eax,ffffff80
+                    "\xc3"                     // ret 
+                };
+                memcpy(cursor, code_put, sizeof(code_put) - 1);
+                cursor += sizeof(code_put) - 1;
+
+            }
             { // 波形タイプが0で参照ファイルより読み込ませる時の横解像度の最大値を上げる
                 /* ; 浮動小数掛け算の無駄を削減して関数を挟む
                     1008e28c db8700010000       fild    dword ptr [edi+00000100]
@@ -108,7 +142,7 @@ namespace patch {
                     push esi ; audio_n
                     return audio_n;
                 */
-                char calc_audio_n_bin[] = {
+                static const char calc_audio_n_bin[] = {
                     "\x89\x44\x24\x24"         // mov     dword ptr [esp+24],eax
                     "\x40"                     // inc     eax
                     "\x89\x44\x24\x20"         // mov     dword ptr [esp+20],eax

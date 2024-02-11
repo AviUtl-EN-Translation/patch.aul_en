@@ -108,10 +108,12 @@ namespace patch {
 			start += length - 1;
 			length = -length;
 		}
+		int length0 = 0;
 		short audio_blocksize = ((WAVEFORMATEX*)((int)afh + AVI_FILE_HANDLE_WAVEFORMATEX))->nBlockAlign;
 		if (start < 0) {
 			length = min(length + start, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N));
 			if (length <= 0) return 0;
+			length0 = -start;
 			int ofs = -start * audio_blocksize;
 			memset(buf, 0, ofs);
 			buf = (short*)((int)buf + ofs);
@@ -120,7 +122,7 @@ namespace patch {
 			length = min(length, *(int*)((int)afh + AVI_FILE_HANDLE_AUDIO_N) - start);
 			if (length <= 0) return 0;
 		}
-		int length0 = length;
+		length0 += length;
 		if ((*(InputPluginInfo**)((int)afh + AVI_FILE_HANDLE_INPUT_PLUGIN_INFO))->idx == get_WaveFileReader_idx()) { // WaveFileReaderではキャッシュを取らない
 			exfunc_avi_file_read_audio_sample_org(afh, start, length, buf);
 		} else while (0 < length) { // WaveFileReader以外はキャッシュを取る

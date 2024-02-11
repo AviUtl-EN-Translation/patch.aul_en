@@ -152,3 +152,4 @@
 #include "patch_set_frame.hpp"
 #include "patch_str2int.hpp"
 #include "patch_failed_max_frame.hpp"
+#include "patch_setting_dialog_scriptcontrol.hpp"

@@ -136,8 +136,51 @@ namespace patch {
         return reinterpret_cast<char*(__cdecl*)(ExEdit::Filter*, void*)>(GLOBAL::exedit_base + 0x8f960)(efp, exdata);
     }
 
-    double __cdecl AudioFile_t::calc_pos_wrap(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp) {
-        return abs(calc_pos(ofi, milliframe, video_rate, video_scale, efp));
+    double __cdecl AudioFile_t::calc_pos_wrap1(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp) {
+        double pos = calc_pos(ofi, milliframe, video_rate, video_scale, efp);
+        if (efp->track_value_left[TRACK_SPEED] < 0) pos = -pos;
+        return pos;
+    }
+    double __cdecl AudioFile_t::calc_pos_wrap2(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp) {
+        /* 
+            長さを調整する条件を満たしていたら、この後にある分岐条件である
+            if (exdata->centi_sec < objinfo.track_left[TRACK_POS] + (int)(pos * 100.0))
+            となるようなposを返す
+        */
+        ObjectInfo objinfo;
+        int centi_sec = ((Exdata_AudioFile*)efp->exdata_ptr)->centi_sec;
+        efp->exfunc->getvalue(efp->exfunc->get_start_idx(efp->processing), &objinfo);
+        double pos = 100.0 * calc_pos(ofi, milliframe, video_rate, video_scale, efp);
+        if (0 <= objinfo.track_left[TRACK_SPEED]) {
+            pos += objinfo.track_left[TRACK_POS];
+        } else {
+            pos += centi_sec - objinfo.track_left[TRACK_POS];
+        }
+        double ret = (centi_sec - objinfo.track_left[TRACK_POS]) * 0.01 - 1.0;
+        if (0 <= efp->track_value_left[TRACK_SPEED]) {
+            if (centi_sec < pos) {
+                ret += 2.0;
+            }
+        } else {
+            if (pos <= 0) {
+                ret += 2.0;
+            }
+        }
+        return ret;
+    }
+    double __cdecl AudioFile_t::calc_pos_wrap3(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp) {
+        ObjectInfo objinfo;
+        int centi_sec = ((Exdata_AudioFile*)efp->exdata_ptr)->centi_sec;
+        efp->exfunc->getvalue(efp->exfunc->get_start_idx(efp->processing), &objinfo);
+        double pos = calc_pos(ofi, milliframe, video_rate, video_scale, efp);
+
+        if (efp->track_value_left[TRACK_SPEED] < 0) {
+            pos = -pos;
+        }
+        if ((efp->track_value_left[TRACK_SPEED] ^ objinfo.track_left[TRACK_SPEED]) < 0) {
+            pos += ((double)centi_sec - (double)objinfo.track_left[TRACK_POS] * 2.0) * 0.01;
+        }
+        return pos;
     }
 
     BOOL __cdecl AudioFile_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip0) {

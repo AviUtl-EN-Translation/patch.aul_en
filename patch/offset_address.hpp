@@ -59,6 +59,9 @@ namespace OFS {
 
 		constexpr i32 str_plugins_backslash = 0x074904; // "plugins\\"
 
+		constexpr i32 key_short_str_list = 0x074c90;
+		constexpr i32 key_long_str_list = 0x083de8;
+		constexpr i32 key_code_list = 0x074e00;
 
 	}
 
@@ -185,11 +188,10 @@ namespace OFS {
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
 		constexpr i32 efAnimationEffect_ptr = 0x09d2b8;
 		constexpr i32 efCustomObject_ptr = 0x09d3e0;
+		constexpr i32 efWaveForm_ptr = 0x0ba300;
 		constexpr i32 efCameraEffect_ptr = 0x09d508;
 		constexpr i32 efSceneChange_ptr = 0x0b7f80;
-
-		constexpr i32 efPortionFilter = 0x0a92c0;
-		constexpr i32 efWaveform = 0x0ba300;
+		constexpr i32 efPortionFilter_ptr = 0x0a92c0;
 
 		constexpr i32 PixelYCA_ssss2fbbs = 0x070220;
 		constexpr i32 PixelYCA_fbbs2ssss = 0x0703f0;

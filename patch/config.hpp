@@ -58,6 +58,7 @@ public:
             
             #ifdef PATCH_SWITCH_KEYCONFIG
                 patch::KeyConfig.switch_load(cr);
+                patch::ApendKey.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_ACCESS_KEY
                 patch::access_key.switch_load(cr);
@@ -243,7 +244,7 @@ public:
                 patch::DiffuseLight.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
-                patch::obj_specialcolorconv.switch_load(cr);
+                patch::SpecialColorConv.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
                 patch::PortionFilter.switch_load(cr);
@@ -253,6 +254,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY
                 patch::dialog_chromakey.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_SCRIPTCONTROL
+                patch::dialog_scriptcontrol.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
                 patch::rclickmenu_split.switch_load(cr);
@@ -669,6 +673,7 @@ public:
             
             #ifdef PATCH_SWITCH_KEYCONFIG
                 patch::KeyConfig.switch_store(switch_);
+                patch::ApendKey.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_ACCESS_KEY
                 patch::access_key.switch_store(switch_);
@@ -854,7 +859,7 @@ public:
                 patch::DiffuseLight.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
-                patch::obj_specialcolorconv.switch_store(switch_);
+                patch::SpecialColorConv.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
                 patch::PortionFilter.switch_store(switch_);
@@ -864,6 +869,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY
                 patch::dialog_chromakey.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_SCRIPTCONTROL
+                patch::dialog_scriptcontrol.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT
                 patch::rclickmenu_split.switch_store(switch_);

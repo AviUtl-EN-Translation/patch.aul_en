@@ -249,7 +249,7 @@ namespace patch {
         deselect_object_if();
     }
     int __cdecl any_obj_t::mov_eax_1_waveform_wrap() {
-        auto efp = (ExEdit::Filter*)(GLOBAL::exedit_base + OFS::ExEdit::efWaveform);
+        auto efp = (ExEdit::Filter*)(GLOBAL::exedit_base + OFS::ExEdit::efWaveForm_ptr);
         struct DialogParamInfo {
             short type;
             short exdata_use_id;
@@ -522,7 +522,7 @@ namespace patch {
         deselect_object_if();
     }
     int __cdecl any_obj_t::mov_eax_1_portion_filter_wrap() {
-        auto efp = (ExEdit::Filter*)(GLOBAL::exedit_base + OFS::ExEdit::efPortionFilter);
+        auto efp = (ExEdit::Filter*)(GLOBAL::exedit_base + OFS::ExEdit::efPortionFilter_ptr);
         update_any_exdata_use_idx(efp, 0); // OFS::ExEdit::str_type
         update_any_exdata_use_idx(efp, 1); // OFS::ExEdit::str_name
         deselect_object_if();

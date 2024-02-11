@@ -86,6 +86,7 @@ void init_t::InitAtPatchLoaded() {
 
 #ifdef PATCH_SWITCH_KEYCONFIG
 	patch::KeyConfig.init();
+	patch::ApendKey.init();
 #endif
 
 #ifdef PATCH_SWITCH_FAILED_MAX_FRAME
@@ -295,7 +296,7 @@ void init_t::InitAtExeditLoad() {
 	patch::DiffuseLight.init();
 #endif
 #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
-	patch::obj_specialcolorconv.init();
+	patch::SpecialColorConv.init();
 #endif
 #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
 	patch::PortionFilter.init();
@@ -306,6 +307,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_SETTINGDIALOG_CHROMAKEY
 	patch::dialog_chromakey.init();
+#endif
+#ifdef PATCH_SWITCH_SETTINGDIALOG_SCRIPTCONTROL
+	patch::dialog_scriptcontrol.init();
 #endif
 
 #ifdef PATCH_SWITCH_RCLICKMENU_SPLIT

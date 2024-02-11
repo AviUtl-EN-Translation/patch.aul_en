@@ -102,6 +102,7 @@
     <ClInclude Include="patch_script_sort.hpp" />
     <ClInclude Include="patch_setting_dialog_add_filter.hpp" />
     <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
+    <ClInclude Include="patch_setting_dialog_scriptcontrol.hpp" />
     <ClInclude Include="patch_set_frame.hpp" />
     <ClInclude Include="patch_shared_cache.hpp" />
     <ClInclude Include="patch_exception_history.hpp" />

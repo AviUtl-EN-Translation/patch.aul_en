@@ -35,7 +35,9 @@ namespace patch {
 		static BOOL __cdecl func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip0);
 
 		static char* __cdecl update_dialog_wrap(ExEdit::Filter* efp, void* exdata);
-		static double __cdecl calc_pos_wrap(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp);
+		static double __cdecl calc_pos_wrap1(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp);
+		static double __cdecl calc_pos_wrap2(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp);
+		static double __cdecl calc_pos_wrap3(ExEdit::ObjectFilterIndex ofi, int milliframe, int video_rate, int video_scale, ExEdit::Filter* efp);
 
 		bool enabled = true;
 		bool enabled_i;
@@ -89,42 +91,41 @@ namespace patch {
 				{ // 逆再生時にオブジェクトの長さ調整機能が正常に動くように
 					auto& cursor = GLOBAL::executable_memory_cursor;
 
-					{
-						constexpr int vp_begin = 0x8fd2c;
-						OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8ffee - vp_begin);
-						h.replaceNearJmp(0x8fd2c - vp_begin, cursor);
-						store_i32(cursor, '\x83\x79\x04\x9c'); cursor += 4;
-						store_i16(cursor, '\x0f\x8f'); cursor += 2;
-						store_i32(cursor, GLOBAL::exedit_base + 0x8fbf8 - (int)cursor - 4); cursor += 4;
-						store_i8(cursor, '\xe9'); cursor++;
-						store_i32(cursor, GLOBAL::exedit_base + 0x8fd30 - (int)cursor - 4); cursor += 4;
+					constexpr int vp_begin = 0x8fd2c;
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8ffee - vp_begin);
+					h.replaceNearJmp(0x8fd2c - vp_begin, cursor);
+					store_i32(cursor, '\x83\x79\x04\x9c'); cursor += 4;
+					store_i16(cursor, '\x0f\x8f'); cursor += 2;
+					store_i32(cursor, GLOBAL::exedit_base + 0x8fbf8 - (int)cursor - 4); cursor += 4;
+					store_i8(cursor, '\xe9'); cursor++;
+					store_i32(cursor, GLOBAL::exedit_base + 0x8fd30 - (int)cursor - 4); cursor += 4;
 
-						h.store_i8(0x8fed8 - vp_begin, '\xe9');
-						h.replaceNearJmp(0x8fed9 - vp_begin, cursor);
-						h.store_i16(0x8fedd - vp_begin, '\xd9\xe1');
-						store_i32(cursor, '\xdb\x40\x04\xda'); cursor += 4;
-						store_i32(cursor, '\x4c\x24\x3c\xe9'); cursor += 4;
-						store_i32(cursor, GLOBAL::exedit_base + 0x8fedd - (int)cursor - 4); cursor += 4;
+					h.store_i8(0x8fed8 - vp_begin, '\xe9');
+					h.replaceNearJmp(0x8fed9 - vp_begin, cursor);
+					h.store_i16(0x8fedd - vp_begin, '\xd9\xe1');
+					store_i32(cursor, '\xdb\x40\x04\xda'); cursor += 4;
+					store_i32(cursor, '\x4c\x24\x3c\xe9'); cursor += 4;
+					store_i32(cursor, GLOBAL::exedit_base + 0x8fedd - (int)cursor - 4); cursor += 4;
 
-						h.replaceNearJmp(0x8ffad - vp_begin, cursor);
-						store_i32(cursor, '\x83\x79\x04\x9c'); cursor += 4;
-						store_i16(cursor, '\x0f\x8f'); cursor += 2;
-						store_i32(cursor, GLOBAL::exedit_base + 0x8fbf8 - (int)cursor - 4); cursor += 4;
-						store_i8(cursor, '\xe9'); cursor++;
-						store_i32(cursor, GLOBAL::exedit_base + 0x8ffb1 - (int)cursor - 4); cursor += 4;
+					h.replaceNearJmp(0x8ffad - vp_begin, cursor);
+					store_i32(cursor, '\x83\x79\x04\x9c'); cursor += 4;
+					store_i16(cursor, '\x0f\x8f'); cursor += 2;
+					store_i32(cursor, GLOBAL::exedit_base + 0x8fbf8 - (int)cursor - 4); cursor += 4;
+					store_i8(cursor, '\xe9'); cursor++;
+					store_i32(cursor, GLOBAL::exedit_base + 0x8ffb1 - (int)cursor - 4); cursor += 4;
 
-						h.store_i8(0x8ffe7 - vp_begin, '\xe9');
-						h.replaceNearJmp(0x8ffe8 - vp_begin, cursor);
-						h.store_i16(0x8ffec - vp_begin, '\xd9\xe1');
-						store_i32(cursor, '\xdb\x41\x04\xda'); cursor += 4;
-						store_i32(cursor, '\x4c\x24\x3c\xe9'); cursor += 4;
-						store_i32(cursor, GLOBAL::exedit_base + 0x8ffec - (int)cursor - 4); cursor += 4;
+					h.store_i8(0x8ffe7 - vp_begin, '\xe9');
+					h.replaceNearJmp(0x8ffe8 - vp_begin, cursor);
+					h.store_i16(0x8ffec - vp_begin, '\xd9\xe1');
+					store_i32(cursor, '\xdb\x41\x04\xda'); cursor += 4;
+					store_i32(cursor, '\x4c\x24\x3c\xe9'); cursor += 4;
+					store_i32(cursor, GLOBAL::exedit_base + 0x8ffec - (int)cursor - 4); cursor += 4;
 
-						h.replaceNearJmp(0x8fda0 - vp_begin, &calc_pos_wrap);
-						h.replaceNearJmp(0x8fdbd - vp_begin, &calc_pos_wrap);
-						h.replaceNearJmp(0x8fe2c - vp_begin, &calc_pos_wrap);
-						h.replaceNearJmp(0x8fea0 - vp_begin, &calc_pos_wrap);
-					}
+					h.replaceNearJmp(0x8fda0 - vp_begin, &calc_pos_wrap1);
+					h.replaceNearJmp(0x8fdbd - vp_begin, &calc_pos_wrap1);
+					h.replaceNearJmp(0x8fe2c - vp_begin, &calc_pos_wrap2);
+					h.replaceNearJmp(0x8fea0 - vp_begin, &calc_pos_wrap3);
+
 				}
 
 			}

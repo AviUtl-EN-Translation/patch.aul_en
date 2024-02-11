@@ -160,7 +160,7 @@ namespace patch {
         lua_remove(L, idx);
         return ret;
     }
-    
+
     static int luastateidx_internal = 0;
     BOOL __cdecl lua_t::DoScriptInit() {
         env::store();
