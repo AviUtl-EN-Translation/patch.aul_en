@@ -52,7 +52,10 @@ namespace patch {
                     halfchar = beshort - '０' + '0';
                     break;
                 default:
-                    *ptr = '\0';
+                    while (ptr < str) {
+                        *ptr = ' ';
+                        ptr++;
+                    }
                     return;
                 }
                 *ptr = halfchar;
@@ -62,7 +65,10 @@ namespace patch {
                 case '-':case '.':case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
                     break;
                 default:
-                    *ptr = '\0';
+                    while (ptr < str) {
+                        *ptr = ' ';
+                        ptr++;
+                    }
                     return;
                 }
                 *ptr = *str;
@@ -70,7 +76,10 @@ namespace patch {
             ptr++;
             str++;
         }
-        *ptr = '\0';
+        while (ptr < str) {
+            *ptr = ' ';
+            ptr++;
+        }
     }
 
     int __cdecl str2int_t::str2int_wrap(char* str) {
