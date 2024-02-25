@@ -28,7 +28,7 @@
 namespace patch {
 
     // init at exedit load
-    // exc
+    // 動画・音声・音声波形表示オブジェクトの初期値設定ファイル(.exc)に存在しないファイルが登録されていたら読み込みを行わないように変更
     inline class exc_avi_file_t {
         bool enabled = true;
         bool enabled_i;
