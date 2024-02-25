@@ -211,7 +211,25 @@ inline bool InjectFunction_fastcall(uint32_t address, void(*func)(), size_t asm_
 
 
 
-inline static void(__cdecl* push_new_args)(uint32_t function, int arg_ofs, int arg_n);
+inline static const char bin_push_new_args[] = {
+	"\x53"                     // push    ebx
+	"\x03\xca"                 // add     ecx,edx
+	"\x33\xdb"                 // mov     ebx,00
+	"\x8d\x0c\x8c"             // mov     ecx,esp+ecx*4
+	"\x85\xd2"                 // test    edx
+	"\x7e\x0a"                 // jng     skip,0a
+	"\x8b\xda"                 // mov     ebx,edx
+	"\xff\x31"                 // push    dword ptr [ecx]
+	"\x83\xe9\x04"             // sub     ecx,+04
+	"\x4a"                     // dec     edx
+	"\x7f\xf8"                 // jg      back,08
+	"\xc1\xe3\x02"             // shl     ebx,02
+	"\xff\xd0"                 // call    eax
+	"\x03\xe3"                 // add     esp,ebx
+	"\x5b"                     // pop     ebx
+	"\xc3"                     // ret
+};
+//inline static void(__cdecl* push_new_args)(uint32_t function, int arg_ofs, int arg_n) = reinterpret_cast<decltype(push_new_args)>(&bin_push_new_args);
 
 /// <summary>
 /// 指定したアドレスの関数の直前に、自分の関数を実行する
@@ -255,7 +273,7 @@ inline void InjectionFunction_push_args_cdecl(uint32_t address, const uint32_t f
 	store_i8(cursor, 0xba); cursor++;
 	store_i32(cursor, arg_n); cursor += 4;
 	store_i8(cursor, 0xe8); cursor++;
-	store_i32(cursor, CalcNearJmp((uint32_t)cursor, (uint32_t)push_new_args)); cursor += 4;
+	store_i32(cursor, CalcNearJmp((uint32_t)cursor, (uint32_t)bin_push_new_args)); cursor += 4;
 
 	// pop
 	if (flag & FLAG_PUSH_POP_EDX) {
@@ -280,28 +298,6 @@ inline void InjectionFunction_push_args_cdecl(uint32_t address, const uint32_t f
 }
 
 inline void init_util_magic() {
-	auto& cursor = GLOBAL::executable_memory_cursor;
-
-	static const char bin_push_new_args[] = {
-		"\x53"                     // push    ebx
-		"\x03\xca"                 // add     ecx,edx
-		"\x33\xdb"                 // mov     ebx,00
-		"\x8d\x0c\x8c"             // mov     ecx,esp+ecx*4
-		"\x85\xd2"                 // test    edx
-		"\x7e\x0a"                 // jng     skip,0a
-		"\x8b\xda"                 // mov     ebx,edx
-		"\xff\x31"                 // push    dword ptr [ecx]
-		"\x83\xe9\x04"             // sub     ecx,+04
-		"\x4a"                     // dec     edx
-		"\x7f\xf8"                 // jg      back,08
-		"\xc1\xe3\x02"             // shl     ebx,02
-		"\xff\xd0"                 // call    eax
-		"\x03\xe3"                 // add     esp,ebx
-		"\x5b"                     // pop     ebx
-		"\xc3"                     // ret
-	};
-	(push_new_args) = reinterpret_cast<decltype(push_new_args)>(cursor);
-
-	memcpy(cursor, bin_push_new_args, sizeof(bin_push_new_args) - 1);
-	cursor += sizeof(bin_push_new_args) - 1;
+	DWORD oldProtect;
+	VirtualProtect((LPVOID)bin_push_new_args, sizeof(bin_push_new_args), PAGE_EXECUTE_READWRITE, &oldProtect);
 }
