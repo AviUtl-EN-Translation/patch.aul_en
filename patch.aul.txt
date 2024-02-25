@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_50
+patch.aul r43_ss_51
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -142,7 +142,7 @@ https://scrapbox.io/nazosauna/patch.aul
         ・時間制御・グループ制御・カメラ制御 の対象レイヤー数を変更
         ・エッジ抽出のチェックボックス切り替え
         ・クロマキー・カラーキー・特定色域変換の色の取得
-        ・フィルタ効果の削除（右クリックメニュー）
+        ・フィルタ効果を上/下に移動・フィルタ効果の削除（右クリックメニュー）
         ・上のオブジェクトでクリッピング・カメラ制御の対象にする（右クリックメニュー・ボタン）の切り替え
     ・Ctrlを押しながらトラック数値をクリックして動かした後に複数選択状態が解除されるのを修正
     ・操作によっては複数選択状態が解除されないままになるので拡張編集ウィンドウをアクティブにした時に判定するように変更
@@ -184,6 +184,9 @@ https://scrapbox.io/nazosauna/patch.aul
     ・編集プロジェクト読み込み時、最大フレーム数が足りず失敗した後、拡張編集などにオブジェクトが置けてしまうのを修正
     ・ショートカットキーの設定でF13-24・Apps・変換・無変換・Pauseが登録できるように追加
     ・スクリプト制御を折り畳むことで次のスクリプト制御のエディットボックスが表示されるように修正
+    ・動画ファイルオブジェクトを削除してもハンドルを閉じないように変更
+    ・同じ動画に対して動画ファイルのハンドルを共有させるように変更(Altを押しながら読み込ませるときは無効)
+    ・動画ファイル・音声ファイル・音声波形表示オブジェクトの初期値設定ファイル(.exc)に存在しないファイルが登録されている場合は読み込みを行わないように変更
 
     追加
     ・コンソールの表示
@@ -298,7 +301,9 @@ https://scrapbox.io/nazosauna/patch.aul
         "fileinfo" : boolean, ; ファイルの情報を開くと落ちる/ファイル制御情報が正しくないことがあるのを修正 (既定値: true)
         "set_frame" : boolean, ; 選択フレームが総フレーム数以上の値になっている場合に調整する (既定値: true)
         "read_audio" : boolean, ; exfunc->avi_file_read_audio_sampleを改造 (既定値: true)
-        "wave_file_reader" boolean, ; Wave File Readerが読み込めない形式で失敗した時、別の入力プラグインに渡すように修正 (既定値: true)
+        "wave_file_reader" : boolean, ; Wave File Readerが読み込めない形式で失敗した時、別の入力プラグインに渡すように修正 (既定値: true)
+        "avi_file_handle_close" : boolean, ; 動画ファイルオブジェクトを削除してもハンドルを閉じないように変更 (既定値: true)
+        "avi_file_handle_share" : boolean, ; 同じ動画に対して動画ファイルのハンドルを共有させるように変更 (既定値: true)
         "aup_load" : boolean, ; 設定ダイアログ表示中のオブジェクトIDが異常値のaupを読み込むとエラーとなるのを対策 (既定値: true)
         "aup_layer_setting" : boolean, ; プロジェクトの保存時、レイヤー情報を保存する基準を変える (既定値: true)
         "aup_scene_setting" : boolean, ; プロジェクトの保存/読み込み時にシーン設定の一部情報（グリッド設定など）が欠けるのを修正 (既定値: true)
@@ -311,6 +316,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "exo_abnormal_pos" : boolean, ; オブジェクトファイルの入力で、開始フレームなどが異常なオブジェクトの対処を変更 (既定値: true)
         "exo_fold_gui" : boolean, ; exa,exo生成時、設定ダイアログの▼（折り畳み）とマウスマーク（GUI表示）の情報を追加する (既定値: true)
         "exa_camera" : boolean, ; エイリアスでオブジェクトにフィルタ効果を付与するときにカメラ制御の対象が外れるのを修正 (既定値: true)
+        "exc_avi_file" : boolean, ; 動画ファイル・音声ファイル・音声波形表示の初期値設定ファイルに存在しないファイルが登録されている場合は読み込みを行わないように変更 (既定値: true)
         "str_minusval" : boolean, ; オブジェクトファイルの入力、スクリプトファイルの読み込みで、トラックバーの -0.99～-0.01 が正になるのを修正 (既定値: true)
         "str2int" : boolean, ; 一部入力欄での数値読み込みで先頭にある空白を無視し、全角文字も読み込めるようにする (既定値: true)
         "tra_aviutlfilter" : boolean, ; 拡張編集以外のフィルタのトラックバーにトラックバー変化方法スクリプトを適用していると例外になる問題 (既定値: true)
@@ -422,7 +428,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_50" のような文字列が格納されている
+        例として "patch.aul r43_ss_51" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
