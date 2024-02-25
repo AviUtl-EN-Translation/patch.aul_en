@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_50"
+#define PATCH_VERSION_STR "r43_ss_51"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -109,6 +109,8 @@
 #define PATCH_SWITCH_READ_AUDIO read_audio
 #define PATCH_SWITCH_WAVE_FILE_READER wave_file_reader
 // #define PATCH_SWITCH_ADJUST_VMEM adjust_vmem
+#define PATCH_SWITCH_AVI_FILE_HANDLE_CLOSE avi_file_handle_close
+#define PATCH_SWITCH_AVI_FILE_HANDLE_SHARE avi_file_handle_share
 #define PATCH_SWITCH_TRA_AVIUTL_FILTER tra_aviutl_filter
 #define PATCH_SWITCH_TRA_CHANGE_DRAWFILTER tra_change_drawfilter
 #define PATCH_SWITCH_TRA_CHANGE_MODE tra_change_mode
@@ -126,6 +128,7 @@
 #define PATCH_SWITCH_EXO_ABNORMAL_POS exo_abnormal_pos
 #define PATCH_SWITCH_EXO_FOLD_GUI exo_fold_gui
 #define PATCH_SWITCH_EXA_CAMERA exa_camera
+#define PATCH_SWITCH_EXC_AVI_FILE exc_avi_file
 #define PATCH_SWITCH_STR_MINUSVAL str_minusval
 #define PATCH_SWITCH_STR2INT str2int
 #define PATCH_SWITCH_TEXT_OP_SIZE text_op_size

@@ -44,6 +44,11 @@ void init_t::InitAtPatchLoaded() {
 
 	GLOBAL::patchaul_config_path = GLOBAL::patchaul_path + L".json";
 
+	if (!PathFileExistsW((LPCWSTR)(GLOBAL::patchaul_config_path.c_str()))) {
+		//GLOBAL::config.store(GLOBAL::patchaul_config_path);
+		config2.store(GLOBAL::patchaul_config_path);
+	}
+
 	//GLOBAL::config.load(GLOBAL::patchaul_config_path);
 	config2.load(GLOBAL::patchaul_config_path);
 
@@ -51,6 +56,7 @@ void init_t::InitAtPatchLoaded() {
 
 	ModulesData::update();
 
+	init_util_magic();
 	{
 		DWORD oldProtect;
 		VirtualProtect(GLOBAL::executable_memory, sizeof(GLOBAL::executable_memory), PAGE_EXECUTE_READWRITE, &oldProtect);
@@ -132,6 +138,12 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_THEME_CC
 	patch::theme_cc.init();
 #endif
+#ifdef PATCH_SWITCH_AVI_FILE_HANDLE_CLOSE
+	patch::avi_file_handle_close.init();
+#endif
+#ifdef PATCH_SWITCH_AVI_FILE_HANDLE_SHARE
+	patch::avi_file_handle_share.init();
+#endif
 
 #ifdef PATCH_SWITCH_TRA_AVIUTL_FILTER
 	patch::tra_aviutlfilter.init();
@@ -193,6 +205,10 @@ void init_t::InitAtExeditLoad() {
 
 #ifdef PATCH_SWITCH_EXA_CAMERA
 	patch::exa_camera.init();
+#endif
+
+#ifdef PATCH_SWITCH_EXC_AVI_FILE
+	patch::exc_avi_file.init();
 #endif
 
 #ifdef PATCH_SWITCH_STR_MINUSVAL
@@ -523,8 +539,6 @@ void init_t::InitAtExeditLoad() {
 	}
 #endif
 
-	//GLOBAL::config.store(GLOBAL::patchaul_config_path);
-	config2.store(GLOBAL::patchaul_config_path);
 }
 		
 void init_t::InitAufBefore() {

@@ -485,6 +485,15 @@
     <ClInclude Include="patch_setting_dialog_scriptcontrol.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_avi_file_handle_share.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_avi_file_handle_close.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_exc_avi_file.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -755,6 +764,12 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_failed_max_frame.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_avi_file_handle_share.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_exc_avi_file.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

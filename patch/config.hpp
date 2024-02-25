@@ -93,6 +93,12 @@ public:
             #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_AVI_FILE_HANDLE_CLOSE
+                patch::avi_file_handle_close.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_AVI_FILE_HANDLE_SHARE
+                patch::avi_file_handle_share.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_AUP_LOAD
                 patch::aup_load.switch_load(cr);
             #endif
@@ -131,6 +137,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_EXA_CAMERA
                 patch::exa_camera.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_EXC_AVI_FILE
+                patch::exc_avi_file.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_STR_MINUSVAL
                 patch::str_minusval.switch_load(cr);
@@ -708,6 +717,12 @@ public:
             #ifdef PATCH_SWITCH_SPLASH
                 patch::splash.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_AVI_FILE_HANDLE_CLOSE
+                patch::avi_file_handle_close.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_AVI_FILE_HANDLE_SHARE
+                patch::avi_file_handle_share.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_AUP_LOAD
                 patch::aup_load.switch_store(switch_);
             #endif
@@ -746,6 +761,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_EXA_CAMERA
                 patch::exa_camera.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_EXC_AVI_FILE
+                patch::exc_avi_file.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_STR_MINUSVAL
                 patch::str_minusval.switch_store(switch_);

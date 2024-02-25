@@ -557,66 +557,23 @@ namespace patch {
         update_any_exdata_use_idx(efp, 2); // OFS::ExEdit::str_file
         deselect_object_if();
     }
-    int __cdecl any_obj_t::mov_eax_1_use0_e0_wrap(DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+
+    void __cdecl any_obj_t::any_use0(ExEdit::Filter* efp) {
         update_any_exdata_use_idx(efp, 0);
-        return 1;
     }
-    int __cdecl any_obj_t::mov_eax_1_use2_e0_wrap(DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata_use_idx(efp, 2);
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_use0_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata_use_idx(efp, 0);
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_use1_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+    void __cdecl any_obj_t::any_use1(ExEdit::Filter* efp) {
         update_any_exdata_use_idx(efp, 1);
-        return 1;
     }
-    int __cdecl any_obj_t::mov_eax_1_use2_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+    void __cdecl any_obj_t::any_use2(ExEdit::Filter* efp) {
         update_any_exdata_use_idx(efp, 2);
-        return 1;
     }
-    int __cdecl any_obj_t::mov_eax_1_use5_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+    void __cdecl any_obj_t::any_use5(ExEdit::Filter* efp) {
         update_any_exdata_use_idx(efp, 5);
-        return 1;
     }
-    int __cdecl any_obj_t::mov_eax_1_use2_e2_wrap(int e1, int e2, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata_use_idx(efp, 2);
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_use0use1_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
+    void __cdecl any_obj_t::any_use0use1(ExEdit::Filter* efp) {
         update_any_exdata_use_idx(efp, 0);
         update_any_exdata_use_idx(efp, 1);
-        return 1;
     }
-    /*
-    int __cdecl any_obj_t::mov_eax_1_type_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type));
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_blend_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_blend));
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_mode_0_wrap(DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_mode));
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_mode_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_mode));
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_mode_2_wrap(int e1, int e2, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_mode));
-        return 1;
-    }
-    int __cdecl any_obj_t::mov_eax_1_type_name_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp) {
-        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_type));
-        update_any_exdata(efp->processing, (char*)(GLOBAL::exedit_base + OFS::ExEdit::str_name));
-        return 1;
-    }
-    */
 
     void __cdecl  any_obj_t::update_obj_data_before_clipping_wrap(int object_idx) {
         reinterpret_cast<void(__cdecl*)(int)>(GLOBAL::exedit_base + 0x36020)(object_idx);
@@ -631,6 +588,29 @@ namespace patch {
         }
     }
 
+    void __cdecl any_obj_t::swap_filter_effect_wrap(int object_idx, int filter_idx, int filter_ofs) {
+        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
+        if (0 <= obj[object_idx].index_midpt_leader) {
+            object_idx = obj[object_idx].index_midpt_leader;
+        }
+        int filter_param_id = obj[object_idx].filter_param[filter_idx].id;
+
+        reinterpret_cast<void(__cdecl*)(int, int, int)>(GLOBAL::exedit_base + OFS::ExEdit::swap_filter_effect)(object_idx, filter_idx, filter_ofs);
+
+        int SelectingObjectNum = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
+        int* SelectingObjectIdxArray = (int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
+        for (int i = 0; i < SelectingObjectNum; i++) {
+            int select_idx = SelectingObjectIdxArray[i];
+            if (select_idx != object_idx) {
+                if (obj[select_idx].index_midpt_leader < 0 || obj[select_idx].index_midpt_leader == select_idx) {
+                    if (obj[select_idx].filter_param[filter_idx].id == filter_param_id) {
+                        reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 1);
+                        reinterpret_cast<void(__cdecl*)(int, int, int)>(GLOBAL::exedit_base + OFS::ExEdit::swap_filter_effect)(select_idx, filter_idx, filter_ofs);
+                    }
+                }
+            }
+        }
+    }
     void __cdecl any_obj_t::delete_filter_effect_wrap(int object_idx, int filter_idx) {
         auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
         if (0 <= obj[object_idx].index_midpt_leader) {
@@ -654,84 +634,6 @@ namespace patch {
             }
         }
     }
-
-
-
-    /*  // OFS::ExEdit::update_any_exdataをちょっと改造 不要になったけど解析データとして使うことがあれば
-    void __cdecl update_any_exdata_ex(ExEdit::ObjectFilterIndex ofi, char* str, int flag, void* param) {
-        if ((int)ofi == 0) return;
-
-        int SettingDialog_ObjIdx = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SettingDialog_ObjIdx);
-        if (SettingDialog_ObjIdx < 0) return;
-
-        int SelectingObjectNum = *(int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
-        if (SelectingObjectNum <= 0) return;
-
-        auto obj = *(ExEdit::Object**)(GLOBAL::exedit_base + OFS::ExEdit::ObjectArrayPointer);
-        int* SelectingObjectIdxArray = (int*)(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
-        DWORD ExdataPointer = *(DWORD*)(GLOBAL::exedit_base + OFS::ExEdit::ExdataPointer);
-        auto LoadedFilterTable = (ExEdit::Filter**)(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterTable);
-
-        int filter_idx = (int)ofi >> 16;
-        auto efp = LoadedFilterTable[obj[SettingDialog_ObjIdx].filter_param[filter_idx].id];
-        if (efp->exdata_use == NULL) return;
-        if (efp->exdata_size <= 0) return;
-
-        if (0 <= obj[SettingDialog_ObjIdx].index_midpt_leader) {
-            SettingDialog_ObjIdx = obj[SettingDialog_ObjIdx].index_midpt_leader;
-        }
-        int dlg_exdata_offset = obj[SettingDialog_ObjIdx].exdata_offset;
-        int dlg_filter_exdata_offset = obj[SettingDialog_ObjIdx].filter_param[filter_idx].exdata_offset;
-
-
-        for (int i = 0; i < SelectingObjectNum; i++) {
-            int select_idx = SelectingObjectIdxArray[i];
-            int leader_filter_idx = reinterpret_cast<int(__cdecl*)(int, int, int)>(GLOBAL::exedit_base + OFS::ExEdit::get_same_filter_idx_if_leader)(select_idx, SettingDialog_ObjIdx, filter_idx);
-            if (0 <= leader_filter_idx) {
-                if (0 <= obj[select_idx].index_midpt_leader) {
-                    select_idx = obj[select_idx].index_midpt_leader;
-                }
-                int select_filter_exdata_offset = obj[select_idx].filter_param[leader_filter_idx].exdata_offset;
-                int select_exdata_offset = obj[select_idx].exdata_offset;
-                int exdata_offset = 0;
-// ##################### sdk更新したら変える
-                struct exdata_use_fix{ // sdkのExdataUse::typeがintになっているため上手くいかない
-                    short type;
-                    short size;
-                    char* name;
-                } *exdata_use = (exdata_use_fix*)efp->exdata_use;
-                while (exdata_offset < efp->exdata_size) {
-                    if (lstrcmpA(exdata_use->name, str) != 0) {
-                        exdata_offset += exdata_use->size;
-                        exdata_use++;
-                    } else {
-                        void* select_exdata = (void*)(ExdataPointer + select_exdata_offset + select_filter_exdata_offset + 4 + exdata_offset);
-                        void* dlg_exdata = (void*)(ExdataPointer + dlg_exdata_offset + dlg_filter_exdata_offset + 4 + exdata_offset);
-                        if (memcmp(select_exdata, dlg_exdata, exdata_use->size)) {
-                            reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 0);
-
-                            if (flag & 2) { // 音声ファイルの動画ファイルと連携を外したい
-                                reinterpret_cast<void(__cdecl*)(int, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_undo)(select_idx, 1);
-                                int idx = select_idx + 1;
-                                while (0 < idx) {
-                                    obj[idx-1].check_value[obj[idx-1].filter_param[leader_filter_idx].check_begin + 1] = 0;
-                                    idx = (int)efp->exfunc->x08((ExEdit::ObjectFilterIndex)(idx)); // get_next_obj
-                                }
-                            }
-
-                            memcpy(select_exdata, dlg_exdata, exdata_use->size);
-
-                            if (flag & 1) {
-                                efp->exfunc->rename_object((ExEdit::ObjectFilterIndex)(select_idx + 1), (char*)param);
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    */
 
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_ANY_OBJ

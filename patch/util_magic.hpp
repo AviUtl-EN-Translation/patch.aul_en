@@ -25,6 +25,7 @@
 #include "util_int.hpp"
 #include "util_pe.hpp"
 
+
 inline i32 CalcNearJmp(i32 address, i32 jmp_address) {
 	return jmp_address - (address + 4);
 }
@@ -206,4 +207,97 @@ inline bool InjectFunction_fastcall(uint32_t address, void(*func)(), size_t asm_
 	store_i16(address + 5, '\xff\xe0'); // JMP EAX
 
 	return true;
+}
+
+
+
+inline static const char bin_push_new_args[] = {
+	"\x53"                     // push    ebx
+	"\x03\xca"                 // add     ecx,edx
+	"\x33\xdb"                 // mov     ebx,00
+	"\x8d\x0c\x8c"             // mov     ecx,esp+ecx*4
+	"\x85\xd2"                 // test    edx
+	"\x7e\x0a"                 // jng     skip,0a
+	"\x8b\xda"                 // mov     ebx,edx
+	"\xff\x31"                 // push    dword ptr [ecx]
+	"\x83\xe9\x04"             // sub     ecx,+04
+	"\x4a"                     // dec     edx
+	"\x7f\xf8"                 // jg      back,08
+	"\xc1\xe3\x02"             // shl     ebx,02
+	"\xff\xd0"                 // call    eax
+	"\x03\xe3"                 // add     esp,ebx
+	"\x5b"                     // pop     ebx
+	"\xc3"                     // ret
+};
+//inline static void(__cdecl* push_new_args)(uint32_t function, int arg_ofs, int arg_n) = reinterpret_cast<decltype(push_new_args)>(&bin_push_new_args);
+
+/// <summary>
+/// 指定したアドレスの関数の直前に、自分の関数を実行する
+/// 実行後元の関数に戻る
+/// __cdecl専用
+/// </summary>
+/// <param name="address"> 中断したい関数のアドレス </param>
+/// <param name="function"> 挿入する関数 </param>
+/// <param name="asm_word_n"> 命令単位に合った数(5以上) </param>
+/// <param name="stack_s"> 何番目のスタックから引数にするか(4byte単位) </param>
+/// <param name="arg_n"> 引数の数(4byte単位) </param>
+/// <param name="flag"> EAX,ECX,EDXを退避するかを設定 </param>
+/// <returns> TRUE </returns>
+#define FLAG_PUSH_POP_EAX 0x00000001 // 戻り値が元のEAXに上書きされる注意
+#define FLAG_PUSH_POP_ECX 0x00000002
+#define FLAG_PUSH_POP_EDX 0x00000004
+// それ以外は呼出規約として関数側が行っている
+inline void InjectionFunction_push_args_cdecl(uint32_t address, const uint32_t function, size_t asm_word_n, uint16_t stack_s, uint8_t arg_n, uint32_t flag) {
+	auto& cursor = GLOBAL::executable_memory_cursor;
+	auto cursor0 = GLOBAL::executable_memory_cursor;
+	stack_s++; // バイナリ関数retアドレス分
+	// push
+	if (flag & FLAG_PUSH_POP_EAX) {
+		store_i8(cursor, 0x50); cursor++;
+		stack_s++;
+	}
+	if (flag & FLAG_PUSH_POP_ECX) {
+		store_i8(cursor, 0x51); cursor++;
+		stack_s++;
+	}
+	if (flag & FLAG_PUSH_POP_EDX) {
+		store_i8(cursor, 0x52); cursor++;
+		stack_s++;
+	}
+
+	// args eax,ecx,edx
+	store_i8(cursor, 0xb8); cursor++;
+	store_i32(cursor, function); cursor += 4;
+	store_i8(cursor, 0xb9); cursor++;
+	store_i32(cursor, stack_s); cursor += 4;
+	store_i8(cursor, 0xba); cursor++;
+	store_i32(cursor, arg_n); cursor += 4;
+	store_i8(cursor, 0xe8); cursor++;
+	store_i32(cursor, CalcNearJmp((uint32_t)cursor, (uint32_t)bin_push_new_args)); cursor += 4;
+
+	// pop
+	if (flag & FLAG_PUSH_POP_EDX) {
+		store_i8(cursor, 0x5a); cursor++;
+	}
+	if (flag & FLAG_PUSH_POP_ECX) {
+		store_i8(cursor, 0x59); cursor++;
+	}
+	if (flag & FLAG_PUSH_POP_EAX) {
+		store_i8(cursor, 0x58); cursor++;
+	}
+
+	memcpy(cursor, (void*)address, asm_word_n); cursor += asm_word_n;
+
+	store_i8(cursor, 0xe9); cursor++;
+	store_i32(cursor, CalcNearJmp((uint32_t)cursor, address + asm_word_n)); cursor += 4;
+
+
+	OverWriteOnProtectHelper h(address, 5);
+	h.store_i8(0, 0xe9);
+	h.replaceNearJmp(1, cursor0);
+}
+
+inline void init_util_magic() {
+	DWORD oldProtect;
+	VirtualProtect((LPVOID)bin_push_new_args, sizeof(bin_push_new_args), PAGE_EXECUTE_READWRITE, &oldProtect);
 }

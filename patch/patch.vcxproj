@@ -43,6 +43,8 @@
     <ClInclude Include="patch_aup_load.hpp" />
     <ClInclude Include="patch_aup_scene_setting.hpp" />
     <ClInclude Include="patch_aviutl_wndproc_override.hpp" />
+    <ClInclude Include="patch_avi_file_handle_close.hpp" />
+    <ClInclude Include="patch_avi_file_handle_share.hpp" />
     <ClInclude Include="patch_base.hpp" />
     <ClInclude Include="patch_blend.hpp" />
     <ClInclude Include="patch_border_only_text.hpp" />
@@ -53,6 +55,7 @@
     <ClInclude Include="patch_dialog_new_file.hpp" />
     <ClInclude Include="patch_exa_camera.hpp" />
     <ClInclude Include="patch_exclusion_font.hpp" />
+    <ClInclude Include="patch_exc_avi_file.hpp" />
     <ClInclude Include="patch_exo_abnormal_pos.hpp" />
     <ClInclude Include="patch_failed_max_frame.hpp" />
     <ClInclude Include="patch_fast_audio_spectrum.hpp" />
@@ -200,11 +203,13 @@
     <ClCompile Include="patch_any_obj.cpp" />
     <ClCompile Include="patch_aup_load.cpp" />
     <ClCompile Include="patch_aviutl_wndproc_override.cpp" />
+    <ClCompile Include="patch_avi_file_handle_share.cpp" />
     <ClCompile Include="patch_blend.cpp" />
     <ClCompile Include="patch_border_only_text.cpp" />
     <ClCompile Include="patch_camera_scene.cpp" />
     <ClCompile Include="patch_change_disp_scene.cpp" />
     <ClCompile Include="patch_exa_camera.cpp" />
+    <ClCompile Include="patch_exc_avi_file.cpp" />
     <ClCompile Include="patch_failed_file_drop.cpp" />
     <ClCompile Include="patch_failed_max_frame.cpp" />
     <ClCompile Include="patch_fast_audio_spectrum.cpp" />

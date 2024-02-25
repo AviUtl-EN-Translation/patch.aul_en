@@ -96,6 +96,7 @@ namespace OFS {
 		constexpr i32 efSceneAudio_exdatause_idx_name = 0x0aeb60;
 		constexpr i32 efScene_exdatause_idx_name = 0x0ae9b0;
 
+		constexpr i32 read_object_file_data = 0x029810;
 		constexpr i32 exo_readtrack = 0x029090;
 		constexpr i32 str2int2 = 0x0918ab;
 
@@ -125,6 +126,7 @@ namespace OFS {
 		constexpr i32 timeline_click_y = 0x196744;
 		constexpr i32 timeline_x2frame = 0x032b70;
 		constexpr i32 timeline_y2layer = 0x032c10;
+		constexpr i32 timeline_width = 0x1a52fc;
 
 		constexpr i32 memory_ptr = 0x1a5328;
 		constexpr i32 zbuffer_ptr = 0x1ec7ac;
@@ -188,6 +190,9 @@ namespace OFS {
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
 		constexpr i32 efAnimationEffect_ptr = 0x09d2b8;
 		constexpr i32 efCustomObject_ptr = 0x09d3e0;
+		constexpr i32 efMovieFile_ptr = 0x09dd08;
+		constexpr i32 efMovieSynthesis_ptr = 0x09de30;
+		constexpr i32 efAudioFile_ptr = 0x0ba570;
 		constexpr i32 efWaveForm_ptr = 0x0ba300;
 		constexpr i32 efCameraEffect_ptr = 0x09d508;
 		constexpr i32 efSceneChange_ptr = 0x0b7f80;
@@ -354,6 +359,8 @@ namespace OFS {
 
 		constexpr i32 object2idx = 0x02b0d0;
 		constexpr i32 delete_object = 0x034500;
+		constexpr i32 delete_all_object = 0x02b540;
+
 
 		constexpr i32 set_range_object = 0x038940;
 		constexpr i32 RangeObjectTable = 0x192200;
@@ -361,6 +368,7 @@ namespace OFS {
 		constexpr i32 SettingDialog_ObjIdx = 0x177a10;
 		constexpr i32 get_last_filter_idx = 0x0335f0;
 		constexpr i32 get_filterp = 0x047b00;
+		constexpr i32 swap_filter_effect = 0x033b30;
 		constexpr i32 delete_filter_effect = 0x033d20;
 
 		constexpr i32 is_camera_object = 0x039990;
@@ -417,6 +425,9 @@ namespace OFS {
 		constexpr i32 avi_handle_open = 0x004ea0;
 		constexpr i32 avi_handle_close = 0x004e20;
 		constexpr i32 avi_handle_reopen = 0x0052e0;
+		constexpr i32 avi_handle_init = 0x005310;
+		constexpr i32 avi_handle_exit = 0x005350;
+		constexpr i32 avi_handle_free = 0x005360;
 
 		constexpr i32 lut_random_wave = 0x1bad60;    // short[65536]: min=-2048 max=2048
 		constexpr i32 lut_cos_half = 0x1dad60;       // short[256]  : (1+cos(n*PI/256))*2048  : 4096 -> 0

@@ -329,7 +329,7 @@ namespace patch {
         }
 
         // set_undoの先頭に追加する処理
-        static int __cdecl f8d290(void* ret, int object_idx, int flag);
+        static void __cdecl f8d290(int object_idx, int flag);
 
         // run_undoの始めの方に追加する処理
         static int __cdecl pre_run_undo();
@@ -445,12 +445,10 @@ namespace patch {
 
             /*  bufferの最適化処理を行う
                 1008d290 a11c4e2410   MOV        EAX, [UndoInfo_limit_mode]
-                →       e8--------   CALL       f8d290
+                →       e9--------   CALL       f8d290
             */
             {
-                OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08d290, 5);
-                h.store_i8(0, '\xe8'); // call (rel32)
-                h.replaceNearJmp(1, &f8d290);
+                InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x08d290, (int)&f8d290, 5, 1, 2, 0);
             }
 
             /*  undoの前処理

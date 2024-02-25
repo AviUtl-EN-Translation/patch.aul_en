@@ -46,22 +46,22 @@ namespace patch {
     }*/
     
 
-    int __cdecl redo_t::f8d290(void* ret, int object_idx, int flag) {
+    void __cdecl redo_t::f8d290(int object_idx, int flag) {
         int& UndoInfo_object_num = *UndoInfo_object_num_ptr;
         int& UndoInfo_write_offset = *UndoInfo_write_offset_ptr;
         int& UndoInfo_limit_mode = *UndoInfo_limit_mode_ptr;
 
         // データが生成されない条件をそのまま追加
         if ((UndoInfo_limit_mode && (flag & 2) == 0) || UndoInfo_write_offset < 0 || UndoInfo_object_num < 0) {
-            return UndoInfo_limit_mode;
+            return;
         }
         auto ObjectArrayPointer = *ObjectArrayPointer_ptr;
         if ((flag & 0x10) == 0) {
             if (!has_flag(ObjectArrayPointer[object_idx].flag, ExEdit::Object::Flag::Exist) && ((flag & 2) == 0)) {
-                return UndoInfo_limit_mode;
+                return;
             }
             if ((flag & 1) && 0 <= ObjectArrayPointer[object_idx].index_midpt_leader) {
-                return UndoInfo_limit_mode;
+                return;
             }
         }
         // ----------------------------------
@@ -88,7 +88,7 @@ namespace patch {
             optimized = false;
         }
 
-        return UndoInfo_limit_mode;
+        return;
     }
 
     int __cdecl redo_t::pre_run_undo() {

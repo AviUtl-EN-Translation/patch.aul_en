@@ -53,7 +53,7 @@ namespace patch {
                     break;
                 default:
                     while (ptr < str) {
-                        *ptr = ' ';
+                        *ptr = '?';
                         ptr++;
                     }
                     return;
@@ -66,7 +66,7 @@ namespace patch {
                     break;
                 default:
                     while (ptr < str) {
-                        *ptr = ' ';
+                        *ptr = '?';
                         ptr++;
                     }
                     return;
@@ -77,7 +77,7 @@ namespace patch {
             str++;
         }
         while (ptr < str) {
-            *ptr = ' ';
+            *ptr = '?';
             ptr++;
         }
     }

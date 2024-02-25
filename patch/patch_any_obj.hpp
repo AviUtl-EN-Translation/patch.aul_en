@@ -71,22 +71,12 @@ namespace patch {
 		static void __cdecl update_dlg_colorkey_wrap(ExEdit::Filter* efp, int* exdata);
 		static void __cdecl update_dlg_shadow_wrap(ExEdit::Filter* efp, void* exdata);
 		static void __cdecl update_dlg_border_wrap(ExEdit::Filter* efp, void* exdata);
-		/*
-		static int __cdecl mov_eax_1_blend_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_type_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_type_name_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_mode_0_wrap(DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_mode_1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_mode_2_wrap(int e1, int e2, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		*/
-		static int __cdecl mov_eax_1_use0_e0_wrap(DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_use2_e0_wrap(DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_use0_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_use1_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_use2_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_use5_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_use2_e2_wrap(int e1, int e2, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
-		static int __cdecl mov_eax_1_use0use1_e1_wrap(int e1, DWORD ret, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, void* editp, ExEdit::Filter* efp);
+
+		static void __cdecl any_use0(ExEdit::Filter* efp);
+		static void __cdecl any_use1(ExEdit::Filter* efp);
+		static void __cdecl any_use2(ExEdit::Filter* efp);
+		static void __cdecl any_use5(ExEdit::Filter* efp);
+		static void __cdecl any_use0use1(ExEdit::Filter* efp);
 
 		static void update_any_color_specialcolorconv(ExEdit::Filter* efp, int id, short status);
 		static void __stdcall mov_status_0_specialcolorconv(ExEdit::Filter* efp);
@@ -95,6 +85,7 @@ namespace patch {
 		static void __stdcall mov_status2_1_specialcolorconv(ExEdit::Filter* efp);
 		static void __cdecl update_obj_data_before_clipping_wrap(int object_idx);
 		static void __cdecl update_obj_data_camera_target_wrap(int object_idx);
+		static void __cdecl swap_filter_effect_wrap(int object_idx, int filter_idx, int filter_ofs);
 		static void __cdecl delete_filter_effect_wrap(int object_idx, int filter_idx);
 
 		inline static BOOL script_dlg_ok_cancel;
@@ -613,38 +604,21 @@ namespace patch {
 			}
 
 			{ // 色ずれ・インターレース解除・ルミナンスキー・ミラー のコンボボックス
-				constexpr int vp_begin = 0x180b8;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 5);
-				h.store_i8(0x180b8 - vp_begin, '\xe8');
-				h.replaceNearJmp(0x180b9 - vp_begin, &mov_eax_1_use0_e1_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x180b8, (int)&any_use0, 5, 7, 1, 0);
 			}
 			{ // グラデーション のコンボボックス
-				constexpr int vp_begin = 0x59b8d;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x59bb1 - vp_begin);
-				h.store_i8(0x59b8d - vp_begin, '\xe8');
-				h.replaceNearJmp(0x59b8e - vp_begin, &mov_eax_1_use0_e1_wrap);
-				h.store_i8(0x59bac - vp_begin, '\xe8');
-				h.replaceNearJmp(0x59bad - vp_begin, &mov_eax_1_use5_e1_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x59b8d, (int)&any_use0, 5, 7, 1, 0);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x59bac, (int)&any_use5, 5, 7, 1, 0);
 			}
 			{ // 閃光 のコンボボックス
-				constexpr int vp_begin = 0x4f437;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 5);
-				h.store_i8(0x4f437 - vp_begin, '\xe8');
-				h.replaceNearJmp(0x4f438 - vp_begin, &mov_eax_1_use2_e2_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x4f437, (int)&any_use2, 5, 8, 1, 0);
 			}
 			{ // グロー のコンボボックス
-				constexpr int vp_begin = 0x58ef5;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 5);
-				h.store_i8(0x58ef5 - vp_begin, '\xe8');
-				h.replaceNearJmp(0x58ef6 - vp_begin, &mov_eax_1_use2_e1_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x58ef5, (int)&any_use2, 5, 7, 1, 0);
 			}
 			{ // ワイプ のコンボボックス
-				constexpr int vp_begin = 0x91751;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x9178c - vp_begin);
-				h.store_i8(0x91751 - vp_begin, '\xe8');
-				h.replaceNearJmp(0x91752 - vp_begin, &mov_eax_1_use0use1_e1_wrap);
-				h.store_i8(0x91787 - vp_begin, '\xe8');
-				h.replaceNearJmp(0x91788 - vp_begin, &mov_eax_1_use0use1_e1_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x91751, (int)&any_use0use1, 5, 7, 1, 0);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x91787, (int)&any_use0use1, 5, 7, 1, 0);
 			}
 			{ // シャドー の影色の設定・パターン画像ファイル
 				constexpr int vp_begin = 0x88e2d;
@@ -659,44 +633,24 @@ namespace patch {
 				h.replaceNearJmp(0x521dc - vp_begin, &update_dlg_border_wrap);
 			}
 			{ // ノイズ のコンボボックス
-				constexpr int vp_begin = 0x6d73d;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6d751 - vp_begin);
-				h.store_i8(0x6d73d - vp_begin, '\xe8');
-				h.replaceNearJmp(0x6d73e - vp_begin, &mov_eax_1_use1_e1_wrap);
-				h.store_i8(0x6d74c - vp_begin, '\xe8');
-				h.replaceNearJmp(0x6d74d - vp_begin, &mov_eax_1_use0_e1_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x6d73d, (int)&any_use1, 5, 7, 1, 0);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x6d74c, (int)&any_use0, 5, 7, 1, 0);
 			}
 			{ // 動画ファイル合成 のコンボボックス
 				/*
 					1000688b b801000000         mov     eax,00000001
 					10006890 5b                 pop     ebx
 					10006891 81c478010000       add     esp,00000178
-					↓
-					1000688b 5b                 pop     ebx
-					1000688c 81c478010000       add     esp,00000178
-					10006892 e8XxXxXxXx         call    newfunc
 				*/
-				constexpr int vp_begin = 0x688b;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6897 - vp_begin);
-				h.store_i32(0x688b - vp_begin, '\x5b\x81\xc4\x78');
-				h.store_i32(0x688f - vp_begin, '\x01\x00\x00\xe8');
-				h.replaceNearJmp(0x6893 - vp_begin, &mov_eax_1_use2_e0_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0x688b, (int)&any_use2, 5, 0x178 / 4 + 2 + 5, 1, 0);
 			}
 			{ // 画像ファイル合成 のコンボボックス
 				/*
 					1000e1e4 b801000000         mov     eax,00000001
 					1000e1e9 5b                 pop     ebx
 					1000e1ea 81c40c010000       add     esp,0000010c
-					↓
-					1000e1e4 5b                 pop     ebx
-					1000e1e5 81c40c010000       add     esp,0000010c
-					1000e1eb e8XxXxXxXx         call    newfunc
 				*/
-				constexpr int vp_begin = 0xe1e4;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0xe1f0 - vp_begin);
-				h.store_i32(0xe1e4 - vp_begin, '\x5b\x81\xc4\x0c');
-				h.store_i32(0xe1e8 - vp_begin, '\x01\x00\x00\xe8');
-				h.replaceNearJmp(0xe1ec - vp_begin, &mov_eax_1_use0_e0_wrap);
+				InjectionFunction_push_args_cdecl(GLOBAL::exedit_base + 0xe1e4, (int)&any_use0, 5, 0x10c / 4 + 2 + 5, 1, 0);
 			}
 
 			{ // カメラ制御の対象・上のオブジェクトでクリッピング の切り替え
@@ -706,6 +660,9 @@ namespace patch {
 				h.replaceNearJmp(0x435c3 - vp_begin, &update_obj_data_before_clipping_wrap);
 			}
 
+			{ // フィルタ効果を上/下に移動
+				ReplaceNearJmp(GLOBAL::exedit_base + 0x41c5a, &swap_filter_effect_wrap);
+			}
 			{ // フィルタ効果の削除
 				ReplaceNearJmp(GLOBAL::exedit_base + 0x41b44, &delete_filter_effect_wrap);
 			}

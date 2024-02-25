@@ -153,3 +153,6 @@
 #include "patch_str2int.hpp"
 #include "patch_failed_max_frame.hpp"
 #include "patch_setting_dialog_scriptcontrol.hpp"
+#include "patch_avi_file_handle_share.hpp"
+#include "patch_avi_file_handle_close.hpp"
+#include "patch_exc_avi_file.hpp"

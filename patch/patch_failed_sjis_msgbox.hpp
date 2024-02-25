@@ -32,8 +32,8 @@ namespace patch {
 
     inline class failed_sjis_msgbox_t {
 
-        inline static const char str_new_failed_msg_question[] = "ファイルパスに扱えない環境依存文字が含まれています\nファイル名やフォルダ名を確認してください";
-        inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした\n削除されたファイルを読み込ませようとしたか、ファイル名やフォルダ名に環境依存文字が含まれる可能性があります\n\n毎回このメッセージが出る場合は.excファイルを削除するか、参照ファイルが無い状態で「現在の設定を初期値にする」を行ってください";
+        inline static const char str_new_failed_msg_question[] = "ファイルパスに環境依存文字が含まれています\nファイル名やフォルダ名を確認してください";
+        inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした\n削除されたファイルを読み込ませようとしたか、ファイル名やフォルダ名に環境依存文字が含まれる可能性があります";
         static int __stdcall MessageBoxA_1(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_2(LPCSTR path, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_import_exo(HWND hWnd, LPCSTR lpText, LPCSTR path);
