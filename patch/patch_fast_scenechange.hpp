@@ -29,8 +29,11 @@
 namespace patch::fast {
 	// init at exedit load
 	/* シーンチェンジの速度アップ
+		ワイプ(円)
+		ワイプ(時計)
 		ワイプ(横)
 		ワイプ(縦)
+		ランダムライン
 	*/
 	/* 他で実装済み（発光から下はスクリプトなので省略）
 		放射ブラー (fast.radiationalblurにて実装）

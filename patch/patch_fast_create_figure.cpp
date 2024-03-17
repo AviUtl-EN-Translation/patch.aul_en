@@ -115,7 +115,6 @@ namespace patch::fast {
         }
     }
 
-
     void __cdecl CreateFigure_t::CreateFigure_polygons(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         auto& figure = *reinterpret_cast<CreateFigure_var*>(GLOBAL::exedit_base + OFS::ExEdit::CreateFigure_var_ptr);
 
@@ -171,7 +170,6 @@ namespace patch::fast {
 
         float angle_rate = (float)figure.type / 6.283185307179586f;
         int yy = (thread_id * 2 - efpip->obj_h) + 1;
-
         if (7 < obj_half_w && has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
             __m256i xa = _mm256_set_epi32(-14, -12, -10, -8, -6, -4, -2, 0);
             __m256 pi256 = _mm256_set1_ps(3.141592653589793f - 0.5f / angle_rate);
@@ -187,18 +185,17 @@ namespace patch::fast {
 
                 __m256i yy256 = _mm256_set1_epi32(yy);
                 __m256 yf256 = _mm256_cvtepi32_ps(yy256);
-
                 for (int x = (obj_half_w + 7) >> 3; 0 < x; x--) {
                     __m256i xx256 = _mm256_add_epi32(_mm256_set1_epi32(xx), xa);
                     __m256 angle256 = _mm256_atan2_ps(_mm256_cvtepi32_ps(xx256), yf256);
                     angle256 = _mm256_mul_ps(_mm256_add_ps(angle256, pi256), rate256);
-                    __m256i pt256 = _mm256_mod_epi32(_mm256_cvttps_epi32(angle256), type256);
+                    __m256i pt256 = _mm256_mod_epi32(_mm256_cvtps_epi32(angle256), type256);
                     __m256i xp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(xp, pt256, 4), xx256);
                     __m256i yp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(yp, pt256, 4), yy256);
                     __m256i dist256 = _mm256_sub_epi32(xp256, yp256);
                     dist256 = _mm256_add_epi32(_mm256_i32gather_epi32(xylen, pt256, 4), dist256);
                     __m256i a256 = _mm256_clamp_epi32(_mm256_srai_epi32(dist256, 6), min256, max256);
-                    
+
                     for (int i = 0; i < 8; i++) {
                         int a = a256.m256i_i32[i];
                         if (0 < a && 0 < inner) {
@@ -251,6 +248,7 @@ namespace patch::fast {
             }
         }
     }
+
 
 } // namespace patch::fast
 #endif // ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
