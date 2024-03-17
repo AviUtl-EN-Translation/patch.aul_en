@@ -275,6 +275,7 @@ namespace OFS {
 		constexpr i32 exfunc_6c = 0x04d2a0;
 		constexpr i32 func_0x047ad0 = 0x047ad0;
 		constexpr i32 scenechange_progress_times4096 = 0x230c60;
+		constexpr i32 scenechange_func_array = 0xb6f38;
 		constexpr i32 GetCurrentProcessing = 0x047ba0;
 		constexpr i32 LoadedFilterTable = 0x187c98;
 		constexpr i32 LoadedFilterCount = 0x146248;

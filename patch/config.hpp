@@ -454,6 +454,12 @@ public:
                 #ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
                     patch::fast::SpecialColorConv.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_FAST_WIPE
+                    patch::fast::Wipe.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_SCENECHANGE
+                    patch::fast::SceneChange.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_FAST_AUDIO_SPECTRUM
                     patch::fast::audio_spectrum.switch_load(cr);
                 #endif
@@ -1077,6 +1083,12 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
                     patch::fast::SpecialColorConv.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_WIPE
+                    patch::fast::Wipe.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_SCENECHANGE
+                    patch::fast::SceneChange.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_AUDIO_SPECTRUM
                     patch::fast::audio_spectrum.switch_store(switch_);

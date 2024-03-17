@@ -156,3 +156,5 @@
 #include "patch_avi_file_handle_share.hpp"
 #include "patch_avi_file_handle_close.hpp"
 #include "patch_exc_avi_file.hpp"
+#include "patch_fast_scenechange.hpp"
+#include "patch_fast_wipe.hpp"

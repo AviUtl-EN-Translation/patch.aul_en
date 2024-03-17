@@ -487,6 +487,12 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
 			patch::fast::SpecialColorConv.init();
 		#endif
+		#ifdef PATCH_SWITCH_FAST_WIPE
+			patch::fast::Wipe.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_SCENECHANGE
+			patch::fast::SceneChange.init();
+		#endif
 		#ifdef PATCH_SWITCH_FAST_AUDIO_SPECTRUM
 			patch::fast::audio_spectrum.init();
 		#endif

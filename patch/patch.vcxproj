@@ -71,10 +71,12 @@
     <ClInclude Include="patch_fast_extractedge.hpp" />
     <ClInclude Include="patch_fast_lightemission.hpp" />
     <ClInclude Include="patch_fast_pixelformat_conv.hpp" />
+    <ClInclude Include="patch_fast_scenechange.hpp" />
     <ClInclude Include="patch_fast_shadow.hpp" />
     <ClInclude Include="patch_fast_specialcolorconv.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />
     <ClInclude Include="patch_fast_waveform.hpp" />
+    <ClInclude Include="patch_fast_wipe.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
     <ClInclude Include="patch_init_window_pos.hpp" />
@@ -223,10 +225,12 @@
     <ClCompile Include="patch_fast_exfunc_fill.cpp" />
     <ClCompile Include="patch_fast_extractedge.cpp" />
     <ClCompile Include="patch_fast_lightemission.cpp" />
+    <ClCompile Include="patch_fast_scenechange.cpp" />
     <ClCompile Include="patch_fast_shadow.cpp" />
     <ClCompile Include="patch_fast_specialcolorconv.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_fast_waveform.cpp" />
+    <ClCompile Include="patch_fast_wipe.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_init_window_pos.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
