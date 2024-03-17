@@ -172,12 +172,11 @@ namespace patch::fast {
         int yy = (thread_id * 2 - efpip->obj_h) + 1;
         if (7 < obj_half_w && has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
             __m256i xa = _mm256_set_epi32(-14, -12, -10, -8, -6, -4, -2, 0);
-            __m256 pi256 = _mm256_set1_ps(3.141592653589793f - 0.5f / angle_rate);
+            __m256 pi256 = _mm256_set1_ps(3.141592653589793f);
             __m256 rate256 = _mm256_set1_ps(angle_rate);
             __m256i type256 = _mm256_set1_epi32(figure.type);
             __m256i min256 = _mm256_setzero_si256();
             __m256i max256 = _mm256_set1_epi32(0x1000);
-
             for (int y = thread_id; y < efpip->obj_h; y += thread_num) {
                 int xx = efpip->obj_w - 1;
                 ExEdit::PixelYCA* pixl = (ExEdit::PixelYCA*)efpip->obj_edit + efpip->obj_line * y;
@@ -189,7 +188,7 @@ namespace patch::fast {
                     __m256i xx256 = _mm256_add_epi32(_mm256_set1_epi32(xx), xa);
                     __m256 angle256 = _mm256_atan2_ps(_mm256_cvtepi32_ps(xx256), yf256);
                     angle256 = _mm256_mul_ps(_mm256_add_ps(angle256, pi256), rate256);
-                    __m256i pt256 = _mm256_mod_epi32(_mm256_cvtps_epi32(angle256), type256);
+                    __m256i pt256 = _mm256_mod_epi32(_mm256_cvttps_epi32(angle256), type256);
                     __m256i xp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(xp, pt256, 4), xx256);
                     __m256i yp256 = _mm256_mullo_epi32(_mm256_i32gather_epi32(yp, pt256, 4), yy256);
                     __m256i dist256 = _mm256_sub_epi32(xp256, yp256);
