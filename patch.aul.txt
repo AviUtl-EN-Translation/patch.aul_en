@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_52
+patch.aul r43_ss_53
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -33,7 +33,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・メニュー文字列を実態に即したものに変更
     ・動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない
     ・拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある
-    ・音声波形表示/極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/シャドー/グロー/拡散光/発光/ぼかし/境界ぼかし/凸エッジ/エッジ抽出/色ずれ/カラーキー/クロマキー/特定色域変換の高速化
+    ・音声波形表示/極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/シャドー/グロー/拡散光/発光/ぼかし/境界ぼかし/凸エッジ/エッジ抽出/色ずれ/カラーキー/クロマキー/特定色域変換/シーンチェンジの高速化
         OpenCL/AVX2を使用することがあります
         わずかにオリジナルと結果が変わってしまいます (floatとdoubleの差です)
         また、アーティファクトなどのバグを解消することもあります
@@ -187,6 +187,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・動画ファイルオブジェクトを削除してもハンドルを閉じないように変更
     ・同じ動画に対して動画ファイルのハンドルを共有させるように変更(Altを押しながら読み込ませるときは無効)
     ・動画ファイル・音声ファイル・音声波形表示オブジェクトの初期値設定ファイル(.exc)に存在しないファイルが登録されている場合は読み込みを行わないように変更
+    ・グリッド野設定にて基準フレーム番号に負の値を入力できるように変更
 
     追加
     ・コンソールの表示
@@ -415,6 +416,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.colorkey" : boolean, ; カラーキーの高速化 (既定値: true)
             "fast.chromakey" : boolean, ; クロマキーの高速化 (既定値: true)
             "fast.specialcolorconv" : boolean, ; 特定色域変換の高速化 (既定値: true)
+            "fast.scenechange" : boolean, ; シーンチェンジの高速化 (既定値: true)
             "fast.cl" : boolean, ; fast.*でOpenCLが必要なオプションに必要なオプション (既定値: true)
                 "fast.radiationalblur" : boolean, ; fast.clが前提 放射ブラーの高速化 (既定値: true)
                 "fast.polartransform" : boolean, ; fast.clが前提 極座標変換の高速化 (既定値: true)
@@ -428,7 +430,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_52" のような文字列が格納されている
+        例として "patch.aul r43_ss_53" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
