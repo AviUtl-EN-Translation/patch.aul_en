@@ -39,6 +39,7 @@ namespace patch::fast {
 		inline static const char key[] = "fast.convexedge";
 
 	public:
+		static void __cdecl yc_mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
 
 		struct efConvexEdge_var {

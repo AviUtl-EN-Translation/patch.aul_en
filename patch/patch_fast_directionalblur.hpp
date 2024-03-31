@@ -51,7 +51,8 @@ namespace patch::fast {
 
             if (!enabled_i)return;
 
-            store_i32(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_func_proc_ptr, &func_proc);
+            ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_ptr);
+            (efp->func_proc) = (func_proc);
 
             OverWriteOnProtectHelper h(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_Filter_mt_func_call, 6);
             h.store_i16(0, '\x90\xe8'); // nop; call (rel32)
@@ -59,6 +60,9 @@ namespace patch::fast {
 
 
         }
+
+        bool is_enabled() { return enabled; }
+        bool is_enabled_i() { return enabled_i; }
 
         void switch_load(ConfigReader& cr) {
             cr.regist(key, [this](json_value_s* value) {

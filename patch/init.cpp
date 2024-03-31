@@ -314,6 +314,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
 	patch::SpecialColorConv.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_MOTIONBLUR
+	patch::MotionBlur.init();
+#endif
 #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
 	patch::PortionFilter.init();
 #endif
@@ -409,7 +412,30 @@ void init_t::InitAtExeditLoad() {
 	
 	patch::setting_dialog();
 
-	#ifdef PATCH_SWITCH_FAST
+
+#ifdef PATCH_SWITCH_EXFILTER
+	patch::exfilter::exfilter.init();
+	if (patch::exfilter::exfilter.is_enabled_i()) {
+		#ifdef PATCH_SWITCH_EXFILTER_SHARP
+			patch::exfilter::Sharp.init();
+		#endif
+		#ifdef PATCH_SWITCH_EXFILTER_CONVEXEDGE
+			patch::exfilter::ConvexEdge.init();
+		#endif
+		#ifdef PATCH_SWITCH_EXFILTER_FLASH
+			patch::exfilter::Flash.init();
+		#endif
+		#ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
+			patch::exfilter::SpecialColorConv.init();
+		#endif
+
+		#ifdef PATCH_SWITCH_EXFILTER_GLARE
+			patch::exfilter::Glare.init();
+		#endif
+	}
+#endif
+
+#ifdef PATCH_SWITCH_FAST
 	patch::fast::fast.init();
 	if (patch::fast::fast.is_enabled_i()) {
 		#ifdef PATCH_SWITCH_FAST_GETPUTPIXELDATA
@@ -429,6 +455,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
 			patch::fast::pixelformat_conv.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_YC_FILTER_EFFECT
+			patch::fast::yc_filter_effect.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_DRAWFILTER
 			patch::fast::DrawFilter.init();
@@ -456,6 +485,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_BLUR
 			patch::fast::Blur.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_SHARP
+			patch::fast::Sharp.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_CONVEXEDGE
 			patch::fast::ConvexEdge.init();
@@ -531,7 +563,7 @@ void init_t::InitAtExeditLoad() {
 			}
 		#endif
 	}
-	#endif
+#endif
 
 #ifdef PATCH_SWITCH_UNDO
 	patch::undo.init();

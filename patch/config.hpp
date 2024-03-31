@@ -255,6 +255,9 @@ public:
             #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
                 patch::SpecialColorConv.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_MOTIONBLUR
+                patch::MotionBlur.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
                 patch::PortionFilter.switch_load(cr);
             #endif
@@ -384,6 +387,26 @@ public:
                     patch::lua_setanchor.switch_load(cr);
                 #endif
             #endif
+                    
+            #ifdef PATCH_SWITCH_EXFILTER
+                patch::exfilter::exfilter.switch_load(cr);
+                #ifdef PATCH_SWITCH_EXFILTER_SHARP
+                    patch::exfilter::Sharp.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_CONVEXEDGE
+                    patch::exfilter::ConvexEdge.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_FLASH
+                    patch::exfilter::Flash.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
+                    patch::exfilter::SpecialColorConv.switch_load(cr);
+                #endif
+
+                #ifdef PATCH_SWITCH_EXFILTER_GLARE
+                    patch::exfilter::Glare.switch_load(cr);
+                #endif
+            #endif
 
             #ifdef PATCH_SWITCH_FAST
                 patch::fast::fast.switch_load(cr);
@@ -399,6 +422,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
                     patch::fast::pixelformat_conv.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_YC_FILTER_EFFECT
+                    patch::fast::yc_filter_effect.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_DRAWFILTER
                     patch::fast::DrawFilter.switch_load(cr);
@@ -426,6 +452,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_BLUR
                     patch::fast::Blur.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_SHARP
+                    patch::fast::Sharp.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_CONVEXEDGE
                     patch::fast::ConvexEdge.switch_load(cr);
@@ -885,6 +914,9 @@ public:
             #ifdef PATCH_SWITCH_OBJ_SPECIALCOLORCONV
                 patch::SpecialColorConv.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_OBJ_MOTIONBLUR
+                patch::MotionBlur.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
                 patch::PortionFilter.switch_store(switch_);
             #endif
@@ -1014,6 +1046,26 @@ public:
                     patch::lua_setanchor.switch_store(switch_);
                 #endif
             #endif
+                    
+            #ifdef PATCH_SWITCH_EXFILTER
+                patch::exfilter::exfilter.switch_store(switch_);
+                #ifdef PATCH_SWITCH_EXFILTER_SHARP
+                    patch::exfilter::Sharp.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_CONVEXEDGE
+                    patch::exfilter::ConvexEdge.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_FLASH
+                    patch::exfilter::Flash.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
+                    patch::exfilter::SpecialColorConv.switch_store(switch_);
+                #endif
+
+                #ifdef PATCH_SWITCH_EXFILTER_GLARE
+                    patch::exfilter::Glare.switch_store(switch_);
+                #endif
+            #endif
 
             #ifdef PATCH_SWITCH_FAST
                 patch::fast::fast.switch_store(switch_);
@@ -1029,6 +1081,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_PIXELFORMAT_CONV
                     patch::fast::pixelformat_conv.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_YC_FILTER_EFFECT
+                    patch::fast::yc_filter_effect.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_DRAWFILTER
                     patch::fast::DrawFilter.switch_store(switch_);
@@ -1056,6 +1111,9 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_BLUR
                     patch::fast::Blur.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_SHARP
+                    patch::fast::Sharp.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_CONVEXEDGE
                     patch::fast::ConvexEdge.switch_store(switch_);

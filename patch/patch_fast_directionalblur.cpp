@@ -26,14 +26,38 @@ namespace patch::fast {
     static stopwatch_mem sw;
 
     BOOL __cdecl DirectionalBlur_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        efDirectionalBlur_var& dblur = *(efDirectionalBlur_var*)uintptr_t(reinterpret_cast<efDirectionalBlur_var*>(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_var_ptr));
-
         if (efpip->obj_w <= 0 || efpip->obj_h <= 0) return TRUE;
 
         int range = efp->track[0];
         if (range == 0) {
             return TRUE;
         }
+        if (efpip->xf4) {
+            auto scene_w = efpip->scene_w;
+            auto scene_h = efpip->scene_h;
+            auto scene_line = efpip->scene_line;
+            auto frame_edit = efpip->frame_edit;
+            auto frame_temp = efpip->frame_temp;
+            efpip->scene_w = efpip->obj_w;
+            efpip->scene_h = efpip->obj_h;
+            efpip->scene_line = efpip->obj_line;
+            efpip->frame_edit = reinterpret_cast<decltype(efpip->frame_edit)>(efpip->obj_edit);
+            efpip->frame_temp = reinterpret_cast<decltype(efpip->frame_temp)>(efpip->obj_temp);
+
+            BOOL ret = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_Filter_ptr)->func_proc(efp, efpip);
+
+            efpip->obj_edit = reinterpret_cast<decltype(efpip->obj_edit)>(efpip->frame_edit);
+            efpip->obj_temp = reinterpret_cast<decltype(efpip->obj_temp)>(efpip->frame_temp);
+            efpip->scene_w = scene_w;
+            efpip->scene_h = scene_h;
+            efpip->scene_line = scene_line;
+            efpip->frame_edit = frame_edit;
+            efpip->frame_temp = frame_temp;
+
+            return ret;
+        }
+
+        efDirectionalBlur_var& dblur = *(efDirectionalBlur_var*)uintptr_t(reinterpret_cast<efDirectionalBlur_var*>(GLOBAL::exedit_base + OFS::ExEdit::efDirectionalBlur_var_ptr));
 
         double rad = efp->track[1] * 0.00174532925199433;
         int x_step = (int)(sin(rad) * -65536.0); // PI / 1800

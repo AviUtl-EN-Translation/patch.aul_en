@@ -23,31 +23,42 @@ namespace patch::fast {
 
 #ifdef PATCH_SWITCH_FAST_CONVEXEDGE
     void __cdecl ConvexEdge_t::mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-
+        if (efpip->xf4) {
+            yc_mt(thread_id, thread_num, efp, efpip);
+            return;
+        }
         if (0 < *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::luastateidx)) {
             mt_org(thread_id, thread_num, efp, efpip);
             return;
         }
 
         auto ce = reinterpret_cast<efConvexEdge_var*>(GLOBAL::exedit_base + OFS::ExEdit::efConvexEdge_var_ptr);
-        int absx = abs(ce->step_x16);
-        int maxx = ce->width * absx >> 16;
-        int absy = abs(ce->step_y16);
-        int maxy = ce->width * absy >> 16;
+        int maxx = ce->width * ce->step_x16 >> 16;
+        int maxy = ce->width * ce->step_y16 >> 16;
         for (int y = thread_id; y < efpip->obj_h; y += thread_num) {
             int y1, y2;
-            if (maxy <= y) {
-                y1 = ce->width;
+            if (0 <= ce->step_y16) {
+                if (maxy <= y) {
+                    y1 = ce->width;
+                } else {
+                    y1 = ((y << 16) + 0xffff) / ce->step_y16;
+                }
+                if (maxy <= efpip->obj_h - y - 1) {
+                    y2 = ce->width;
+                } else {
+                    y2 = (((efpip->obj_h - y - 1) << 16) + 0xffff) / ce->step_y16;
+                }
             } else {
-                y1 = ((y << 16) + 0xffff) / absy;
-            }
-            if (maxy <= efpip->obj_h - y - 1) {
-                y2 = ce->width;
-            } else {
-                y2 = (((efpip->obj_h - y - 1) << 16) + 0xffff) / absy;
-            }
-            if (ce->step_y16 < 0) {
-                std::swap(y1, y2);
+                if (0 <= y + maxy) {
+                    y2 = ce->width;
+                } else {
+                    y2 = ((y << 16)) / -ce->step_y16;
+                }
+                if (0 <= efpip->obj_h - y - 1 + maxy) {
+                    y1 = ce->width;
+                } else {
+                    y1 = (((efpip->obj_h - y - 1) << 16)) / -ce->step_y16;
+                }
             }
 
             auto src = (ExEdit::PixelYCA*)efpip->obj_edit + y * efpip->obj_line;
@@ -55,18 +66,28 @@ namespace patch::fast {
             for (int x = 0; x < efpip->obj_w; x++) {
                 if (0 < src->a) {
                     int x1, x2;
-                    if (maxx <= x) {
-                        x1 = ce->width;
+                    if (0 <= ce->step_x16) {
+                        if (maxx <= x) {
+                            x1 = ce->width;
+                        } else {
+                            x1 = ((x << 16) + 0xffff) / ce->step_x16;
+                        }
+                        if (maxx <= efpip->obj_w - x - 1) {
+                            x2 = ce->width;
+                        } else {
+                            x2 = (((efpip->obj_w - x - 1) << 16) + 0xffff) / ce->step_x16;
+                        }
                     } else {
-                        x1 = ((x << 16) + 0xffff) / absx;
-                    }
-                    if (maxx <= efpip->obj_w - x - 1) {
-                        x2 = ce->width;
-                    } else {
-                        x2 = (((efpip->obj_w - x - 1) << 16) + 0xffff) / absx;
-                    }
-                    if (ce->step_x16 < 0) {
-                        std::swap(x1, x2);
+                        if (0 <= x + maxx) {
+                            x2 = ce->width;
+                        } else {
+                            x2 = ((x << 16)) / -ce->step_x16;
+                        }
+                        if (0 <= efpip->obj_w - x - 1 + maxx) {
+                            x1 = ce->width;
+                        } else {
+                            x1 = (((efpip->obj_w - x - 1) << 16)) / -ce->step_x16;
+                        }
                     }
                     int xx = 0;
                     int yy = 0;
@@ -123,11 +144,92 @@ namespace patch::fast {
             }
         }
     }
-#endif // ifdef PATCH_SWITCH_FAST_CONVEXEDGE
+    void __cdecl ConvexEdge_t::yc_mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+
+        auto ce = reinterpret_cast<efConvexEdge_var*>(GLOBAL::exedit_base + OFS::ExEdit::efConvexEdge_var_ptr);
+        int maxx = ce->width * ce->step_x16 >> 16;
+        int maxy = ce->width * ce->step_y16 >> 16;
+        for (int y = thread_id; y < efpip->obj_h; y += thread_num) {
+            int y1, y2;
+            if (0 <= ce->step_y16) {
+                if (maxy <= y) {
+                    y1 = ce->width;
+                } else {
+                    y1 = ((y << 16) + 0xffff) / ce->step_y16;
+                }
+                if (maxy <= efpip->obj_h - y - 1) {
+                    y2 = ce->width;
+                } else {
+                    y2 = (((efpip->obj_h - y - 1) << 16) + 0xffff) / ce->step_y16;
+                }
+            } else {
+                if (0 <= y + maxy) {
+                    y2 = ce->width;
+                } else {
+                    y2 = ((y << 16)) / -ce->step_y16;
+                }
+                if (0 <= efpip->obj_h - y - 1 + maxy) {
+                    y1 = ce->width;
+                } else {
+                    y1 = (((efpip->obj_h - y - 1) << 16)) / -ce->step_y16;
+                }
+            }
+
+            auto src = (ExEdit::PixelYC*)efpip->obj_edit + y * efpip->obj_line;
+            auto dst = (ExEdit::PixelYC*)efpip->obj_temp + y * efpip->obj_line;
+            for (int x = 0; x < efpip->obj_w; x++) {
+                int x1, x2;
+                if (0 <= ce->step_x16) {
+                    if (maxx <= x) {
+                        x1 = ce->width;
+                    } else {
+                        x1 = ((x << 16) + 0xffff) / ce->step_x16;
+                    }
+                    if (maxx <= efpip->obj_w - x - 1) {
+                        x2 = ce->width;
+                    } else {
+                        x2 = (((efpip->obj_w - x - 1) << 16) + 0xffff) / ce->step_x16;
+                    }
+                } else {
+                    if (0 <= x + maxx) {
+                        x2 = ce->width;
+                    } else {
+                        x2 = ((x << 16)) / -ce->step_x16;
+                    }
+                    if (0 <= efpip->obj_w - x - 1 + maxx) {
+                        x1 = ce->width;
+                    } else {
+                        x1 = (((efpip->obj_w - x - 1) << 16)) / -ce->step_x16;
+                    }
+                }
+                int a = (min(x2, y2) - min(x1, y1)) << 12;
+                a = std::clamp(src->y + (int)round((double)a * ce->height_rate), 0, SHRT_MAX);
+                if (src->y <= a || src->y <= 0) {
+                    dst->y = a;
+                    dst->cb = src->cb;
+                    dst->cr = src->cr;
+                } else if (a < 0) {
+                    dst->y = 0;
+                    dst->cb = 0;
+                    dst->cr = 0;
+                } else {
+                    dst->y = a;
+                    a = (a << 12) / src->y;
+                    dst->cb = src->cb * a >> 12;
+                    dst->cr = src->cr * a >> 12;
+                }
+                src++;
+                dst++;
+            }
+        }
+    }
 
 
 #ifdef PATCH_SWITCH_FAST_CONVEXEDGE_CL
     BOOL __cdecl ConvexEdgeCL_t::mt_func(AviUtl::MultiThreadFunc original_func_ptr, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        if (efpip->xf4) {
+            return efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&ConvexEdge.yc_mt, efp, efpip);
+        }
         auto ce = reinterpret_cast<efConvexEdge_var*>(GLOBAL::exedit_base + OFS::ExEdit::efConvexEdge_var_ptr);
         if (efpip->obj_w * efpip->obj_h * ce->width < 0x1000000) {
             return efp->aviutl_exfunc->exec_multi_thread_func(original_func_ptr, efp, efpip);
@@ -161,5 +263,6 @@ namespace patch::fast {
     }
 #endif // ifdef PATCH_SWITCH_FAST_CONVEXEDGE_CL
 
+#endif // ifdef PATCH_SWITCH_FAST_CONVEXEDGE
 
 } // namespace patch::fast

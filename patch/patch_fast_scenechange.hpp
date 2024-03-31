@@ -70,12 +70,14 @@ namespace patch::fast {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0xb6f3c, 4).store_i32(0, &scCircleWipe);
-			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0xb6f44, 4).store_i32(0, &scFanWipe);
-			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0xb6f7c, 4).store_i32(0, &scHorizontalWipe);
-			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0xb6f80, 4).store_i32(0, &scVerticalWipe);
-			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0xb6f8c, 4).store_i32(0, &scRandomLine);
+			constexpr int vp_begin = 0xb6f3c;
+			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0xb6f90 - vp_begin);
 
+			h.store_i32(0xb6f3c - vp_begin, &scCircleWipe);
+			h.store_i32(0xb6f44 - vp_begin, &scFanWipe);
+			h.store_i32(0xb6f7c - vp_begin, &scHorizontalWipe);
+			h.store_i32(0xb6f80 - vp_begin, &scVerticalWipe);
+			h.store_i32(0xb6f8c - vp_begin, &scRandomLine);
 
 		}
 

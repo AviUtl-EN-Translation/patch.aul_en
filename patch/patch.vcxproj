@@ -56,6 +56,12 @@
     <ClInclude Include="patch_exa_camera.hpp" />
     <ClInclude Include="patch_exclusion_font.hpp" />
     <ClInclude Include="patch_exc_avi_file.hpp" />
+    <ClInclude Include="patch_exfilter.hpp" />
+    <ClInclude Include="patch_exfilter_convexedge.hpp" />
+    <ClInclude Include="patch_exfilter_flash.hpp" />
+    <ClInclude Include="patch_exfilter_glare.hpp" />
+    <ClInclude Include="patch_exfilter_sharp.hpp" />
+    <ClInclude Include="patch_exfilter_specialcolorconv.hpp" />
     <ClInclude Include="patch_exo_abnormal_pos.hpp" />
     <ClInclude Include="patch_failed_max_frame.hpp" />
     <ClInclude Include="patch_fast_audio_spectrum.hpp" />
@@ -73,10 +79,12 @@
     <ClInclude Include="patch_fast_pixelformat_conv.hpp" />
     <ClInclude Include="patch_fast_scenechange.hpp" />
     <ClInclude Include="patch_fast_shadow.hpp" />
+    <ClInclude Include="patch_fast_sharp.hpp" />
     <ClInclude Include="patch_fast_specialcolorconv.hpp" />
     <ClInclude Include="patch_fast_text_border.hpp" />
     <ClInclude Include="patch_fast_waveform.hpp" />
     <ClInclude Include="patch_fast_wipe.hpp" />
+    <ClInclude Include="patch_fast_yc_filter_effect.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
     <ClInclude Include="patch_init_window_pos.hpp" />
@@ -89,6 +97,7 @@
     <ClInclude Include="patch_obj_diffuselight.hpp" />
     <ClInclude Include="patch_obj_flash.hpp" />
     <ClInclude Include="patch_obj_mask.hpp" />
+    <ClInclude Include="patch_obj_motionblur.hpp" />
     <ClInclude Include="patch_obj_portionfilter.hpp" />
     <ClInclude Include="patch_obj_radiationalblur.hpp" />
     <ClInclude Include="patch_obj_resize.hpp" />
@@ -212,6 +221,10 @@
     <ClCompile Include="patch_change_disp_scene.cpp" />
     <ClCompile Include="patch_exa_camera.cpp" />
     <ClCompile Include="patch_exc_avi_file.cpp" />
+    <ClCompile Include="patch_exfilter_convexedge.cpp" />
+    <ClCompile Include="patch_exfilter_flash.cpp" />
+    <ClCompile Include="patch_exfilter_sharp.cpp" />
+    <ClCompile Include="patch_exfilter_specialcolorconv.cpp" />
     <ClCompile Include="patch_failed_file_drop.cpp" />
     <ClCompile Include="patch_failed_max_frame.cpp" />
     <ClCompile Include="patch_fast_audio_spectrum.cpp" />
@@ -227,10 +240,12 @@
     <ClCompile Include="patch_fast_lightemission.cpp" />
     <ClCompile Include="patch_fast_scenechange.cpp" />
     <ClCompile Include="patch_fast_shadow.cpp" />
+    <ClCompile Include="patch_fast_sharp.cpp" />
     <ClCompile Include="patch_fast_specialcolorconv.cpp" />
     <ClCompile Include="patch_fast_text_border.cpp" />
     <ClCompile Include="patch_fast_waveform.cpp" />
     <ClCompile Include="patch_fast_wipe.cpp" />
+    <ClCompile Include="patch_fast_yc_filter_effect.cpp" />
     <ClCompile Include="patch_group_id.cpp" />
     <ClCompile Include="patch_init_window_pos.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />

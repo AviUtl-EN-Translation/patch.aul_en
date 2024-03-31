@@ -78,8 +78,8 @@ namespace patch::fast {
 			if (!enabled_i)return;
 
 			{ // effect
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + OFS::ExEdit::efBlur_func_proc_ptr, 4);
-				h.store_i32(0, &efBlur_effect_func_proc);
+				ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efBlur_ptr);
+				(efp->func_proc) = (efBlur_effect_func_proc);
 			}
 			{ // filter
 				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0e5fe, 1204);

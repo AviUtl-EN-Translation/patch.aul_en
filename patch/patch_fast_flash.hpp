@@ -42,7 +42,7 @@ namespace patch::fast {
             int temp_h;
             short color_cb;
             short _padding1;
-            int corrected_intensity;
+            int intensity;
             int pixel_range;
             short color_cr;
             short _padding2;
@@ -66,6 +66,11 @@ namespace patch::fast {
                 h.replaceNearJmp(0x4e8d2 - vp_begin, &color_mt_func);
             }
         }
+
+        void switching(bool flag) { enabled = flag; }
+
+        bool is_enabled() { return enabled; }
+        bool is_enabled_i() { return enabled_i; }
 
         void switch_load(ConfigReader& cr) {
             cr.regist(key, [this](json_value_s* value) {

@@ -15,6 +15,7 @@
 
 #pragma once
 #include "macro.h"
+#ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
 #ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
 
 #include <exedit.hpp>
@@ -25,63 +26,45 @@
 #include "global.hpp"
 #include "config_rw.hpp"
 
-namespace patch::fast {
+#include "patch_exfilter.hpp"
+
+namespace patch::exfilter {
 	// init at exedit load
-	// 特定色域変換を速度アップ
+	// 特定色域変換のフィルタオブジェクトを追加
 	inline class SpecialColorConv_t {
 
-		static void __cdecl mt_avx2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		inline static ExEdit::Filter ef;
+
+		static void __cdecl mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl mt_border(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl mt_blur2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
 		bool enabled = true;
 		bool enabled_i;
-		inline static const char key[] = "fast.specialcolorconv";
+		inline static const char key[] = "exfilter.specialcolorconv";
 
 	public:
+		static BOOL __cdecl func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
-		static void __cdecl mt_blur1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		
 		struct efSpecialColorConv_var { // 11ecfc
 			void* temp1;
 			void* temp2;
 			int range;
 			int size;
 		};
-		
+
 
 		void init() {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			auto avx2enable = has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2);
+			auto efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efSpecialColorConv_ptr);
+			ef = *efp;
 
-			/*
-			  ;(short*)efpip->obj_temp + efpip->obj_line * efpip->obj_h;
-			  100154b5 8b87ec000000       mov     eax,dword ptr [edi+000000ec]
-			  100154bb 0faf87b8000000     imul    eax,dword ptr [edi+000000b8]
-			  100154c2 8b8fb0000000       mov     ecx,dword ptr [edi+000000b0]
-			  100154c8 8d1441             lea     edx,dword ptr [ecx+eax*2]
-			  ↓
-			  ;(int*)efpip->obj_temp + efpip->obj_w * efpip->obj_h;
-			  100154b5 8b87b4000000       mov     eax,dword ptr [edi+000000b4]
-			  100154bb 0faf87b8000000     imul    eax,dword ptr [edi+000000b8]
-			  100154c2 8b8fb0000000       mov     ecx,dword ptr [edi+000000b0]
-			  100154c8 8d1481             lea     edx,dword ptr [ecx+eax*4]
-			*/
+			*(int*)&ef.flag = 0;
+			(ef.func_proc) = (func_proc);
 
-			constexpr int vp_begin = 0x154ab;
-			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x15528 - vp_begin);
-			
-			h.store_i32(0x154ab - vp_begin, &mt_border);
-			h.store_i8(0x154b7 - vp_begin, '\xb4');
-			h.store_i8(0x154ca - vp_begin, '\x81');
-			h.store_i32(0x154f5 - vp_begin, &mt_blur1);
-			h.store_i32(0x15505 - vp_begin, &mt_blur2);
-			if (avx2enable) {
-				h.store_i32(0x15524 - vp_begin, &mt_avx2);
-			}
-
+			exfilter.apend_filter(&ef);
 
 		}
 
@@ -101,5 +84,6 @@ namespace patch::fast {
 		}
 
 	} SpecialColorConv;
-} // namespace patch::fast
+} // namespace patch::exfilter
 #endif // ifdef PATCH_SWITCH_FAST_SPECIALCOLORCONV
+#endif // ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV

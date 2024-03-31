@@ -721,16 +721,11 @@ kernel void RadiationalBlur_Filter_Far(	global short* dst, global short* src, in
 	}
 }
 )" R"(
-kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, int vram_w,
+kernel void Flash(global short* dst, global short* src, int src_w, int src_h, int vram_w,
 	int g_cx, int g_cy, int g_range, int g_pixel_range, int g_temp_x, int g_temp_y, int g_r_intensity) {
-	int xi = get_global_id(0);
-	int yi = get_global_id(1);
-
-	int x = xi + g_temp_x;
-	int y = yi + g_temp_y;
-
-	int cx = g_cx - x;
-	int cy = g_cy - y;
+	int xi = get_global_id(0), yi = get_global_id(1);
+	int x = xi + g_temp_x, y = yi + g_temp_y;
+	int cx = g_cx - x, cy = g_cy - y;
 	int c_dist_times8 = (int)round(sqrt((float)(cx * cx + cy * cy)) * 8.0f);
 	int range = g_range * c_dist_times8 / 1000;
 
@@ -747,34 +742,25 @@ kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, i
 		c_dist_times8 *= 2;
 		range *= 2;
 	}
-
-	int sum_y = 0;
-	int sum_cb = 0;
-	int sum_cr = 0;
-	if (2 <= c_dist_times8 && 2 <= range) {
-		for (int i = 0; i < range; i++) {
-			int x_itr = x + i * cx / c_dist_times8;
-			int y_itr = y + i * cy / c_dist_times8;
-
-			if (0 <= x_itr && 0 <= y_itr && x_itr < src_w && y_itr < src_h) {
-				short4 itr = vload4(x_itr + y_itr * vram_w, src);
-				if (4096 < itr.w) {
-					itr.w = 4096;
-				}
-				sum_y += itr.x * itr.w / 4096;
-				sum_cb += itr.y * itr.w / 4096;
-				sum_cr += itr.z * itr.w / 4096;
-			}
-		}
-		sum_y /= range;
-		sum_cb /= range;
-		sum_cr /= range;
-	} else if (0 <= x && 0 <= y && x < src_w && y < src_h) {
-		short4 itr = vload4(x + y * vram_w, src);
-		sum_y = itr.x * itr.w / 4096;
-		sum_cb = itr.y * itr.w / 4096;
-		sum_cr = itr.z * itr.w / 4096;
+	if (c_dist_times8 < 2 || range < 2) {
+		c_dist_times8 = range = 1;
 	}
+	int sum_y = 0, sum_cb = 0, sum_cr = 0;
+	for (int i = 0; i < range; i++) {
+		int u = x + i * cx / c_dist_times8;
+		int v = y + i * cy / c_dist_times8;
+
+		if (0 <= u && 0 <= v && u < src_w && v < src_h) {
+			short4 itr = vload4(u + v * vram_w, src);
+			itr.w = min(itr.w, (short)4096);
+			sum_y += itr.x * itr.w / 4096;
+			sum_cb += itr.y * itr.w / 4096;
+			sum_cr += itr.z * itr.w / 4096;
+		}
+	}
+	sum_y /= range;
+	sum_cb /= range;
+	sum_cr /= range;
 
 	int pixel_itr = xi + yi * vram_w;
 	short ya = sum_y - g_r_intensity;
@@ -796,17 +782,12 @@ kernel void Flash(	global short* dst, global short* src, int src_w, int src_h, i
 		dst[2] = sum_cr * 4096 / ya;
 	}
 }
-kernel void FlashColor(	global short* dst, global short* src, int src_w, int src_h, int vram_w,
+kernel void FlashColor(global short* dst, global short* src, int src_w, int src_h, int vram_w,
 	int g_cx, int g_cy, int g_range, int g_pixel_range, int g_temp_x, int g_temp_y,
 	int g_r_intensity, short g_color_y, short g_color_cb, short g_color_cr) {
-	int xi = get_global_id(0);
-	int yi = get_global_id(1);
-
-	int x = xi + g_temp_x;
-	int y = yi + g_temp_y;
-
-	int cx = g_cx - x;
-	int cy = g_cy - y;
+	int xi = get_global_id(0), yi = get_global_id(1);
+	int x = xi + g_temp_x, y = yi + g_temp_y;
+	int cx = g_cx - x, cy = g_cy - y;
 	int c_dist_times8 = (int)round(sqrt((float)(cx * cx + cy * cy)) * 8.0f);
 	int range = g_range * c_dist_times8 / 1000;
 	if (g_pixel_range < c_dist_times8) {
@@ -822,20 +803,19 @@ kernel void FlashColor(	global short* dst, global short* src, int src_w, int src
 		c_dist_times8 *= 2;
 		range *= 2;
 	}
-	int sum_a = 0;
-	if (2 <= c_dist_times8 && 2 <= range) {
-		for (int i = 0; i < range; i++) {
-			int x_itr = x + i * cx / c_dist_times8;
-			int y_itr = y + i * cy / c_dist_times8;
-
-			if (0 <= x_itr && 0 <= y_itr && x_itr < src_w && y_itr < src_h) {
-				sum_a += min((int)src[(x_itr + y_itr * vram_w) * 4 + 3], 4096);
-			}
-		}
-		sum_a /= range;
-	} else if (0 <= x && 0 <= y && x < src_w && y < src_h) {
-		sum_a = src[(x + y * vram_w) * 4 + 3];
+	if (c_dist_times8 < 2 || range < 2) {
+		c_dist_times8 = range = 1;
 	}
+	int sum_a = 0;
+	for (int i = 0; i < range; i++) {
+		int u = x + i * cx / c_dist_times8;
+		int v = y + i * cy / c_dist_times8;
+
+		if (0 <= u && 0 <= v && u < src_w && v < src_h) {
+			sum_a += min((int)src[(u + v * vram_w) * 4 + 3], 4096);
+		}
+	}
+	sum_a /= range;
 	int col_y = g_color_y * sum_a / 4096;
 	int col_cb = g_color_cb * sum_a / 4096;
 	int col_cr = g_color_cr * sum_a / 4096;
@@ -858,6 +838,57 @@ kernel void FlashColor(	global short* dst, global short* src, int src_w, int src
 		}
 		dst[1] = col_cb * 4096 / ya;
 		dst[2] = col_cr * 4096 / ya;
+	}
+}
+kernel void FlashFilter(global short* dst, global short* src, int src_w, int src_h, int vram_w,
+	int g_cx, int g_cy, int g_range, int g_pixel_range, int g_r_intensity) {
+	int x = get_global_id(0), y = get_global_id(1);
+	int cx = g_cx - x, cy = g_cy - y;
+	int c_dist_times8 = (int)round(sqrt((float)(cx * cx + cy * cy)) * 8.0f);
+	int range = g_range * c_dist_times8 / 1000;
+
+	if (g_pixel_range < c_dist_times8) {
+		range = g_pixel_range * g_range / 1000;
+		c_dist_times8 = g_pixel_range;
+	} else if (8 < c_dist_times8) {
+		c_dist_times8 *= 8;
+		range *= 8;
+	} else if (4 < c_dist_times8) {
+		c_dist_times8 *= 4;
+		range *= 4;
+	} else if (2 < c_dist_times8) {
+		c_dist_times8 *= 2;
+		range *= 2;
+	}
+	if (c_dist_times8 < 2 || range < 2) {
+		c_dist_times8 = range = 1;
+	}
+	int sum_y = 0, sum_cb = 0, sum_cr = 0;
+	for (int i = 0; i < range; i++) {
+		int u = x + i * cx / c_dist_times8;
+		int v = y + i * cy / c_dist_times8;
+
+		if (0 <= u && 0 <= v && u < src_w && v < src_h) {
+			global short* pix = src + (u + v * vram_w) * 3;
+			sum_y += pix[0];
+			sum_cb += pix[1];
+			sum_cr += pix[2];
+		}
+	}
+	sum_y /= range;
+	sum_cb /= range;
+	sum_cr /= range;
+
+	dst += (x + y * vram_w) * 3;
+	src += (x + y * vram_w) * 3;
+	dst[0] = src[0];
+	dst[1] = src[1];
+	dst[2] = src[2];
+	short ya = sum_y - g_r_intensity;
+	if (0 < ya) {
+		dst[0] += ya;
+		dst[1] += sum_cb - g_r_intensity * sum_cb / sum_y;
+		dst[2] += sum_cr - g_r_intensity * sum_cr / sum_y;
 	}
 }
 )" R"(
@@ -1096,13 +1127,13 @@ kernel void ConvexEdge(global short* dst, global short* src, int obj_w, int obj_
 	for (int n = width; 0 < n; n--) {
 		xx += step_x16;
 		yy += step_y16;
-		int xxx = x + (xx >> 0x10);
-		int yyy = y + (yy >> 0x10);
+		int xxx = x + (xx >> 16);
+		int yyy = y + (yy >> 16);
 		if (0 <= xxx && xxx < obj_w && 0 <= yyy && yyy < obj_h) {
 			a += src[(yyy * obj_line + xxx) * 4];
 		}
-		xxx = x - (xx >> 0x10);
-		yyy = y - (yy >> 0x10);
+		xxx = x - (xx >> 16);
+		yyy = y - (yy >> 16);
 		if (0 <= xxx && xxx < obj_w && 0 <= yyy && yyy < obj_h) {
 			a -= src[(yyy * obj_line + xxx) * 4];
 		}

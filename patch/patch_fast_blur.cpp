@@ -1499,6 +1499,34 @@ namespace patch::fast {
     BOOL __cdecl Blur_t::efBlur_effect_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         int blur_size = efp->track[0];
         if (blur_size <= 0 || efpip->obj_w <= 0 || efpip->obj_h <= 0) return TRUE;
+
+        if (efpip->xf4) {
+            auto scene_w = efpip->scene_w;
+            auto scene_h = efpip->scene_h;
+            auto scene_line = efpip->scene_line;
+            auto frame_edit = efpip->frame_edit;
+            auto frame_temp = efpip->frame_temp;
+            efpip->scene_w = efpip->obj_w;
+            efpip->scene_h = efpip->obj_h;
+            efpip->scene_line = efpip->obj_line;
+            efpip->frame_edit = reinterpret_cast<decltype(efpip->frame_edit)>(efpip->obj_edit);
+            efpip->frame_temp = reinterpret_cast<decltype(efpip->frame_temp)>(efpip->obj_temp);
+
+            efp->flag ^= static_cast<decltype(efp->flag)>(0x20);
+            BOOL ret = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efBlur_Filter_ptr)->func_proc(efp, efpip);
+            efp->flag ^= static_cast<decltype(efp->flag)>(0x20);
+
+            efpip->obj_edit = reinterpret_cast<decltype(efpip->obj_edit)>(efpip->frame_edit);
+            efpip->obj_temp = reinterpret_cast<decltype(efpip->obj_temp)>(efpip->frame_temp);
+            efpip->scene_w = scene_w;
+            efpip->scene_h = scene_h;
+            efpip->scene_line = scene_line;
+            efpip->frame_edit = frame_edit;
+            efpip->frame_temp = frame_temp;
+
+            return ret;
+        }
+
         int blur_w = blur_size;
         int blur_h = blur_size;
         int aspect = efp->track[1];

@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_54"
+#define PATCH_VERSION_STR "r43_ss_55"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -155,7 +155,7 @@
 #define PATCH_SWITCH_OBJ_COLORCORRECTION obj_colorcorrection
 #define PATCH_SWITCH_OBJ_BLUR obj_blur
 #define PATCH_SWITCH_OBJ_GLOW obj_glow
-#define PATCH_SWITCH_OBJ_SHARP obj_sharp
+// #define PATCH_SWITCH_OBJ_SHARP obj_sharp fast.sharpにより不要に
 #define PATCH_SWITCH_OBJ_MASK obj_mask
 #define PATCH_SWITCH_OBJ_RESIZE obj_resize
 #define PATCH_SWITCH_OBJ_ROTATION obj_rotation
@@ -166,6 +166,7 @@
 #define PATCH_SWITCH_OBJ_FLASH obj_flash
 #define PATCH_SWITCH_OBJ_DIFFUSELIGHT obj_diffuselight
 #define PATCH_SWITCH_OBJ_SPECIALCOLORCONV obj_specialcolorconv
+#define PATCH_SWITCH_OBJ_MOTIONBLUR obj_motionblur
 #define PATCH_SWITCH_OBJ_PORTIONFILTER obj_portionfilter
 #define PATCH_SWITCH_BORDER_ONLY_TEXT border_only_text
 #define PATCH_SWITCH_RCLICKMENU_SPLIT rclickmenu_split
@@ -219,6 +220,16 @@
 	#define PATCH_SWITCH_LUA_PATH lua_path
 #endif // ifdef PATCH_SWITCH_LUA
 
+#define PATCH_SWITCH_EXFILTER exfilter
+#ifdef PATCH_SWITCH_EXFILTER
+	#define PATCH_SWITCH_EXFILTER_SHARP exfilter_sharp
+	#define PATCH_SWITCH_EXFILTER_CONVEXEDGE exfilter_convexedge
+	#define PATCH_SWITCH_EXFILTER_FLASH exfilter_flash
+	#define PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV exfilter_specialcolorconv
+
+	#define PATCH_SWITCH_EXFILTER_GLARE exfilter_glare
+#endif //define PATCH_SWITCH_EXFILTER
+
 #define PATCH_SWITCH_FAST fast
 #ifdef PATCH_SWITCH_FAST
 	
@@ -226,6 +237,7 @@
 	#define PATCH_SWITCH_FAST_EXEDITWINDOW fast_exeditwindow
 	// #define PATCH_SWITCH_FAST_EXFUNC_FILL exfunc_fill
 	// #define PATCH_SWITCH_FAST_PIXELFORMAT_CONV pixelformat_conv
+	#define PATCH_SWITCH_FAST_YC_FILTER_EFFECT yc_filter_effect
 	#define PATCH_SWITCH_FAST_DRAWFILTER draw_filter
 	#define PATCH_SWITCH_FAST_TEXT fast_text
 	#define PATCH_SWITCH_FAST_TEXTBORDER fast_text_border
@@ -235,6 +247,7 @@
 	#define PATCH_SWITCH_FAST_BORDER fast_border
 	#define PATCH_SWITCH_FAST_BORDERBLUR fast_borderblur
 	#define PATCH_SWITCH_FAST_BLUR fast_blur
+	#define PATCH_SWITCH_FAST_SHARP fast_sharp
 	#define PATCH_SWITCH_FAST_CONVEXEDGE fast_convexedge
 	#define PATCH_SWITCH_FAST_EXTRACTEDGE fast_extractedge
 	#define PATCH_SWITCH_FAST_GLOW fast_glow

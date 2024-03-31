@@ -157,15 +157,21 @@ namespace OFS {
 		constexpr i32 CreateFigure_polygons_func_call = 0x073949;
 		constexpr i32 CreateFigure_polygons_func_mt_call = 0x07395b;
 
+		constexpr i32 drawfilter_func_proc = 0x019160;
+		constexpr i32 drawfilter_func_WndProc = 0x01b550;
+
 		constexpr i32 efShadow_func_proc_var_ptr = 0x0b8590;
 		constexpr i32 efShadow_var_ptr = 0x231f90;
 		constexpr i32 efBorder_func_proc_var_ptr = 0x0a5d28;
 		constexpr i32 efBorder_func_proc_ptr = 0x0515d0;
 		constexpr i32 efBorder_var_ptr = 0x1b1e30;
-		constexpr i32 efBlur_func_proc_ptr = 0x0a0750;
+		constexpr i32 efBlur_ptr = 0xa0720;
+		constexpr i32 efBlur_Filter_ptr = 0xa0848;
 		constexpr i32 efBlur_var_ptr = 0x11ec34;
 		constexpr i32 efGlow_var_ptr = 0x1b2010;
+		constexpr i32 efDiffuseLight_ptr = 0x0a21d0;
 		constexpr i32 efDiffuseLight_var_ptr = 0x11efdc;
+		constexpr i32 efLightEmission_ptr = 0x0a6218;
 		constexpr i32 efLightEmission_var_ptr = 0x1b1fdc;
 		constexpr i32 efPolarTransform_func_proc = 0x0748a0;
 		constexpr i32 efPolarTransform_func_proc_ptr = 0x0add30;
@@ -173,21 +179,42 @@ namespace OFS {
 		constexpr i32 efPolarTransform_var_ptr = 0x1e48c0;
 		constexpr i32 efDisplacementMap_mt_func_call = 0x01f154;
 		constexpr i32 efDisplacementMap_var_ptr = 0x11effc;
-		constexpr i32 efRadiationalBlur_func_proc = 0x00b310;
-		constexpr i32 efRadiationalBlur_func_proc_ptr = 0x09fdb0;
+		constexpr i32 efRadiationalBlur_ptr = 0x09fd80;
+		constexpr i32 efRadiationalBlur_Filter_ptr = 0x09fea8;
 		constexpr i32 efRadiationalBlur_var_ptr = 0x0d75a8;
+		constexpr i32 efRadiationalBlur_func_proc = 0x00b310;
+		constexpr i32 efFlash_ptr = 0x0a59f8;
 		constexpr i32 efFlash_func_proc = 0x04e560;
 		constexpr i32 efFlash_var_ptr = 0x1a6b7c;
 		constexpr i32 efFlash_func_proc_ptr = 0x0a5a28;
-		constexpr i32 efDirectionalBlur_func_proc_ptr = 0x0a00a0;
+		constexpr i32 efFlash_Filter_ptr = 0x0a5b20;
+		constexpr i32 efDirectionalBlur_ptr = 0x0a0070;
+		constexpr i32 efDirectionalBlur_Filter_ptr = 0x0a0198;
 		constexpr i32 efDirectionalBlur_var_ptr = 0x0d75cc;
 		constexpr i32 efDirectionalBlur_Filter_mt_func_call = 0x00cae6;
+		constexpr i32 efLensBlur_ptr = 0x0a0b70;
+		constexpr i32 efLensBlur_var_ptr = 0x11ec5c;
 		constexpr i32 efLensBlur_Media_mt_func_call = 0x012761;
 		constexpr i32 efLensBlur_Filter_mt_func_call = 0x012786;
-		constexpr i32 efLensBlur_var_ptr = 0x11ec5c;
+		constexpr i32 efConvexEdge_ptr = 0x09ecb0;
 		constexpr i32 efConvexEdge_var_ptr = 0x0d7588;
 		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
+		constexpr i32 efSpecialColorConv_ptr = 0x0a1530;
+		constexpr i32 efSpecialColorConv_var_ptr = 0x11ecfc;
+		constexpr i32 efSharp_ptr = 0xb86f8;
+		constexpr i32 efColorCorrection_ptr = 0xa1248;
+		constexpr i32 efMonochromatic_ptr = 0xa85c0;
+		constexpr i32 efMosaic_ptr = 0xa8858;
+		constexpr i32 efClipping_ptr = 0xa1058;
+		constexpr i32 efExColorConfig_ptr = 0xa1890;
+		constexpr i32 efCoordinate_ptr = 0x9e550;
+		constexpr i32 efZoom_ptr = 0x9e9f0;
+		constexpr i32 efAlpha_ptr = 0x9e228;
+		constexpr i32 efAngle_ptr = 0x9e3b0;
+		constexpr i32 efFlip_ptr = 0xae4a8;
+		constexpr i32 efVibration_ptr = 0xadf10;
+		constexpr i32 efCameraControlOption_ptr = 0xb9e80;
 		constexpr i32 efAnimationEffect_ptr = 0x09d2b8;
 		constexpr i32 efCustomObject_ptr = 0x09d3e0;
 		constexpr i32 efMovieFile_ptr = 0x09dd08;
@@ -197,6 +224,7 @@ namespace OFS {
 		constexpr i32 efCameraEffect_ptr = 0x09d508;
 		constexpr i32 efSceneChange_ptr = 0x0b7f80;
 		constexpr i32 efPortionFilter_ptr = 0x0a92c0;
+		constexpr i32 efGlare_ptr = 0x0a6040;
 
 		constexpr i32 PixelYCA_ssss2fbbs = 0x070220;
 		constexpr i32 PixelYCA_fbbs2ssss = 0x0703f0;
@@ -227,6 +255,7 @@ namespace OFS {
 		constexpr i32 str_blend = 0x0a30e8;
 		constexpr i32 str_RGB_d_d_d = 0x0a2d24;
 		constexpr i32 str_SHITEINASHI_MOTOGAZOUNOIRO = 0x0a5c8c;
+		constexpr i32 str_HANNI = 0x09ffe8;
 
 
 		constexpr i32 AviFileHandleInfoArray = 0x0d4748;
