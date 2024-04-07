@@ -33,7 +33,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・メニュー文字列を実態に即したものに変更
     ・動画ファイル と 音声ファイル で中間点を打っていないときでもファイルを再参照しても再生位置などの情報を変更しない
     ・拡張編集以外のフィルタ(例:拡張色調補正)を使ったプロジェクトをオブジェクトファイルに出力できないことがある
-    ・音声波形表示/極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/シャドー/グロー/拡散光/発光/ぼかし/境界ぼかし/凸エッジ/エッジ抽出/色ずれ/カラーキー/クロマキー/特定色域変換/シーンチェンジの高速化
+    ・音声波形表示/極座標変換/ディスプレイスメントマップ/放射ブラー/閃光/方向ブラー/レンズブラー/縁取り/シャドー/グロー/拡散光/発光/シャープ/ぼかし/境界ぼかし/凸エッジ/エッジ抽出/色ずれ/カラーキー/クロマキー/特定色域変換/シーンチェンジの高速化
         OpenCL/AVX2を使用することがあります
         わずかにオリジナルと結果が変わってしまいます (floatとdoubleの差です)
         また、アーティファクトなどのバグを解消することもあります
@@ -42,6 +42,9 @@ https://scrapbox.io/nazosauna/patch.aul
         マスクやディスプレイスメントマップのソースとしての図形にも効果がある
     ・テキストの軽量化
         キャッシュをとります。縁取り文字の処理を最適化します
+    ・透明度を扱わないフィルタ効果のみが付与されている動画ファイル・アルファ無しシーンなどの処理の速度アップ
+        対応フィルタ：座標・拡大率・透明度・回転・振動・拡張色設定・カメラ制御オプション・グループ制御・色調補正・単色化・モザイク・特定色域変換・クリッピング・シャープ・凸エッジ
+        サイズ固定など条件付き対応フィルタ：拡散光・発光・閃光・放射ブラー・方向ブラー・レンズブラー・ぼかし・反転
     ・シーン画像生成に時間がかかった時にキャッシュを作成する
     ・Luaの環境が分かれてしまうことがある
     ・package.path,package.cpathはどんなときでもscriptフォルダを含めるように
@@ -188,6 +191,10 @@ https://scrapbox.io/nazosauna/patch.aul
     ・同じ動画に対して動画ファイルのハンドルを共有させるように変更(Altを押しながら読み込ませるときは無効)
     ・動画ファイル・音声ファイル・音声波形表示オブジェクトの初期値設定ファイル(.exc)に存在しないファイルが登録されている場合は読み込みを行わないように変更
     ・グリッド野設定にて基準フレーム番号に負の値を入力できるように変更
+    ・画像データのキャッシュのサイズをページ単位になるように広げる
+    ・モーションブラーにて間隔が0未満の時にエラーが出るのを修正
+    ・
+    ・
 
     追加
     ・コンソールの表示
@@ -229,6 +236,12 @@ https://scrapbox.io/nazosauna/patch.aul
     ・テキストオブジェクトに 縁のみ 縁のみ(細) を追加
     ・エッジ抽出の色選択に 色指定無し を追加
 
+    ・フィルタの追加
+        ・シャープ（フィルタオブジェクト）
+        ・凸エッジ（フィルタオブジェクト）
+        ・閃光（フィルタオブジェクト）
+        ・特定色域変換（フィルタオブジェクト）
+        ・グレア（フィルタ効果）
 
 設定
     patch.aulと同じパスにpatch.aul.jsonが生成されて、これが設定ファイルになります。
@@ -351,6 +364,7 @@ https://scrapbox.io/nazosauna/patch.aul
 	"obj_radiationalblur" : boolean, ; 放射ブラーでアーチファクトが出るのを修正 (既定値: true)
 	"obj_flash" : boolean, ; 閃光でアーチファクトが出るのを修正 (既定値: true)
         "obj_specialcolorconv" : boolean, ; 特定色域変換で変換前色に黒色を指定すると0除算が起こることがあるのを修正 (既定値: true)
+        "obj_motionblur" : boolean, ; モーションブラーの間隔が負の値になった時にエラーとなるのを修正 (既定値: true)
         "obj_portionfilter" : boolean, ; 部分フィルタがスレッド数より小さいサイズに対して正常に反映されないバグを修正 / (ファイルから選択)でファイルパスを表示する (既定値: true)
         "settingdialog_excolorconfig" : boolean, ; 拡張色変換のウィンドウが下のフィルタに被るのを修正 (既定値: true)
         "settingdialog_chromakey" : boolean, ; クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更 (既定値: true)
@@ -359,6 +373,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "blend" : boolean, ; アルファチャンネルのあるフレームバッファで合成モード「通常」以外を使用すると誤った結果になるのを修正 (既定値: true)
         "add_extension" : boolean, ; 動画、音声ファイル参照の時、exedit.iniにある拡張子を追加する (既定値: true)
         "new_project_editbox" : boolean, ; 新規プロジェクト作成ダイアログの画像サイズ入力欄の幅を広げる (既定値: true)
+        "image_data_cache" : boolean, ; 画像データのキャッシュのサイズをページ単位になるように広げる (既定値: true)
         "scene_cache" : boolean, ; シーン画像生成に時間がかかった時にキャッシュを作成する機能の追加 (既定値: true)
         "scene_vram" : boolean, ; フィルタオブジェクトのレンズブラーやぼかしフィルタなどをシーンで読むとエラーとなるのを修正 (既定値: true)
         "playback_speed" : boolean, ; 中間点と再生速度の関連バグの修正 (既定値: true)
@@ -395,9 +410,16 @@ https://scrapbox.io/nazosauna/patch.aul
             "lua.rand" : boolean, ; rand関数で例外になるパターンを潰す (既定値: true)
             "lua.randex" : boolean, ; 正確な乱数を提供するrandexクラスの追加 (既定値: true)
             "lua_setanchor" : boolean, ; setanchorを使っているスクリプトが正常に描画できないことがあるのを修正 (既定値: true)
+        "exfilter" : boolean, ; 拡張編集用フィルタの追加 (既定値: true)
+            "exfilter.sharp" : boolean, ; フィルタオブジェクトのシャープを追加 (既定値: true)
+            "exfilter.convexedge" : boolean, ; フィルタオブジェクトの凸エッジを追加 (既定値: true)
+            "exfilter.flash" : boolean, ; フィルタオブジェクトの閃光を追加 (既定値: true)
+            "exfilter.specialcolorconv" : boolean, ; フィルタオブジェクトの特定色域変換を追加 (既定値: true)
+            "exfilter.glare" : boolean, ; 拡張編集で実装途中のフィルタ効果グレアを追加 (既定値: false)
         "fast" : boolean, ; fast.*配下のスイッチの主電源 (既定値: true)
             "fast.exeditwindow" : boolean, ; 拡張編集ウィンドウの描画の最適化 (既定値: true)
             "fast.settingdialog" : boolean, ; 設定ダイアログの描画の最適化 (既定値: true)
+            "fast.yc_filter_effect" : boolean, ; 透明度を扱わない画像処理の拡張 (既定値: true)
             "fast.drawfilter" : boolean, ; 標準描画や拡張描画の非効率な計算を改善する (既定値: true)
             "fast.text" : boolean, ; テキストの軽量化 (既定値: true)
             "fast.textborder" : boolean, ; テキスト縁取り文字の軽量化 (既定値: true)
@@ -407,6 +429,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.border" : boolean, ; 縁取りの高速化/バグ修正 (既定値: true)
             "fast.borderblur" : 境界ぼかしの高速化 (既定値: true)
             "fast.blur" : boolean, ; ぼかしの高速化/バグ修正 (既定値: true)
+            "fast.sharp" : シャープの高速化 (既定値: true)
             "fast.convexedge" :  boolean, ; 凸エッジの高速化 (既定値: true)
             "fast.extractedge" : boolean, ; エッジ抽出の高速化/色指定無しの追加 (既定値: true)
             "fast.glow" : boolean, ; グローの高速化 (既定値: true)
