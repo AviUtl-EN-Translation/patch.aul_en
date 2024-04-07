@@ -96,6 +96,7 @@ namespace patch {
                     1006c28e 0f1f00             nop
                 */
 
+                /*
                 constexpr int vp_begin = 0x6c241;
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6c291 - vp_begin);
                 h.store_i16(0x6c241 - vp_begin, '\x7e\x2c');
@@ -110,6 +111,7 @@ namespace patch {
                 h.store_i8(0x6c27d - vp_begin, '\x14');
                 h.store_i16(0x6c28e - vp_begin, '\x0f\x1f');
                 h.store_i8(0x6c290 - vp_begin, '\x00');
+                */
             }
             { // 残像OFF
                 /*
@@ -117,7 +119,7 @@ namespace patch {
                     ↓
                     1006c477 7e19               jng     skip,19
                 */
-                OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x6c477, 1).store_i8(0, '\x7e');
+                // OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x6c477, 1).store_i8(0, '\x7e');
             }
         }
 
