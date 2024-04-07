@@ -1503,12 +1503,10 @@ namespace patch::fast {
         if (efpip->xf4) {
             auto scene_w = efpip->scene_w;
             auto scene_h = efpip->scene_h;
-            auto scene_line = efpip->scene_line;
             auto frame_edit = efpip->frame_edit;
             auto frame_temp = efpip->frame_temp;
             efpip->scene_w = efpip->obj_w;
             efpip->scene_h = efpip->obj_h;
-            efpip->scene_line = efpip->obj_line;
             efpip->frame_edit = reinterpret_cast<decltype(efpip->frame_edit)>(efpip->obj_edit);
             efpip->frame_temp = reinterpret_cast<decltype(efpip->frame_temp)>(efpip->obj_temp);
 
@@ -1520,7 +1518,6 @@ namespace patch::fast {
             efpip->obj_temp = reinterpret_cast<decltype(efpip->obj_temp)>(efpip->frame_temp);
             efpip->scene_w = scene_w;
             efpip->scene_h = scene_h;
-            efpip->scene_line = scene_line;
             efpip->frame_edit = frame_edit;
             efpip->frame_temp = frame_temp;
 

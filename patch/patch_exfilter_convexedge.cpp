@@ -28,14 +28,12 @@ namespace patch::exfilter {
         auto flag = efpip->flag;
         auto obj_w = efpip->obj_w;
         auto obj_h = efpip->obj_h;
-        auto obj_line = efpip->obj_line;
         auto obj_edit = efpip->obj_edit;
         auto obj_temp = efpip->obj_temp;
         auto no_alpha = efpip->xf4;
         efpip->flag &= ~ExEdit::FilterProcInfo::Flag::fast_preview;
         efpip->obj_w = efpip->scene_w;
         efpip->obj_h = efpip->scene_h;
-        efpip->obj_line = efpip->scene_line;
         efpip->obj_edit = reinterpret_cast<decltype(efpip->obj_edit)>(efpip->frame_edit);
         efpip->obj_temp = reinterpret_cast<decltype(efpip->obj_temp)>(efpip->frame_temp);
         efpip->xf4 = 1;
@@ -47,7 +45,6 @@ namespace patch::exfilter {
         efpip->frame_temp = reinterpret_cast<decltype(efpip->frame_temp)>(efpip->obj_temp);
         efpip->obj_w = obj_w;
         efpip->obj_h = obj_h;
-        efpip->obj_line = obj_line;
         efpip->obj_edit = obj_edit;
         efpip->obj_temp = obj_temp;
         efpip->xf4 = no_alpha;

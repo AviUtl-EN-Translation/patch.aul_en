@@ -87,6 +87,7 @@
     <ClInclude Include="patch_fast_yc_filter_effect.hpp" />
     <ClInclude Include="patch_group_camera_scene.hpp" />
     <ClInclude Include="patch_group_id.hpp" />
+    <ClInclude Include="patch_image_data_cache.hpp" />
     <ClInclude Include="patch_init_window_pos.hpp" />
     <ClInclude Include="patch_keyconfig.hpp" />
     <ClInclude Include="patch_load_exedit_backup.hpp" />

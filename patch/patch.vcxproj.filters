@@ -527,6 +527,9 @@
     <ClInclude Include="patch_exfilter_flash.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_image_data_cache.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />

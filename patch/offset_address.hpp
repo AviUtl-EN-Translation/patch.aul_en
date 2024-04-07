@@ -54,6 +54,11 @@ namespace OFS {
 		constexpr i32 str_asterisk_dot_auf = 0x0752fc; // "*.auf"
 		constexpr i32 str_asterisk_dot_auo = 0x0750d4; // "*.auo"
 
+		constexpr i32 str_GetFilterTable = 0x0752d8;
+		constexpr i32 str_GetFilterTableList = 0x0752e8;
+		constexpr i32 str_GetInputPluginTable = 0x074994;
+		constexpr i32 str_GetColorPluginTable = 0x0748e8;
+
 		constexpr i32 str_percent_s_percent_s = 0x0743c8; // "%s%s"
 		constexpr i32 str_percent_s_percent_s_percent_s = 0x0743e8; // "%s%s"
 
@@ -222,6 +227,7 @@ namespace OFS {
 		constexpr i32 efAudioFile_ptr = 0x0ba570;
 		constexpr i32 efWaveForm_ptr = 0x0ba300;
 		constexpr i32 efCameraEffect_ptr = 0x09d508;
+		constexpr i32 efGroupControl_ptr = 0x0a6ba8;
 		constexpr i32 efSceneChange_ptr = 0x0b7f80;
 		constexpr i32 efPortionFilter_ptr = 0x0a92c0;
 		constexpr i32 efGlare_ptr = 0x0a6040;

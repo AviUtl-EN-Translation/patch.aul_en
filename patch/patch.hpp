@@ -167,3 +167,4 @@
 #include "patch_exfilter_specialcolorconv.hpp"
 #include "patch_exfilter_flash.hpp"
 #include "patch_obj_motionblur.hpp"
+#include "patch_image_data_cache.hpp"

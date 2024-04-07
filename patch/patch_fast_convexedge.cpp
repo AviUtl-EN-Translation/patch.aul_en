@@ -175,8 +175,8 @@ namespace patch::fast {
                 }
             }
 
-            auto src = (ExEdit::PixelYC*)efpip->obj_edit + y * efpip->obj_line;
-            auto dst = (ExEdit::PixelYC*)efpip->obj_temp + y * efpip->obj_line;
+            auto src = (ExEdit::PixelYC*)efpip->obj_edit + y * efpip->scene_line;
+            auto dst = (ExEdit::PixelYC*)efpip->obj_temp + y * efpip->scene_line;
             for (int x = 0; x < efpip->obj_w; x++) {
                 int x1, x2;
                 if (0 <= ce->step_x16) {

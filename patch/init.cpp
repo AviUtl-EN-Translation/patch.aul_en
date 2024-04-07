@@ -343,6 +343,9 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_ADD_EXTENSION
 	patch::add_extension.init();
 #endif
+#ifdef PATCH_SWITCH_IMAGE_DATA_CACHE
+	patch::image_data_cache.init();
+#endif
 #ifdef PATCH_SWITCH_SECOND_CACHE
 	patch::second_cache.init();
 #endif
@@ -598,7 +601,7 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 	LPCSTR filename = PathFindFileNameA(lpLibFileName);
 	if (lstrcmpiA(filename, "exedit.auf") == 0) {
 		GLOBAL::exedit_hmod = ret;
-		auto filters = reinterpret_cast<AviUtl::GetFilterTableList_t>(GetProcAddress(ret, AviUtl::GetFilterTableListName))();
+		auto filters = reinterpret_cast<AviUtl::GetFilterTableList_t>(GetProcAddress(ret, reinterpret_cast<LPCSTR>(GLOBAL::aviutl_base + OFS::AviUtl::str_GetFilterTableList)))();
 		if (strcmp(filters[0]->information, "拡張編集(exedit) version 0.92 by ＫＥＮくん") != 0) {
 			MessageBoxW(NULL, L"patch.aul requires Exedit version *0.92*.\n拡張編集 version 0.92以外では動作しません．", L"patch.aul", MB_ICONEXCLAMATION);
 			return ret;
@@ -649,6 +652,7 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 	}
 #endif
 #ifdef PATCH_SWITCH_WARNING_OLD_LSW
+	/*
 	else if (lstrcmpiA(filename, "lwcolor.auc") == 0) {
 		static const SHA256 r940_hash(0xc7, 0xe2, 0x51, 0xde, 0xd2, 0xf8, 0x21, 0xcb, 0x1b, 0xc6, 0xb1, 0x9a, 0x66, 0x43, 0xd3, 0x0d, 0xa4, 0xeb, 0xd6, 0x97, 0x1e, 0x34, 0x1a, 0xb2, 0x11, 0xd9, 0x41, 0x1d, 0xcc, 0xbf, 0x9a, 0x18);
 		SHA256 hash(lpLibFileName);
@@ -657,6 +661,40 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 			if (ret == IDYES) {
 				static cryptostring lsw_url(L"https://scrapbox.io/aviutl/L-SMASH_Works");
 				web_confirm(lsw_url.get());
+			}
+		}
+	}*/
+	else if (lstrcmpiA(filename, "lwcolor.auc") == 0) {
+		auto col = reinterpret_cast<AviUtl::GetColorPluginTable_t>(GetProcAddress(ret, reinterpret_cast<LPCSTR>(GLOBAL::aviutl_base + OFS::AviUtl::str_GetColorPluginTable)))();
+
+		if (col != NULL && col->information != NULL) {
+			if (lstrlen("L-SMASH Works Color Space Converter r") <= lstrlen(col->information)) {
+				if (strncmp("L-SMASH Works Color Space Converter r", col->information, lstrlen("L-SMASH Works Color Space Converter r")) == 0) {
+					char* ptr = (char*)col->information + lstrlen("L-SMASH Works Color Space Converter r");
+					int r = 0;
+					while ('0' <= *ptr && *ptr <= '9') {
+						r = r * 10 + *ptr - '0';
+						ptr++;
+					}
+
+					if (r == 940) {
+						if (lstrlen(lpLibFileName) + 3 < _MAX_PATH) {
+							char aui64path[_MAX_PATH];
+							lstrcpy(aui64path, lpLibFileName);
+							lstrcpy(aui64path + lstrlen(aui64path) - lstrlen("color.auc"), "input64.aui");
+							if (PathFileExistsA(aui64path)) {
+								r = -940;
+							}
+						}
+					}
+					if (0 < r && r <= 940) {
+						auto mret = patch_resource_message_w(PATCH_RS_PATCH_OLD_LSW, MB_ICONEXCLAMATION | MB_YESNO);
+						if (mret == IDYES) {
+							static cryptostring lsw_url(L"https://scrapbox.io/aviutl/L-SMASH_Works");
+							web_confirm(lsw_url.get());
+						}
+					}
+				}
 			}
 		}
 	}

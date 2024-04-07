@@ -285,6 +285,9 @@ public:
             #ifdef PATCH_SWITCH_DIALOG_NEW_FILE
                 patch::dialog_new_file.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_IMAGE_DATA_CACHE
+                patch::image_data_cache.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_SECOND_CACHE
                 patch::second_cache.switch_load(cr);
             #endif
@@ -943,6 +946,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_DIALOG_NEW_FILE
                 patch::dialog_new_file.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_IMAGE_DATA_CACHE
+                patch::image_data_cache.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_SECOND_CACHE
                 patch::second_cache.switch_store(switch_);

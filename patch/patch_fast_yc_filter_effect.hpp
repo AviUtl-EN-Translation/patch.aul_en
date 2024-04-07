@@ -178,7 +178,8 @@ namespace patch::fast {
 					OFS::ExEdit::efAngle_ptr, // 回転
 					OFS::ExEdit::efVibration_ptr, // 振動
 					OFS::ExEdit::efExColorConfig_ptr, // 拡張色設定
-					OFS::ExEdit::efCameraControlOption_ptr // カメラ制御オプション
+					OFS::ExEdit::efCameraControlOption_ptr, // カメラ制御オプション
+					OFS::ExEdit::efGroupControl_ptr // グループ制御
 				};
 				for (int i = 0; i < sizeof(list) / sizeof(int); i++) {
 					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + list[i]);
@@ -248,7 +249,7 @@ namespace patch::fast {
 					(efDiffuseLight_func_proc_org) = (efp->func_proc);
 					(efp->func_proc) = (efDiffuseLight_func_proc);
 				}
-				{ // 拡散光
+				{ // 発光
 					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efLightEmission_ptr);
 					(efLightEmission_func_proc_org) = (efp->func_proc);
 					(efp->func_proc) = (efLightEmission_func_proc);

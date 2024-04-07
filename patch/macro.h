@@ -174,6 +174,7 @@
 #define PATCH_SWITCH_BLEND blend
 #define PATCH_SWITCH_ADD_EXTENSION add_extension
 #define PATCH_SWITCH_DIALOG_NEW_FILE dlg_newfile
+#define PATCH_SWITCH_IMAGE_DATA_CACHE image_data_cache
 #define PATCH_SWITCH_SCENE_CACHE scenecache
 #define PATCH_SWITCH_SCENE_VRAM scenevram
 #define PATCH_SWITCH_PLAYBACK_SPEED pb_speed

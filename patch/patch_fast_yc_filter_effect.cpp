@@ -30,7 +30,7 @@ namespace patch::fast {
     BOOL __cdecl check4_not(ExEdit::Object* leaderobj, int fid) {
         return leaderobj->check_value[leaderobj->filter_param[fid].check_begin + 4] == 0;
     }
-    BOOL __cdecl check2_exdata1(ExEdit::Object* leaderobj, int fid) {
+    BOOL __cdecl func_check_flash(ExEdit::Object* leaderobj, int fid) {
         int* exdata = (int*)(4 + leaderobj->filter_param[fid].exdata_offset + leaderobj->exdata_offset + *reinterpret_cast<DWORD*>(GLOBAL::exedit_base + OFS::ExEdit::ExdataPointer));
         return leaderobj->check_value[leaderobj->filter_param[fid].check_begin + 2] != 0 && (exdata[1] == 0 || exdata[1] == 1);
     }
@@ -58,7 +58,7 @@ namespace patch::fast {
                 (func_check[i]) = (check4_not);
                 break;
             case OFS::ExEdit::efFlash_ptr:
-                (func_check[i]) = (check2_exdata1);
+                (func_check[i]) = (func_check_flash);
                 break;
             }
         }
@@ -103,12 +103,10 @@ namespace patch::fast {
         if (efpip->xf4) {
             auto scene_w = efpip->scene_w;
             auto scene_h = efpip->scene_h;
-            auto scene_line = efpip->scene_line;
             auto frame_edit = efpip->frame_edit;
             auto frame_temp = efpip->frame_temp;
             efpip->scene_w = efpip->obj_w;
             efpip->scene_h = efpip->obj_h;
-            efpip->scene_line = efpip->obj_line;
             efpip->frame_edit = reinterpret_cast<decltype(efpip->frame_edit)>(efpip->obj_edit);
             efpip->frame_temp = reinterpret_cast<decltype(efpip->frame_temp)>(efpip->obj_temp);
             
@@ -120,7 +118,6 @@ namespace patch::fast {
             efpip->obj_temp = reinterpret_cast<decltype(efpip->obj_temp)>(efpip->frame_temp);
             efpip->scene_w = scene_w;
             efpip->scene_h = scene_h;
-            efpip->scene_line = scene_line;
             efpip->frame_edit = frame_edit;
             efpip->frame_temp = frame_temp;
             return ret;
@@ -157,8 +154,8 @@ namespace patch::fast {
         return func_proc(efFlip_func_proc_org, efFlip_func_proc_org, efp, efpip);
     }
     BOOL __cdecl yc_filter_effect_t::efFlash_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        if (efpip->xf4) {
-            if (((int*)efp->exdata_ptr)[1] == 1) {
+        if (efpip->xf4) { // サイズ固定 && (前方に合成 || 後方に合成)
+            if (((int*)efp->exdata_ptr)[1] == 1) { // 後方に合成
                 return TRUE;
             }
             efp->track[3] = 750;
