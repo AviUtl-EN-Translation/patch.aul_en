@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_55
+patch.aul r43_ss_56
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -44,7 +44,7 @@ https://scrapbox.io/nazosauna/patch.aul
         キャッシュをとります。縁取り文字の処理を最適化します
     ・透明度を扱わないフィルタ効果のみが付与されている動画ファイル・アルファ無しシーンなどの処理の速度アップ
         対応フィルタ：座標・拡大率・透明度・回転・振動・拡張色設定・カメラ制御オプション・グループ制御・色調補正・単色化・モザイク・特定色域変換・クリッピング・シャープ・凸エッジ
-        サイズ固定など条件付き対応フィルタ：拡散光・発光・閃光・放射ブラー・方向ブラー・レンズブラー・ぼかし・反転
+        サイズ固定など条件付き対応フィルタ：拡散光・発光・閃光・放射ブラー・方向ブラー・レンズブラー・ぼかし・反転・シャドー・ノイズ
     ・シーン画像生成に時間がかかった時にキャッシュを作成する
     ・Luaの環境が分かれてしまうことがある
     ・package.path,package.cpathはどんなときでもscriptフォルダを含めるように
@@ -193,8 +193,6 @@ https://scrapbox.io/nazosauna/patch.aul
     ・グリッド野設定にて基準フレーム番号に負の値を入力できるように変更
     ・画像データのキャッシュのサイズをページ単位になるように広げる
     ・モーションブラーにて間隔が0未満の時にエラーが出るのを修正
-    ・
-    ・
 
     追加
     ・コンソールの表示
@@ -237,9 +235,10 @@ https://scrapbox.io/nazosauna/patch.aul
     ・エッジ抽出の色選択に 色指定無し を追加
 
     ・フィルタの追加
-        ・シャープ（フィルタオブジェクト）
-        ・凸エッジ（フィルタオブジェクト）
         ・閃光（フィルタオブジェクト）
+        ・凸エッジ（フィルタオブジェクト）
+        ・シャープ（フィルタオブジェクト）
+        ・ノイズ（フィルタオブジェクト）
         ・特定色域変換（フィルタオブジェクト）
         ・グレア（フィルタ効果）
 
@@ -411,9 +410,10 @@ https://scrapbox.io/nazosauna/patch.aul
             "lua.randex" : boolean, ; 正確な乱数を提供するrandexクラスの追加 (既定値: true)
             "lua_setanchor" : boolean, ; setanchorを使っているスクリプトが正常に描画できないことがあるのを修正 (既定値: true)
         "exfilter" : boolean, ; 拡張編集用フィルタの追加 (既定値: true)
-            "exfilter.sharp" : boolean, ; フィルタオブジェクトのシャープを追加 (既定値: true)
-            "exfilter.convexedge" : boolean, ; フィルタオブジェクトの凸エッジを追加 (既定値: true)
             "exfilter.flash" : boolean, ; フィルタオブジェクトの閃光を追加 (既定値: true)
+            "exfilter.convexedge" : boolean, ; フィルタオブジェクトの凸エッジを追加 (既定値: true)
+            "exfilter.sharp" : boolean, ; フィルタオブジェクトのシャープを追加 (既定値: true)
+            "exfilter.noise" : boolean, ; フィルタオブジェクトのノイズを追加 (既定値: true)
             "exfilter.specialcolorconv" : boolean, ; フィルタオブジェクトの特定色域変換を追加 (既定値: true)
             "exfilter.glare" : boolean, ; 拡張編集で実装途中のフィルタ効果グレアを追加 (既定値: false)
         "fast" : boolean, ; fast.*配下のスイッチの主電源 (既定値: true)
@@ -453,7 +453,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_54" のような文字列が格納されている
+        例として "patch.aul r43_ss_56" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
