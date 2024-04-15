@@ -56,8 +56,10 @@ namespace patch::fast {
 		inline static BOOL(__cdecl* efFlip_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efFlash_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efFlash_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		static BOOL __cdecl efNoise_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		inline static BOOL(__cdecl* efNoise_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
-		inline static const int exedit_check_filter_num = 62;
+		inline static const int exedit_check_filter_num = 100;
 		inline static BOOL(__cdecl* func_check[exedit_check_filter_num])(ExEdit::Object* leaderobj, int fid) = { NULL };
 		inline static BOOL first = TRUE;
 		static void func_check_listing();
@@ -169,6 +171,31 @@ namespace patch::fast {
 				store_i32(cursor, '\xe6\x33\xdb\xe9'); cursor += 4;
 				store_i32(cursor, GLOBAL::exedit_base + 0x835fe - (int)cursor - 4); cursor += 4;
 			}
+			{ // フレームバッファをアルファチャンネル有りシーンで呼び出した場合の対応
+				/*
+					10052315 742e               jz      10052345
+					10052317 0d00000013         or      eax,13000000
+					1005231c
+					↓
+					10052315 742e               jz      10052345
+					10052317 e9XxXxXxXx         jmp     cursor
+
+					10000000 85c0               test    eax,eax
+					10000000 0f85XxXxXxXx       jnz     10052345
+					10000000 0d00000013         or      eax,13000000
+					10000000 e9XxXxXxXx         jmp     1005231c
+				*/
+				constexpr int vp_begin = 0x52317;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x5231c - vp_begin);
+				h.store_i8(0x52317 - vp_begin, '\xe9');
+				h.replaceNearJmp(0x52318 - vp_begin, cursor);
+
+				store_i32(cursor, '\x85\xc0\x0f\x85'); cursor += 4;
+				store_i32(cursor, GLOBAL::exedit_base + 0x52345 - (int)cursor - 4); cursor += 4;
+				store_i32(cursor, '\x0d\x00\x00\x00'); cursor += 4;
+				store_i16(cursor, '\x13\xe9'); cursor += 2;
+				store_i32(cursor, GLOBAL::exedit_base + 0x5231c - (int)cursor - 4); cursor += 4;
+			}
 
 			{ // 初めからアルファチャンネルを扱わないフィルタ効果
 				constexpr int list[] = {
@@ -275,6 +302,13 @@ namespace patch::fast {
 					(efFlash_func_proc_org) = (efp->func_proc);
 					(efp->func_proc) = (efFlash_func_proc);
 #endif // ifdef PATCH_SWITCH_FAST_FLASH
+				}
+				{ //ノイズ
+#ifdef PATCH_SWITCH_EXFILTER_NOISE
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efNoise_ptr);
+					(efNoise_func_proc_org) = (efp->func_proc);
+					(efp->func_proc) = (efNoise_func_proc);
+#endif // ifdef PATCH_SWITCH_EXFILTER_NOISE
 				}
 			}
 			{ // fastなどに組み込み済み

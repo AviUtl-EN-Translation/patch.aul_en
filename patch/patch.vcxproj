@@ -60,6 +60,7 @@
     <ClInclude Include="patch_exfilter_convexedge.hpp" />
     <ClInclude Include="patch_exfilter_flash.hpp" />
     <ClInclude Include="patch_exfilter_glare.hpp" />
+    <ClInclude Include="patch_exfilter_noise.hpp" />
     <ClInclude Include="patch_exfilter_sharp.hpp" />
     <ClInclude Include="patch_exfilter_specialcolorconv.hpp" />
     <ClInclude Include="patch_exo_abnormal_pos.hpp" />
@@ -224,6 +225,7 @@
     <ClCompile Include="patch_exc_avi_file.cpp" />
     <ClCompile Include="patch_exfilter_convexedge.cpp" />
     <ClCompile Include="patch_exfilter_flash.cpp" />
+    <ClCompile Include="patch_exfilter_noise.cpp" />
     <ClCompile Include="patch_exfilter_sharp.cpp" />
     <ClCompile Include="patch_exfilter_specialcolorconv.cpp" />
     <ClCompile Include="patch_failed_file_drop.cpp" />

@@ -20,8 +20,10 @@
 //#define PATCH_STOPWATCH
 #include "patch_fast_blur.hpp"
 #include "patch_fast_directionalblur.hpp"
+#include "patch_fast_shadow.hpp"
 #include "patch_exfilter_specialcolorconv.hpp"
 #include "patch_exfilter_flash.hpp"
+#include "patch_exfilter_Noise.hpp"
 
 namespace patch::fast {
     BOOL __cdecl check0(ExEdit::Object* leaderobj, int fid) {
@@ -33,6 +35,10 @@ namespace patch::fast {
     BOOL __cdecl func_check_flash(ExEdit::Object* leaderobj, int fid) {
         int* exdata = (int*)(4 + leaderobj->filter_param[fid].exdata_offset + leaderobj->exdata_offset + *reinterpret_cast<DWORD*>(GLOBAL::exedit_base + OFS::ExEdit::ExdataPointer));
         return leaderobj->check_value[leaderobj->filter_param[fid].check_begin + 2] != 0 && (exdata[1] == 0 || exdata[1] == 1);
+    }
+    BOOL __cdecl func_check_noise(ExEdit::Object* leaderobj, int fid) {
+        int* exdata = (int*)(4 + leaderobj->filter_param[fid].exdata_offset + leaderobj->exdata_offset + *reinterpret_cast<DWORD*>(GLOBAL::exedit_base + OFS::ExEdit::ExdataPointer));
+        return exdata[1] == 1;
     }
     void yc_filter_effect_t::func_check_listing() {
         auto LoadedFilterTable = (ExEdit::Filter**)(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterTable);
@@ -48,6 +54,11 @@ namespace patch::fast {
                     (func_check[i]) = (check0);
                 }
                 break;
+            case OFS::ExEdit::efShadow_ptr:
+                if (Shadow.is_enabled_i()) {
+                    (func_check[i]) = (check0);
+                }
+                break;
             case OFS::ExEdit::efDiffuseLight_ptr:
             case OFS::ExEdit::efLightEmission_ptr:
             case OFS::ExEdit::efRadiationalBlur_ptr:
@@ -59,6 +70,9 @@ namespace patch::fast {
                 break;
             case OFS::ExEdit::efFlash_ptr:
                 (func_check[i]) = (func_check_flash);
+                break;
+            case OFS::ExEdit::efNoise_ptr:
+                (func_check[i]) = (func_check_noise);
                 break;
             }
         }
@@ -99,7 +113,7 @@ namespace patch::fast {
         *(byte*)&efpip->flag |= 0x40;
     }
 
-    BOOL __cdecl yc_filter_effect_t::func_proc(BOOL(*func_proc)(ExEdit::Filter*, ExEdit::FilterProcInfo*), BOOL(*filter_func_proc)(ExEdit::Filter*, ExEdit::FilterProcInfo*), ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    BOOL __cdecl yc_filter_effect_t::func_proc(BOOL(__cdecl*func_proc)(ExEdit::Filter*, ExEdit::FilterProcInfo*), BOOL(__cdecl*filter_func_proc)(ExEdit::Filter*, ExEdit::FilterProcInfo*), ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         if (efpip->xf4) {
             auto scene_w = efpip->scene_w;
             auto scene_h = efpip->scene_h;
@@ -161,6 +175,9 @@ namespace patch::fast {
             efp->track[3] = 750;
         }
         return func_proc(efFlash_func_proc_org, exfilter::Flash_t::func_proc, efp, efpip);
+    }
+    BOOL __cdecl yc_filter_effect_t::efNoise_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        return func_proc(efNoise_func_proc_org, exfilter::Noise_t::func_proc, efp, efpip);
     }
 
 } // namespace patch::fast

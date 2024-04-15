@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_55"
+#define PATCH_VERSION_STR "r43_ss_56"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -223,9 +223,10 @@
 
 #define PATCH_SWITCH_EXFILTER exfilter
 #ifdef PATCH_SWITCH_EXFILTER
-	#define PATCH_SWITCH_EXFILTER_SHARP exfilter_sharp
-	#define PATCH_SWITCH_EXFILTER_CONVEXEDGE exfilter_convexedge
 	#define PATCH_SWITCH_EXFILTER_FLASH exfilter_flash
+	#define PATCH_SWITCH_EXFILTER_CONVEXEDGE exfilter_convexedge
+	#define PATCH_SWITCH_EXFILTER_SHARP exfilter_sharp
+	#define PATCH_SWITCH_EXFILTER_NOISE exfilter_noise
 	#define PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV exfilter_specialcolorconv
 
 	#define PATCH_SWITCH_EXFILTER_GLARE exfilter_glare

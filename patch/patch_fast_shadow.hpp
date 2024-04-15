@@ -64,7 +64,8 @@ namespace patch::fast {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			store_i32(GLOBAL::exedit_base + OFS::ExEdit::efShadow_func_proc_var_ptr, &func_proc);
+			ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efShadow_ptr);
+			(efp->func_proc) = (func_proc);
 		}
 
 		void switching(bool flag) { enabled = flag; }

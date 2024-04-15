@@ -86,7 +86,7 @@ namespace patch {
                     1006c260 e81bebf9ff         call    1000ad80
                     1006c265 83c410             add     esp,+10
                     1006c268 59                 pop     ecx
-                    1006c269 eb04               jmp     skip,04
+                    1006c269 eb06               jmp     skip,06
                     1006c26b
                     1006c26f 33c9               xor     ecx,ecx
                     1006c271 8344243408         add     dword ptr [esp+34],+08
@@ -96,7 +96,7 @@ namespace patch {
                     1006c28e 0f1f00             nop
                 */
 
-                /*
+                
                 constexpr int vp_begin = 0x6c241;
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x6c291 - vp_begin);
                 h.store_i16(0x6c241 - vp_begin, '\x7e\x2c');
@@ -104,14 +104,14 @@ namespace patch {
                 h.store_i32(0x6c25c - vp_begin, '\xff\x74\x24\x20');
                 h.store_i32(0x6c260 - vp_begin, '\xe8\x1b\xeb\xf9');
                 h.store_i32(0x6c264 - vp_begin, '\xff\x83\xc4\x10');
-                h.store_i32(0x6c268 - vp_begin, '\x59\xeb\x04\x00');
+                h.store_i32(0x6c268 - vp_begin, '\x59\xeb\x06\x00');
                 h.store_i32(0x6c26f - vp_begin, '\x33\xc9\x83\x44');
                 h.store_i32(0x6c272 - vp_begin, '\x44\x24\x34\x08');
                 h.store_i8(0x6c279 - vp_begin, '\x10');
                 h.store_i8(0x6c27d - vp_begin, '\x14');
                 h.store_i16(0x6c28e - vp_begin, '\x0f\x1f');
                 h.store_i8(0x6c290 - vp_begin, '\x00');
-                */
+                
             }
             { // 残像OFF
                 /*
@@ -119,7 +119,7 @@ namespace patch {
                     ↓
                     1006c477 7e19               jng     skip,19
                 */
-                // OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x6c477, 1).store_i8(0, '\x7e');
+                OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x6c477, 1).store_i8(0, '\x7e');
             }
         }
 

@@ -165,7 +165,7 @@ namespace OFS {
 		constexpr i32 drawfilter_func_proc = 0x019160;
 		constexpr i32 drawfilter_func_WndProc = 0x01b550;
 
-		constexpr i32 efShadow_func_proc_var_ptr = 0x0b8590;
+		constexpr i32 efShadow_ptr = 0x0b8560;
 		constexpr i32 efShadow_var_ptr = 0x231f90;
 		constexpr i32 efBorder_func_proc_var_ptr = 0x0a5d28;
 		constexpr i32 efBorder_func_proc_ptr = 0x0515d0;
@@ -203,6 +203,9 @@ namespace OFS {
 		constexpr i32 efLensBlur_Filter_mt_func_call = 0x012786;
 		constexpr i32 efConvexEdge_ptr = 0x09ecb0;
 		constexpr i32 efConvexEdge_var_ptr = 0x0d7588;
+		constexpr i32 efNoise_ptr = 0x0a8ee0;
+		constexpr i32 efNoise_func_proc = 0x06c900;
+		constexpr i32 efNoise_var_ptr = 0x1bad50;
 		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
 		constexpr i32 efSpecialColorConv_ptr = 0x0a1530;

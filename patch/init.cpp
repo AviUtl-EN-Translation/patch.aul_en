@@ -419,14 +419,17 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_EXFILTER
 	patch::exfilter::exfilter.init();
 	if (patch::exfilter::exfilter.is_enabled_i()) {
-		#ifdef PATCH_SWITCH_EXFILTER_SHARP
-			patch::exfilter::Sharp.init();
+		#ifdef PATCH_SWITCH_EXFILTER_FLASH
+			patch::exfilter::Flash.init();
 		#endif
 		#ifdef PATCH_SWITCH_EXFILTER_CONVEXEDGE
 			patch::exfilter::ConvexEdge.init();
 		#endif
-		#ifdef PATCH_SWITCH_EXFILTER_FLASH
-			patch::exfilter::Flash.init();
+		#ifdef PATCH_SWITCH_EXFILTER_SHARP
+			patch::exfilter::Sharp.init();
+		#endif
+		#ifdef PATCH_SWITCH_EXFILTER_NOISE
+			patch::exfilter::Noise.init();
 		#endif
 		#ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
 			patch::exfilter::SpecialColorConv.init();

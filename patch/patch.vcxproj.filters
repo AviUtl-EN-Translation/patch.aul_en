@@ -530,6 +530,9 @@
     <ClInclude Include="patch_image_data_cache.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_exfilter_noise.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -830,6 +833,9 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_exfilter_flash.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_exfilter_noise.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

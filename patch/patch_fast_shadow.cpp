@@ -28,10 +28,7 @@
 
 namespace patch::fast {
 
-    void mt1_ver1(int thread_id, int thread_num, void* param1, void* param2) {
-        auto shadow = static_cast<Shadow_t::efShadow_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-
+    void mt1_ver(int thread_id, int thread_num, Shadow_t::efShadow_var* shadow, ExEdit::FilterProcInfo* efpip) {
         int x = efpip->obj_w * thread_id / thread_num;
         int w = efpip->obj_w * (thread_id + 1) / thread_num - x;
         short* dst0 = (short*)shadow->buf1 + x;
@@ -41,7 +38,20 @@ namespace patch::fast {
 
         memset(cnv0, 0, w * sizeof(int));
 
-        for (int y = shadow->diffuse1; 0 < y; y--) {
+        int loop[4];
+        if (shadow->diffuse1 < efpip->obj_h) {
+            loop[0] = shadow->diffuse1;
+            loop[1] = efpip->obj_h - shadow->diffuse1;
+            loop[2] = 0;
+            loop[3] = shadow->diffuse1 - 1;
+        } else {
+            loop[0] = efpip->obj_h;
+            loop[1] = 0;
+            loop[2] = shadow->diffuse1 - efpip->obj_h;
+            loop[3] = efpip->obj_h - 1;
+        }
+
+        for (int y = loop[0]; 0 < y; y--) {
             auto dst = dst0;
             auto src = src0;
             auto cnv = cnv0;
@@ -55,8 +65,7 @@ namespace patch::fast {
             dst0 += efpip->obj_w;
             src0 += efpip->obj_line * 4;
         }
-
-        for (int y = efpip->obj_h - shadow->diffuse1; 0 < y; y--) {
+        for (int y = loop[1]; 0 < y; y--) {
             auto dst = dst0;
             auto src = src0;
             auto src1 = src01;
@@ -73,54 +82,11 @@ namespace patch::fast {
             src0 += efpip->obj_line * 4;
             src01 += efpip->obj_line * 4;
         }
-        for (int y = shadow->diffuse1 - 1; 0 < y; y--) {
-            auto dst = dst0;
-            auto src1 = src01;
-            auto cnv = cnv0;
-            for (x = w; 0 < x; x--) {
-                *cnv -= *src1;
-                *dst = *cnv / shadow->diffuse1;
-                dst++;
-                src1 += 4;
-                cnv++;
-            }
-            dst0 += efpip->obj_w;
-            src01 += efpip->obj_line * 4;
-        }
-    }
-    void mt1_ver2(int thread_id, int thread_num, void* param1, void* param2) {
-        auto shadow = static_cast<Shadow_t::efShadow_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-
-        int x = efpip->obj_w * thread_id / thread_num;
-        int w = efpip->obj_w * (thread_id + 1) / thread_num - x;
-        short* dst0 = (short*)shadow->buf1 + x;
-        short* src0 = &((ExEdit::PixelYCA*)efpip->obj_edit + x)->a;
-        short* src01 = src0;
-        int* cnv0 = (int*)shadow->buf2 + x;
-
-        memset(cnv0, 0, w * sizeof(int));
-
-        for (int y = efpip->obj_h; 0 < y; y--) {
-            auto dst = dst0;
-            auto src = src0;
-            auto cnv = cnv0;
-            for (x = w; 0 < x; x--) {
-                *cnv += *src;
-                *dst = *cnv / shadow->diffuse1;
-                dst++;
-                src += 4;
-                cnv++;
-            }
-            dst0 += efpip->obj_w;
-            src0 += efpip->obj_line * 4;
-        }
-
-        for (int y = shadow->diffuse1 - efpip->obj_h; 0 < y; y--) {
+        for (int y = loop[2]; 0 < y; y--) {
             memcpy(dst0, dst0 - efpip->obj_w, w * sizeof(short));
             dst0 += efpip->obj_w;
         }
-        for (int y = efpip->obj_h - 1; 0 < y; y--) {
+        for (int y = loop[3]; 0 < y; y--) {
             auto dst = dst0;
             auto src1 = src01;
             auto cnv = cnv0;
@@ -136,28 +102,48 @@ namespace patch::fast {
         }
     }
 
-
-    void mt2_hor1(int thread_id, int thread_num, short* dst, short* src, int obj_w, int obj_h, int diffuse) {
+    void mt23_hor(int thread_id, int thread_num, short* dst, short* src, int obj_w, int obj_h, int diffuse) {
         int y = obj_h * thread_id / thread_num;
         dst += y * (obj_w + diffuse - 1);
         src += y * obj_w;
         auto src1 = src;
+
+        int loop[4];
+        if (diffuse < obj_w) {
+            loop[0] = diffuse;
+            loop[1] = obj_w - diffuse;
+            loop[2] = 0;
+            loop[3] = diffuse - 1;
+        } else {
+            loop[0] = obj_w;
+            loop[1] = 0;
+            loop[2] = diffuse - obj_w;
+            loop[3] = obj_w - 1;
+        }
+
         for (y = obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
             int cnv = 0;
-            for (int x = diffuse; 0 < x; x--) {
+            for (int x = loop[0]; 0 < x; x--) {
                 cnv += *src;
                 *dst = cnv / diffuse;
                 dst++;
                 src++;
             }
-            for (int x = obj_w - diffuse; 0 < x; x--) {
+            for (int x = loop[1]; 0 < x; x--) {
                 cnv += *src - *src1;
                 *dst = cnv / diffuse;
                 dst++;
                 src++;
                 src1++;
             }
-            for (int x = diffuse - 1; 0 < x; x--) {
+            if (0 < loop[2]) {
+                short a = cnv / diffuse;
+                for (int x = loop[2]; 0 < x; x--) {
+                    *dst = a;
+                    dst++;
+                }
+            }
+            for (int x = loop[3]; 0 < x; x--) {
                 cnv -= *src1;
                 *dst = cnv / diffuse;
                 dst++;
@@ -166,57 +152,17 @@ namespace patch::fast {
             src1++;
         }
     }
-    void mt2_hor2(int thread_id, int thread_num, void* param1, void* param2) {
-        auto shadow = static_cast<Shadow_t::efShadow_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-
-        int obj_h = efpip->obj_h + shadow->diffuse1 - 1;
-        int y = obj_h * thread_id / thread_num;
-        short* dst = (short*)shadow->buf2 + y * (efpip->obj_w + shadow->diffuse1 - 1);
-        short* src = (short*)shadow->buf1 + y * efpip->obj_w;
-        auto src1 = src;
-        for (y = obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
-            int cnv = 0;
-            for (int x = efpip->obj_w; 0 < x; x--) {
-                cnv += *src;
-                *dst = cnv / shadow->diffuse1;
-                dst++;
-                src++;
-            }
-            short a = cnv / shadow->diffuse1;
-            for (int x = shadow->diffuse1 - efpip->obj_w; 0 < x; x--) {
-                *dst = a;
-                dst++;
-            }
-            for (int x = efpip->obj_w - 1; 0 < x; x--) {
-                cnv -= *src1;
-                *dst = cnv / shadow->diffuse1;
-                dst++;
-                src1++;
-            }
-            src1++;
-        }
+    void mt2_hor(int thread_id, int thread_num, Shadow_t::efShadow_var* shadow, ExEdit::FilterProcInfo* efpip) {
+        mt23_hor(thread_id, thread_num,
+            (short*)shadow->buf2, // short* dst
+            (short*)shadow->buf1, // short* src
+            efpip->obj_w, // int obj_w
+            efpip->obj_h + shadow->diffuse1 - 1, // int obj_h
+            shadow->diffuse1 // int diffuse
+        );
     }
-    void mt2_hor(int thread_id, int thread_num, void* param1, void* param2) {
-        auto shadow = static_cast<Shadow_t::efShadow_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-
-        if (shadow->diffuse1 <= efpip->obj_w) {
-            mt2_hor1(thread_id, thread_num,
-                (short*)shadow->buf2, // short* dst
-                (short*)shadow->buf1, // short* src
-                efpip->obj_w, // int obj_w
-                efpip->obj_h + shadow->diffuse1 - 1, // int obj_h
-                shadow->diffuse1 // int diffuse
-            );
-        } else {
-            mt2_hor2(thread_id, thread_num, shadow, efpip);
-        }
-    }
-    void mt3_hor(int thread_id, int thread_num, void* param1, void* param2) {
-        auto shadow = static_cast<Shadow_t::efShadow_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-        mt2_hor1(thread_id, thread_num,
+    void mt3_hor(int thread_id, int thread_num, Shadow_t::efShadow_var* shadow, ExEdit::FilterProcInfo* efpip) {
+        mt23_hor(thread_id, thread_num,
             (short*)shadow->buf1, // short* dst
             (short*)shadow->buf2, // short* src
             efpip->obj_w + shadow->diffuse1 - 1, // int obj_w
@@ -225,9 +171,7 @@ namespace patch::fast {
         );
     }
 
-    void mt4_ver_color(int thread_id, int thread_num, void* param1, void* param2) {
-        auto shadow = static_cast<Shadow_t::efShadow_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
+    void mt4_ver_color(int thread_id, int thread_num, Shadow_t::efShadow_var* shadow, ExEdit::FilterProcInfo* efpip) {
 
         int obj_w = efpip->obj_w + shadow->diffuse1 - 1 + shadow->diffuse2 - 1;
         int obj_h = efpip->obj_h + shadow->diffuse1 - 1;
@@ -382,10 +326,7 @@ namespace patch::fast {
         }
     }
 
-    void mt4_ver_image(int thread_id, int thread_num, void* param1, void* param2) {
-        auto shadow = static_cast<Shadow_t::efShadow_var*>(param1);
-        auto efpip = static_cast<ExEdit::FilterProcInfo*>(param2);
-
+    void mt4_ver_image(int thread_id, int thread_num, Shadow_t::efShadow_var* shadow, ExEdit::FilterProcInfo* efpip) {
         int obj_w = efpip->obj_w + shadow->diffuse1 - 1 + shadow->diffuse2 - 1;
         int obj_h = efpip->obj_h + shadow->diffuse1 - 1;
         int x = obj_w * thread_id / thread_num;
@@ -554,6 +495,81 @@ namespace patch::fast {
         }
     }
 
+
+    void calc_blur(int len, short* ptr, fast::Shadow_t::efShadow_var* shadow) {
+        short* dst = ptr + shadow->diffuse2;
+        int n = min(shadow->diffuse1, len);
+        for (int i = 1; i <= n; i++) {
+            *dst = i;
+            dst++;
+        }
+        for (int i = abs(len - shadow->diffuse1); 0 < i; i--) {
+            *dst = n;
+            dst++;
+        }
+        for (int i = n - 1; 0 < i; i--) {
+            *dst = i;
+            dst++;
+        }
+        dst = ptr;
+        short* src = ptr + shadow->diffuse2;
+        int cnv = 0;
+        n = shadow->diffuse1 * shadow->diffuse2;
+        for (int i = shadow->diffuse2; 0 < i; i--) {
+            cnv += *src;
+            *dst = (cnv << 12) / n;
+            dst++;
+            src++;
+        }
+        for (int i = len + shadow->diffuse1 - 1  - shadow->diffuse2; 0 < i; i--) {
+            cnv += *src - *dst;
+            *dst = (cnv << 12) / n;
+            dst++;
+            src++;
+        }
+        for (int i = shadow->diffuse2 - 1; 0 < i; i--) {
+            cnv -= *dst;
+            *dst = (cnv << 12) / n;
+            dst++;
+        }
+    }
+    void mt_yc_color(int thread_id, int thread_num, Shadow_t::efShadow_var* shadow, ExEdit::FilterProcInfo* efpip) {
+        int obj_w = efpip->obj_w + shadow->diffuse1 - 1 + shadow->diffuse2 - 1;
+        int obj_h = efpip->obj_h + shadow->diffuse1 - 1 + shadow->diffuse2 - 1;
+        int y = obj_h * thread_id / thread_num;
+        auto dst = &((ExEdit::PixelYCA*)efpip->obj_temp + (y + shadow->oy) * efpip->obj_line + shadow->ox)->a;
+        int line = (efpip->obj_line - obj_w) * sizeof(ExEdit::PixelYCA);
+        auto srcy = (short*)shadow->buf2 + y;
+        for (y = obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
+            auto srcx = (short*)shadow->buf1;
+            for (int x = obj_w; 0 < x; x--) {
+                *dst = (*srcx * *srcy >> 12) * shadow->intensity >> 12;
+                dst += 4;
+                srcx++;
+            }
+            srcy++;
+            dst = (short*)((int)dst + line);
+        }
+    }
+    void mt_yc_image(int thread_id, int thread_num, Shadow_t::efShadow_var* shadow, ExEdit::FilterProcInfo* efpip) {
+        int obj_w = efpip->obj_w + shadow->diffuse1 - 1 + shadow->diffuse2 - 1;
+        int obj_h = efpip->obj_h + shadow->diffuse1 - 1 + shadow->diffuse2 - 1;
+        int y = obj_h * thread_id / thread_num;
+        auto dst = &((ExEdit::PixelYCA*)efpip->obj_temp + (y + shadow->oy) * efpip->obj_line + shadow->ox)->a;
+        int line = (efpip->obj_line - obj_w) * sizeof(ExEdit::PixelYCA);
+        auto srcy = (short*)shadow->buf2 + y;
+        for (y = obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
+            auto srcx = (short*)shadow->buf1;
+            for (int x = obj_w; 0 < x; x--) {
+                *dst = ((*srcx * *srcy >> 12) * shadow->intensity >> 12) * *dst >> 12;
+                dst += 4;
+                srcx++;
+            }
+            srcy++;
+            dst = (short*)((int)dst + line);
+        }
+    }
+
     BOOL __cdecl Shadow_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         if (efp->track[2] <= 0 || efpip->obj_w <= 0 || efpip->obj_h <= 0) return 1;
         auto shadow = reinterpret_cast<efShadow_var*>(GLOBAL::exedit_base + OFS::ExEdit::efShadow_var_ptr); // 0x231f90
@@ -649,17 +665,23 @@ namespace patch::fast {
         shadow->diffuse2 = diffuse | 1; // (diffuse / 2) * 2 + 1
         shadow->diffuse1 = (diffuse - diffuse / 2) * 2 + 1;
 
-        if (shadow->diffuse1 <= efpip->obj_h) {
-            efp->aviutl_exfunc->exec_multi_thread_func(&mt1_ver1, shadow, efpip);
+        if (efpip->xf4) {
+            calc_blur(efpip->obj_w, shadow->buf1, shadow);
+            calc_blur(efpip->obj_h, shadow->buf2, shadow);
+            if (img_w == 0 || img_h == 0) {
+                efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&mt_yc_color, shadow, efpip);
+            } else {
+                efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&mt_yc_image, shadow, efpip);
+            }
         } else {
-            efp->aviutl_exfunc->exec_multi_thread_func(&mt1_ver2, shadow, efpip);
-        }
-        efp->aviutl_exfunc->exec_multi_thread_func(&mt2_hor, shadow, efpip);
-        efp->aviutl_exfunc->exec_multi_thread_func(&mt3_hor, shadow, efpip);
-        if (img_w == 0 || img_h == 0) {
-            efp->aviutl_exfunc->exec_multi_thread_func(&mt4_ver_color, shadow, efpip);
-        } else {
-            efp->aviutl_exfunc->exec_multi_thread_func(&mt4_ver_image, shadow, efpip);
+            efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&mt1_ver, shadow, efpip);
+            efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&mt2_hor, shadow, efpip);
+            efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&mt3_hor, shadow, efpip);
+            if (img_w == 0 || img_h == 0) {
+                efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&mt4_ver_color, shadow, efpip);
+            } else {
+                efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&mt4_ver_image, shadow, efpip);
+            }
         }
         if (efp->check[0]) {
             shadow->ox = efp->track[0];
@@ -669,7 +691,10 @@ namespace patch::fast {
             efpip->obj_w += diffuse * 2;
             efpip->obj_h += diffuse * 2;
             std::swap(efpip->obj_edit, efpip->obj_temp);
+            auto no_alpha = efpip->xf4;
+            efpip->xf4 = 0;
             reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int)>(GLOBAL::exedit_base + OFS::ExEdit::obj_effect_noarg)(efp->processing, efpip, 0x10fffff);
+            efpip->xf4 = no_alpha;
             efpip->obj_w -= diffuse * 2;
             efpip->obj_h -= diffuse * 2;
             efpip->obj_data.ox -= shadow->ox << 12;

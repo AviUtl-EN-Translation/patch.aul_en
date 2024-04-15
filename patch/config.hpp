@@ -393,14 +393,17 @@ public:
                     
             #ifdef PATCH_SWITCH_EXFILTER
                 patch::exfilter::exfilter.switch_load(cr);
-                #ifdef PATCH_SWITCH_EXFILTER_SHARP
-                    patch::exfilter::Sharp.switch_load(cr);
+                #ifdef PATCH_SWITCH_EXFILTER_FLASH
+                    patch::exfilter::Flash.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_EXFILTER_CONVEXEDGE
                     patch::exfilter::ConvexEdge.switch_load(cr);
                 #endif
-                #ifdef PATCH_SWITCH_EXFILTER_FLASH
-                    patch::exfilter::Flash.switch_load(cr);
+                #ifdef PATCH_SWITCH_EXFILTER_SHARP
+                    patch::exfilter::Sharp.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_NOISE
+                    patch::exfilter::Noise.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
                     patch::exfilter::SpecialColorConv.switch_load(cr);
@@ -1055,14 +1058,17 @@ public:
                     
             #ifdef PATCH_SWITCH_EXFILTER
                 patch::exfilter::exfilter.switch_store(switch_);
-                #ifdef PATCH_SWITCH_EXFILTER_SHARP
-                    patch::exfilter::Sharp.switch_store(switch_);
+                #ifdef PATCH_SWITCH_EXFILTER_FLASH
+                    patch::exfilter::Flash.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_EXFILTER_CONVEXEDGE
                     patch::exfilter::ConvexEdge.switch_store(switch_);
                 #endif
-                #ifdef PATCH_SWITCH_EXFILTER_FLASH
-                    patch::exfilter::Flash.switch_store(switch_);
+                #ifdef PATCH_SWITCH_EXFILTER_SHARP
+                    patch::exfilter::Sharp.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_NOISE
+                    patch::exfilter::Noise.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
                     patch::exfilter::SpecialColorConv.switch_store(switch_);
