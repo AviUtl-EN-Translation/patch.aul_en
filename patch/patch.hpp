@@ -169,3 +169,5 @@
 #include "patch_obj_motionblur.hpp"
 #include "patch_image_data_cache.hpp"
 #include "patch_exfilter_noise.hpp"
+#include "patch_exfilter_audio_auf.hpp"
+#include "patch_exfilter_gradation.hpp"

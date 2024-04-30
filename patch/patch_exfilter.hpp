@@ -22,6 +22,9 @@
 #include "global.hpp"
 #include "config_rw.hpp"
 
+#ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
+#include "patch_exfilter_audio_auf.hpp"
+#endif // ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
 
 namespace patch::exfilter {
     inline class exfilter_t {
@@ -41,7 +44,7 @@ namespace patch::exfilter {
             int LoadedFilterCount = *LoadedFilterCount_ptr;
             for (int i = 0; i < filter_count; i++) {
                 auto efp = filter_list[i];
-                efp->flag |= (ExEdit::Filter::Flag)0x4000000;
+                efp->flag |= ExEdit::Filter::Flag::ExEditFilter;
                 efp->exedit_fp = *reinterpret_cast<AviUtl::FilterPlugin**>(GLOBAL::exedit_base + OFS::ExEdit::exedit_fp);
                 efp->aviutl_exfunc = efp->exedit_fp->exfunc;
                 efp->exfunc = reinterpret_cast<ExEdit::Exfunc*>(GLOBAL::exedit_base + OFS::ExEdit::exfunc);
@@ -59,8 +62,13 @@ namespace patch::exfilter {
                 }
                 LoadedFilterTable[LoadedFilterCount] = efp;
                 LoadedFilterCount++;
+                if (512 <= LoadedFilterCount) break;
             }
             *LoadedFilterCount_ptr = LoadedFilterCount;
+
+#ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
+            Audio_auf.apend();
+#endif // ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
 
             return TRUE; // mov eax,1
         }

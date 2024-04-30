@@ -42,14 +42,14 @@ namespace patch::fast {
 		inline static BOOL(__cdecl* efMonochromatic_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efMosaic_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efMosaic_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		static BOOL __cdecl efGradation_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		inline static BOOL(__cdecl* efGradation_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efSpecialColorConv_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efSpecialColorConv_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efDiffuseLight_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efDiffuseLight_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efLightEmission_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efLightEmission_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		static BOOL __cdecl efRadiationalBlur_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		inline static BOOL(__cdecl* efRadiationalBlur_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efLensBlur_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efLensBlur_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efFlip_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
@@ -58,9 +58,15 @@ namespace patch::fast {
 		inline static BOOL(__cdecl* efFlash_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efNoise_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efNoise_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		static BOOL __cdecl efDivideObject_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		inline static BOOL(__cdecl* efDivideObject_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+
+		static BOOL __cdecl load_image_cache_1st(ExEdit::PixelYCA* buf, int* w, int* h, char* path, int* load_pos);
+		static BOOL __stdcall exfunc_load_image_wrap(ExEdit::FilterProcInfo* efpip,ExEdit::PixelYCA* buf, char* path, int* w, int* h, int* load_pos, int flag);
+		static void __cdecl exfunc_bgr2yca_wrap(void* dst, void* src, int w, int h, int bitcount, int srcline);
 
 		inline static const int exedit_check_filter_num = 100;
-		inline static BOOL(__cdecl* func_check[exedit_check_filter_num])(ExEdit::Object* leaderobj, int fid) = { NULL };
+		inline static BOOL(__cdecl* func_check[exedit_check_filter_num])(int oid, int fid, ExEdit::FilterProcInfo* efpip) = { NULL };
 		inline static BOOL first = TRUE;
 		static void func_check_listing();
 
@@ -75,6 +81,7 @@ namespace patch::fast {
 			if (!enabled_i)return;
 
 			auto& cursor = GLOBAL::executable_memory_cursor;
+
 			{ // main
 				/*
 					100498a3 f6450028           test    byte ptr [ebp+00],28
@@ -125,78 +132,135 @@ namespace patch::fast {
 				h.replaceNearJmp(0x498bf - vp_begin, &yc_check);
 				h.store_i16(0x498c3 - vp_begin, '\xeb\x16');
 			}
-			{ // アルファチャンネルのないシーンを対象にする
-				/*
-					100835e3 7419               jz      100835fe
-					100835e5 6803000013         push    13000003
-					100835ea eb17               jmp     10083603
-					↓
-					100835e3 e9XxXxXxXx         jmp     cursor
+			{ // 入力フィルタ
+				{ // 動画ファイル
+					// 変更不要
+				}
+				{ // 図形
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efFigure_ptr);
+					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+				}
+				{ // 直前オブジェクト
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efBeforeObject_ptr);
+					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+				}
+				{ // 画像ファイル
+					// 画像ファイル読み込み時に透明度が不要であれば変換を挟む
+					ReplaceNearJmp(GLOBAL::exedit_base + 0x4ca74, &load_image_cache_1st);
+					ReplaceNearJmp(GLOBAL::exedit_base + 0x4cafa, &load_image_cache_1st);
+					ReplaceNearJmp(GLOBAL::exedit_base + 0x4cc1e, &load_image_cache_1st);
 
-					10000000 740c               jz      skip,0c
-					10000000 6803000013         push    13000003
-					10000000 33db               xor     ebx,ebx
-					10000000 e9XxXxXxXx         jmp     ee+83603
-					10000000 f7450040000000     test    dword ptr [ebp+00],00000040
-					10000000 740c               jz      skip,0c
-					10000000 6800000013         push    13000000
-					10000000 bb01000000         mov     ebx,00000001
-					10000000 ebe6               jmp     back,1a
-					10000000 33db               xor     ebx,ebx
-					10000000 e9XxXxXxXx         jmp     100835fe
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efImageFile_ptr);
+					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+
+					/*
+						1000d681 ff5238             call    dword ptr [edx+38]
+						1000d684 83c418             add     esp,+18
+
+						1000d7a4 ff5038             call    dword ptr [eax+38]
+						1000d7a7 83c418             add     esp,+18
+
+						↓
+						1000d681 57                 push    edi
+						1000d682 e8XxXxXxXx         call    newfunc_stdcall
+					*/
+					{
+						OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0xd681, 6);
+						h.store_i16(0, '\x57\xe8');
+						h.replaceNearJmp(2, &exfunc_load_image_wrap);
+					}
+					{
+						OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0xd7a4, 6);
+						h.store_i16(0, '\x57\xe8');
+						h.replaceNearJmp(2, &exfunc_load_image_wrap);
+					}
+
+					ReplaceNearJmp(GLOBAL::exedit_base + 0xd450, &exfunc_bgr2yca_wrap);
+					{
+						/*
+							1000d7d2 899ff4000000       mov     dword ptr [edi+0xf4],ebx
+							↓
+							1000d7d2 660f1f440000       nop
+						*/
+						OverWriteOnProtectHelper(GLOBAL::exedit_base + 0xd7d2, 4).store_i32(0, '\x66\x0f\x1f\x44');
+					}
+				}
+				{ // シーン
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efScene_ptr);
+					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+					/* // アルファチャンネルのないシーンを対象にする
+						100835e3 7419               jz      100835fe
+						100835e5 6803000013         push    13000003
+						100835ea eb17               jmp     10083603
+						↓
+						100835e3 e9XxXxXxXx         jmp     cursor
+
+						10000000 740c               jz      skip,0c
+						10000000 6803000013         push    13000003
+						10000000 33db               xor     ebx,ebx
+						10000000 e9XxXxXxXx         jmp     ee+83603
+						10000000 f7450040000000     test    dword ptr [ebp+00],00000040
+						10000000 740c               jz      skip,0c
+						10000000 6800000013         push    13000000
+						10000000 bb01000000         mov     ebx,00000001
+						10000000 ebe6               jmp     back,1a
+						10000000 33db               xor     ebx,ebx
+						10000000 e9XxXxXxXx         jmp     100835fe
 
 
-					1008362d c785f4000000
-					                   00000000 mov     dword ptr [ebp+000000f4],00000000
-					↓
-					1008362d 899df4000000       mov     dword ptr [ebp+000000f4],ebx
-					10083633 0f1f4000           nop
-				*/
-				constexpr int vp_begin = 0x835e3;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x83637 - vp_begin);
-				h.store_i8(0x835e3 - vp_begin, '\xe9');
-				h.replaceNearJmp(0x835e4 - vp_begin, cursor);
-				h.store_i16(0x8362d - vp_begin, '\x89\x9d');
-				h.store_i32(0x83633 - vp_begin, '\x0f\x1f\x40\x00');
+						1008362d c785f4000000
+										   00000000 mov     dword ptr [ebp+000000f4],00000000
+						↓
+						1008362d 899df4000000       mov     dword ptr [ebp+000000f4],ebx
+						10083633 0f1f4000           nop
+					*/
+					constexpr int vp_begin = 0x835e3;
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x83637 - vp_begin);
+					h.store_i8(0x835e3 - vp_begin, '\xe9');
+					h.replaceNearJmp(0x835e4 - vp_begin, cursor);
+					h.store_i16(0x8362d - vp_begin, '\x89\x9d');
+					h.store_i32(0x83633 - vp_begin, '\x0f\x1f\x40\x00');
 
-				store_i32(cursor, '\x74\x0c\x68\x03'); cursor += 4;
-				store_i32(cursor, '\x00\x00\x13\x33'); cursor += 4;
-				store_i16(cursor, '\xdb\xe9'); cursor += 2;
-				store_i32(cursor, GLOBAL::exedit_base + 0x83603 - (int)cursor - 4); cursor += 4;
-				store_i32(cursor, '\xf7\x45\x00\x40'); cursor += 4;
-				store_i32(cursor, '\x00\x00\x00\x74'); cursor += 4;
-				store_i32(cursor, '\x0c\x68\x00\x00'); cursor += 4;
-				store_i32(cursor, '\x00\x13\xbb\x01'); cursor += 4;
-				store_i32(cursor, '\x00\x00\x00\xeb'); cursor += 4;
-				store_i32(cursor, '\xe6\x33\xdb\xe9'); cursor += 4;
-				store_i32(cursor, GLOBAL::exedit_base + 0x835fe - (int)cursor - 4); cursor += 4;
+					store_i32(cursor, '\x74\x0c\x68\x03'); cursor += 4;
+					store_i32(cursor, '\x00\x00\x13\x33'); cursor += 4;
+					store_i16(cursor, '\xdb\xe9'); cursor += 2;
+					store_i32(cursor, GLOBAL::exedit_base + 0x83603 - (int)cursor - 4); cursor += 4;
+					store_i32(cursor, '\xf7\x45\x00\x40'); cursor += 4;
+					store_i32(cursor, '\x00\x00\x00\x74'); cursor += 4;
+					store_i32(cursor, '\x0c\x68\x00\x00'); cursor += 4;
+					store_i32(cursor, '\x00\x13\xbb\x01'); cursor += 4;
+					store_i32(cursor, '\x00\x00\x00\xeb'); cursor += 4;
+					store_i32(cursor, '\xe6\x33\xdb\xe9'); cursor += 4;
+					store_i32(cursor, GLOBAL::exedit_base + 0x835fe - (int)cursor - 4); cursor += 4;
+				}
+				{ // フレームバッファ
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efFrameBuffer_ptr);
+					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+					/* // フレームバッファをアルファチャンネル有りシーンで呼び出した場合の対応
+						10052315 742e               jz      10052345
+						10052317 0d00000013         or      eax,13000000
+						1005231c
+						↓
+						10052315 742e               jz      10052345
+						10052317 e9XxXxXxXx         jmp     cursor
+
+						10000000 85c0               test    eax,eax
+						10000000 0f85XxXxXxXx       jnz     10052345
+						10000000 0d00000013         or      eax,13000000
+						10000000 e9XxXxXxXx         jmp     1005231c
+					*/
+					constexpr int vp_begin = 0x52317;
+					OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x5231c - vp_begin);
+					h.store_i8(0x52317 - vp_begin, '\xe9');
+					h.replaceNearJmp(0x52318 - vp_begin, cursor);
+
+					store_i32(cursor, '\x85\xc0\x0f\x85'); cursor += 4;
+					store_i32(cursor, GLOBAL::exedit_base + 0x52345 - (int)cursor - 4); cursor += 4;
+					store_i32(cursor, '\x0d\x00\x00\x00'); cursor += 4;
+					store_i16(cursor, '\x13\xe9'); cursor += 2;
+					store_i32(cursor, GLOBAL::exedit_base + 0x5231c - (int)cursor - 4); cursor += 4;
+				}
 			}
-			{ // フレームバッファをアルファチャンネル有りシーンで呼び出した場合の対応
-				/*
-					10052315 742e               jz      10052345
-					10052317 0d00000013         or      eax,13000000
-					1005231c
-					↓
-					10052315 742e               jz      10052345
-					10052317 e9XxXxXxXx         jmp     cursor
-
-					10000000 85c0               test    eax,eax
-					10000000 0f85XxXxXxXx       jnz     10052345
-					10000000 0d00000013         or      eax,13000000
-					10000000 e9XxXxXxXx         jmp     1005231c
-				*/
-				constexpr int vp_begin = 0x52317;
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x5231c - vp_begin);
-				h.store_i8(0x52317 - vp_begin, '\xe9');
-				h.replaceNearJmp(0x52318 - vp_begin, cursor);
-
-				store_i32(cursor, '\x85\xc0\x0f\x85'); cursor += 4;
-				store_i32(cursor, GLOBAL::exedit_base + 0x52345 - (int)cursor - 4); cursor += 4;
-				store_i32(cursor, '\x0d\x00\x00\x00'); cursor += 4;
-				store_i16(cursor, '\x13\xe9'); cursor += 2;
-				store_i32(cursor, GLOBAL::exedit_base + 0x5231c - (int)cursor - 4); cursor += 4;
-			}
-
 			{ // 初めからアルファチャンネルを扱わないフィルタ効果
 				constexpr int list[] = {
 					OFS::ExEdit::efCoordinate_ptr, // 座標
@@ -213,7 +277,7 @@ namespace patch::fast {
 					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
 				}
 			}
-			{ // 簡単な処理変更が必要なフィルタ効果
+			{ // 処理変更が必要なフィルタ効果
 				{ // 色調補正
 					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efColorCorrection_ptr);
 					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
@@ -231,6 +295,14 @@ namespace patch::fast {
 					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
 					(efMosaic_func_proc_org) = (efp->func_proc);
 					(efp->func_proc) = (efMosaic_func_proc);
+				}
+				{ // グラデーション
+#ifdef PATCH_SWITCH_EXFILTER_GRADATION
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efGradation_ptr);
+					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+					(efGradation_func_proc_org) = (efp->func_proc);
+					(efp->func_proc) = (efGradation_func_proc);
+#endif // ifdef PATCH_SWITCH_EXFILTER_GRADATION
 				}
 				{ // 特定色域変換
 #ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
@@ -269,6 +341,12 @@ namespace patch::fast {
 					store_i8(cursor, '\xe9'); cursor++;
 					store_i32(cursor, GLOBAL::exedit_base + 0x14621 - (int)cursor - 4); cursor += 4;
 				}
+				{ // オブジェクト分割
+					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efDivideObject_ptr);
+					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+					(efDivideObject_func_proc_org) = (efp->func_proc);
+					(efp->func_proc) = (efDivideObject_func_proc);
+				}
 
 				// 以下、別の条件付きなので0x40は付けない
 				{ // 拡散光
@@ -280,11 +358,6 @@ namespace patch::fast {
 					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efLightEmission_ptr);
 					(efLightEmission_func_proc_org) = (efp->func_proc);
 					(efp->func_proc) = (efLightEmission_func_proc);
-				}
-				{ // 放射ブラー
-					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efRadiationalBlur_ptr);
-					(efRadiationalBlur_func_proc_org) = (efp->func_proc);
-					(efp->func_proc) = (efRadiationalBlur_func_proc);
 				}
 				{ // レンズブラー
 					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efLensBlur_ptr);
@@ -303,12 +376,18 @@ namespace patch::fast {
 					(efp->func_proc) = (efFlash_func_proc);
 #endif // ifdef PATCH_SWITCH_FAST_FLASH
 				}
-				{ //ノイズ
+				{ // ノイズ
 #ifdef PATCH_SWITCH_EXFILTER_NOISE
 					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efNoise_ptr);
 					(efNoise_func_proc_org) = (efp->func_proc);
 					(efp->func_proc) = (efNoise_func_proc);
 #endif // ifdef PATCH_SWITCH_EXFILTER_NOISE
+				}
+				{ // フェード
+					// func_check_listing()内の設定のみ
+				}
+				{ // ワイプ
+					// func_check_listing()内の設定のみ
 				}
 			}
 			{ // fastなどに組み込み済み

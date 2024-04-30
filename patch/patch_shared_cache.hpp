@@ -52,11 +52,6 @@ namespace patch {
         inline static int cache_count = 0;
         inline static int priority_count = 1;
 
-        static void* __cdecl GetOrCreateSharedCache(ExEdit::ObjectFilterIndex ofi, int w, int h, int bitcount, int v_func_id, int* old_cache_exists);
-        static void* __cdecl GetSharedCache(char* name, int* w, int* h, int* bitcount);
-        static void* __cdecl CreateSharedCache(int w, int h, int bitcount, char* name);
-        static void* __cdecl GetOrCreateSharedCache_BeforeClipping(ExEdit::ObjectFilterIndex ofi, int w, int h, int bitcount, int v_func_id, int* old_cache_exists);
-
         inline static void* (__cdecl* get_cache)(char* name, int* w, int* h, int* bitcount);
         inline static void* (__cdecl* create_cache)(int w, int h, int bitcount, char* name);
 
@@ -94,6 +89,11 @@ namespace patch {
         bool enabled_i;
         inline static const char key[] = "shared_cache";
     public:
+
+        static void* __cdecl GetOrCreateSharedCache(ExEdit::ObjectFilterIndex ofi, int w, int h, int bitcount, int v_func_id, int* old_cache_exists);
+        static void* __cdecl GetSharedCache(char* name, int* w, int* h, int* bitcount);
+        static void* __cdecl CreateSharedCache(int w, int h, int bitcount, char* name);
+        static void* __cdecl GetOrCreateSharedCache_BeforeClipping(ExEdit::ObjectFilterIndex ofi, int w, int h, int bitcount, int v_func_id, int* old_cache_exists);
 
 
 

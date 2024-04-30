@@ -57,9 +57,11 @@
     <ClInclude Include="patch_exclusion_font.hpp" />
     <ClInclude Include="patch_exc_avi_file.hpp" />
     <ClInclude Include="patch_exfilter.hpp" />
+    <ClInclude Include="patch_exfilter_audio_auf.hpp" />
     <ClInclude Include="patch_exfilter_convexedge.hpp" />
     <ClInclude Include="patch_exfilter_flash.hpp" />
     <ClInclude Include="patch_exfilter_glare.hpp" />
+    <ClInclude Include="patch_exfilter_gradation.hpp" />
     <ClInclude Include="patch_exfilter_noise.hpp" />
     <ClInclude Include="patch_exfilter_sharp.hpp" />
     <ClInclude Include="patch_exfilter_specialcolorconv.hpp" />
@@ -225,6 +227,7 @@
     <ClCompile Include="patch_exc_avi_file.cpp" />
     <ClCompile Include="patch_exfilter_convexedge.cpp" />
     <ClCompile Include="patch_exfilter_flash.cpp" />
+    <ClCompile Include="patch_exfilter_gradation.cpp" />
     <ClCompile Include="patch_exfilter_noise.cpp" />
     <ClCompile Include="patch_exfilter_sharp.cpp" />
     <ClCompile Include="patch_exfilter_specialcolorconv.cpp" />

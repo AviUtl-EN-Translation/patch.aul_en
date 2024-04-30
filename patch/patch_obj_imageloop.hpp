@@ -33,7 +33,7 @@ namespace patch {
     inline class obj_ImageLoop_t {
 
         static void __cdecl save_current_image(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-        static void __cdecl obj_effect_noargs_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int flag);
+        static void __cdecl do_after_filter_effect_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int flag);
 
 
         bool enabled = true;
@@ -79,7 +79,7 @@ namespace patch {
 
 
 
-            ReplaceNearJmp(GLOBAL::exedit_base + 0x05a92c, &obj_effect_noargs_wrap);
+            ReplaceNearJmp(GLOBAL::exedit_base + 0x05a92c, &do_after_filter_effect_wrap);
             
         }
 

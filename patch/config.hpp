@@ -405,12 +405,18 @@ public:
                 #ifdef PATCH_SWITCH_EXFILTER_NOISE
                     patch::exfilter::Noise.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_EXFILTER_GRADATION
+                    patch::exfilter::Gradation.switch_load(cr);
+                #endif
                 #ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
                     patch::exfilter::SpecialColorConv.switch_load(cr);
                 #endif
 
                 #ifdef PATCH_SWITCH_EXFILTER_GLARE
                     patch::exfilter::Glare.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
+                    patch::exfilter::Audio_auf.switch_load(cr);
                 #endif
             #endif
 
@@ -1070,12 +1076,18 @@ public:
                 #ifdef PATCH_SWITCH_EXFILTER_NOISE
                     patch::exfilter::Noise.switch_store(switch_);
                 #endif
+                #ifdef PATCH_SWITCH_EXFILTER_GRADATION
+                    patch::exfilter::Gradation.switch_store(switch_);
+                #endif
                 #ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
                     patch::exfilter::SpecialColorConv.switch_store(switch_);
                 #endif
 
                 #ifdef PATCH_SWITCH_EXFILTER_GLARE
                     patch::exfilter::Glare.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
+                    patch::exfilter::Audio_auf.switch_store(switch_);
                 #endif
             #endif
 

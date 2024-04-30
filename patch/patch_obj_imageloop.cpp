@@ -45,7 +45,7 @@ namespace patch {
 	}
 
 
-	void __cdecl obj_ImageLoop_t::obj_effect_noargs_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int flag) {
+	void __cdecl obj_ImageLoop_t::do_after_filter_effect_wrap(ExEdit::ObjectFilterIndex ofi, ExEdit::FilterProcInfo* efpip, int flag) {
 		auto a_exfunc = (AviUtl::ExFunc*)(GLOBAL::aviutl_base + OFS::AviUtl::exfunc);
 
 		int* smem = (int*)a_exfunc->get_shared_mem((int)&save_current_image + ExEdit::filter(ofi), (int)ofi, NULL);
@@ -64,7 +64,7 @@ namespace patch {
 			smem = (int*)((int)smem + smemline);
 		}
 
-		reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int)>(GLOBAL::exedit_base + OFS::ExEdit::obj_effect_noarg)(ofi, efpip, flag);
+		reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int)>(GLOBAL::exedit_base + OFS::ExEdit::do_after_filter_effect)(ofi, efpip, flag);
 
 		
 	}

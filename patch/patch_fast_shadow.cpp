@@ -693,7 +693,7 @@ namespace patch::fast {
             std::swap(efpip->obj_edit, efpip->obj_temp);
             auto no_alpha = efpip->xf4;
             efpip->xf4 = 0;
-            reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int)>(GLOBAL::exedit_base + OFS::ExEdit::obj_effect_noarg)(efp->processing, efpip, 0x10fffff);
+            reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int)>(GLOBAL::exedit_base + OFS::ExEdit::do_after_filter_effect)(efp->processing, efpip, 0x10fffff);
             efpip->xf4 = no_alpha;
             efpip->obj_w -= diffuse * 2;
             efpip->obj_h -= diffuse * 2;

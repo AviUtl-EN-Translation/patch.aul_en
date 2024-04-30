@@ -162,6 +162,9 @@ namespace OFS {
 		constexpr i32 CreateFigure_polygons_func_call = 0x073949;
 		constexpr i32 CreateFigure_polygons_func_mt_call = 0x07395b;
 
+		constexpr i32 yca_blend_func_list = 0x09fbb0;
+		constexpr i32 yc_blend_func_list = 0x09fc30;
+
 		constexpr i32 drawfilter_func_proc = 0x019160;
 		constexpr i32 drawfilter_func_WndProc = 0x01b550;
 
@@ -206,7 +209,11 @@ namespace OFS {
 		constexpr i32 efNoise_ptr = 0x0a8ee0;
 		constexpr i32 efNoise_func_proc = 0x06c900;
 		constexpr i32 efNoise_var_ptr = 0x1bad50;
+		constexpr i32 efGradation_ptr = 0x0a68e0;
+		constexpr i32 efGradation_var_ptr = 0x1b2050;
 		constexpr i32 efMotionBlur_var_ptr = 0x1bad34;
+		constexpr i32 efDivideObject_ptr = 0x0a28d8;
+		constexpr i32 efDivideObject_var_ptr = 0x11f010;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
 		constexpr i32 efSpecialColorConv_ptr = 0x0a1530;
 		constexpr i32 efSpecialColorConv_var_ptr = 0x11ecfc;
@@ -216,6 +223,8 @@ namespace OFS {
 		constexpr i32 efMosaic_ptr = 0xa8858;
 		constexpr i32 efClipping_ptr = 0xa1058;
 		constexpr i32 efExColorConfig_ptr = 0xa1890;
+		constexpr i32 efFade_ptr = 0xa5698;
+		constexpr i32 efWipe_ptr = 0xbe748;
 		constexpr i32 efCoordinate_ptr = 0x9e550;
 		constexpr i32 efZoom_ptr = 0x9e9f0;
 		constexpr i32 efAlpha_ptr = 0x9e228;
@@ -227,6 +236,11 @@ namespace OFS {
 		constexpr i32 efCustomObject_ptr = 0x09d3e0;
 		constexpr i32 efMovieFile_ptr = 0x09dd08;
 		constexpr i32 efMovieSynthesis_ptr = 0x09de30;
+		constexpr i32 efImageFile_ptr = 0x0a0380;
+		constexpr i32 efFigure_ptr = 0x0adb08;
+		constexpr i32 efScene_ptr = 0x0aea10;
+		constexpr i32 efFrameBuffer_ptr = 0x0a5e80;
+		constexpr i32 efBeforeObject_ptr = 0x09eb20;
 		constexpr i32 efAudioFile_ptr = 0x0ba570;
 		constexpr i32 efWaveForm_ptr = 0x0ba300;
 		constexpr i32 efCameraEffect_ptr = 0x09d508;
@@ -273,12 +287,17 @@ namespace OFS {
 		constexpr i32 GetCache = 0x00cff0;
 		constexpr i32 CreateCache = 0x00cd00;
 		constexpr i32 GetOrCreateCache = 0x04d7d0;
+		constexpr i32 Cache_var_ptr = 0x0d75f8;
 		constexpr i32 CacheInfo = 0x0d7710;
 		constexpr i32 CachePriorityCount = 0x11eb1c;
 		constexpr i32 str_cachename_format = 0x0a5650;
 
+		constexpr i32 LoadImageCache = 0x00d340;
+
 		constexpr i32 video_func_main = 0x048830;
 		constexpr i32 video_func_idx = 0x1a5384;
+		constexpr i32 store_filter = 0x047e30;
+		constexpr i32 restore_filter = 0x048230;
 
 		constexpr i32 GetOrCreateSceneBufYC = 0x02a770;
 		constexpr i32 GetOrCreateSceneBufYCA = 0x02a830;
@@ -287,6 +306,8 @@ namespace OFS {
 		constexpr i32 get_scene_image = 0x04ce20;
 		constexpr i32 get_scene_size = 0x02b980;
 		constexpr i32 scene_has_alpha = 0x02ba00;
+
+		constexpr i32 memcpy_rect = 0x0730e0;
 
 		constexpr i32 next_undo = 0x08d150;
 		constexpr i32 set_undo = 0x08d290;
@@ -335,7 +356,8 @@ namespace OFS {
 		constexpr i32 sScriptFolderName = 0x1b2b4c;
 
 		constexpr i32 effect_proc = 0x049370;
-		constexpr i32 obj_effect_noarg = 0x04b200;
+		constexpr i32 do_after_filter_effect = 0x04b200;
+		constexpr i32 set_object_frame_dot_line = 0x0487f0;
 
 		constexpr i32 l_effect = 0x05d0a0;
 		constexpr i32 l_load = 0x05ef50;

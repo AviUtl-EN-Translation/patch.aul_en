@@ -431,12 +431,18 @@ void init_t::InitAtExeditLoad() {
 		#ifdef PATCH_SWITCH_EXFILTER_NOISE
 			patch::exfilter::Noise.init();
 		#endif
+		#ifdef PATCH_SWITCH_EXFILTER_GRADATION
+			patch::exfilter::Gradation.init();
+		#endif
 		#ifdef PATCH_SWITCH_EXFILTER_SPECIALCOLORCONV
 			patch::exfilter::SpecialColorConv.init();
 		#endif
 
 		#ifdef PATCH_SWITCH_EXFILTER_GLARE
 			patch::exfilter::Glare.init();
+		#endif
+		#ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
+			patch::exfilter::Audio_auf.init();
 		#endif
 	}
 #endif
