@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_57
+patch.aul r43_ss_58
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -43,7 +43,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・テキストの軽量化
         キャッシュをとります。縁取り文字の処理を最適化します
     ・透明度を扱わないフィルタ効果のみが付与されている動画ファイル・アルファ無しシーンなどの処理の速度アップ
-        対応フィルタ：座標・拡大率・透明度・回転・振動・拡張色設定・カメラ制御オプション・グループ制御・色調補正・単色化・モザイク・特定色域変換・クリッピング・シャープ・凸エッジ・グラデーション・オブジェクト分割
+        対応フィルタ：座標・拡大率・透明度・回転・振動・拡張色設定・カメラ制御オプション・グループ制御・色調補正・単色化・モザイク・特定色域変換・クリッピング・シャープ・凸エッジ・グラデーション・オブジェクト分割・リサイズ
         サイズ固定など条件付き対応フィルタ：拡散光・発光・閃光・方向ブラー・レンズブラー・ぼかし・反転・シャドー・ノイズ・フェード・ワイプ
     ・シーン画像生成に時間がかかった時にキャッシュを作成する
     ・Luaの環境が分かれてしまうことがある
@@ -194,6 +194,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・画像データのキャッシュのサイズをページ単位になるように広げる
     ・モーションブラーにて間隔が0未満の時にエラーが出るのを修正
     ・32bitRGBAの画像に透明度が必要無い場合、24bitRGBに変換して使用キャッシュを25%削減する
+    ・拡張編集の音声処理のメイン関数0x49ca0にて最終レイヤー指定が機能していなかったのを修正
 
     追加
     ・コンソールの表示
@@ -244,6 +245,10 @@ https://scrapbox.io/nazosauna/patch.aul
         ・グラデーション（フィルタオブジェクト）
         ・特定色域変換（フィルタオブジェクト）
         ・グレア（フィルタ効果）
+    ・拡張編集フィルタプラグインを読み込めるようにした
+        ・拡張子 .eef
+        ・対象フォルダ \plugins
+        ・エントリ名 GetFilterTableList
 
 設定
     patch.aulと同じパスにpatch.aul.jsonが生成されて、これが設定ファイルになります。
@@ -378,6 +383,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "image_data_cache" : boolean, ; 画像データのキャッシュのサイズをページ単位になるように広げる (既定値: true)
         "scene_cache" : boolean, ; シーン画像生成に時間がかかった時にキャッシュを作成する機能の追加 (既定値: true)
         "scene_vram" : boolean, ; フィルタオブジェクトのレンズブラーやぼかしフィルタなどをシーンで読むとエラーとなるのを修正 (既定値: true)
+        "audio_layer_end" : boolean, ; 拡張編集の音声処理のメイン関数0x49ca0にて最終レイヤー指定が機能していなかったのを修正 (既定値: true)
         "playback_speed" : boolean, ; 中間点と再生速度の関連バグの修正 (既定値: true)
         "playback_pos" : boolean, ; 再生位置をトラックバー移動にしてループ再生した時の再生位置が正しくないのを修正 (既定値: true)
         "setting_new_project" : boolean, ; 新規プロジェクト作成時にサイズ・フレームレートの変わるフィルタをオフにする/小数点ありフレームレート値を最適化 (既定値: true)
@@ -420,6 +426,7 @@ https://scrapbox.io/nazosauna/patch.aul
             "exfilter.gradation" : boolean, ; フィルタオブジェクトのグラデーションを追加 (既定値: true)
             "exfilter.specialcolorconv" : boolean, ; フィルタオブジェクトの特定色域変換を追加 (既定値: true)
             "exfilter.glare" : boolean, ; 拡張編集で実装途中のフィルタ効果グレアを追加 (既定値: false)
+            "exfilter.plugins" : boolean, ; 拡張編集フィルタプラグインを読み込む (既定値: true)
         "fast" : boolean, ; fast.*配下のスイッチの主電源 (既定値: true)
             "fast.exeditwindow" : boolean, ; 拡張編集ウィンドウの描画の最適化 (既定値: true)
             "fast.settingdialog" : boolean, ; 設定ダイアログの描画の最適化 (既定値: true)
@@ -443,6 +450,8 @@ https://scrapbox.io/nazosauna/patch.aul
             "fast.colorkey" : boolean, ; カラーキーの高速化 (既定値: true)
             "fast.chromakey" : boolean, ; クロマキーの高速化 (既定値: true)
             "fast.specialcolorconv" : boolean, ; 特定色域変換の高速化 (既定値: true)
+            "fast.resize" : boolean, ; リサイズの高速化 (既定値: true)
+            "fast.divideobject" : boolean, ; オブジェクト分割の高速化 (既定値: true)
             "fast.scenechange" : boolean, ; シーンチェンジの高速化 (既定値: true)
             "fast.cl" : boolean, ; fast.*でOpenCLが必要なオプションに必要なオプション (既定値: true)
                 "fast.radiationalblur" : boolean, ; fast.clが前提 放射ブラーの高速化 (既定値: true)
@@ -457,7 +466,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_57" のような文字列が格納されている
+        例として "patch.aul r43_ss_58" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
