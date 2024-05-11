@@ -34,7 +34,7 @@ namespace patch::exfilter {
         inline static const char key[] = "exfilter";
 
 
-#define EXFILTER_MAX 32
+#define EXFILTER_MAX 384
         inline static ExEdit::Filter* filter_list[EXFILTER_MAX] = { NULL };
         inline static int filter_count = 0;
 
@@ -106,10 +106,12 @@ namespace patch::exfilter {
             cw.append(key, enabled);
         }
 
-        void apend_filter(ExEdit::Filter* efp) {
-            if (filter_count < EXFILTER_MAX) {
+        BOOL apend_filter(ExEdit::Filter* efp) {
+            BOOL r = filter_count < EXFILTER_MAX;
+            if (r) {
                 filter_list[filter_count++] = efp;
             }
+            return r;
         }
 
     } exfilter;

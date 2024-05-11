@@ -27,13 +27,17 @@ namespace patch::fast {
 	// init at exedit load
 	// PixelYC形式を変換する部分の速度アップ {short,short,short} <-> {float,byte,byte}
 	
-	// ほぼ変わらなかったためOFF。浮動小数や自然対数を使っている部分なのでSIMD処理すると速くなる可能性はあり
 
 	inline class pixelformat_conv_t {
+
+		static void __cdecl mt_sss2fbb(int thread_id, int thread_num, void* n1, void* n2);
+		static void __cdecl mt_ssss2fbbs(int thread_id, int thread_num, void* n1, void* n2);
+
 		bool enabled = true;
 		bool enabled_i;
 		inline static const char key[] = "fast.pixelformat_conv";
 
+#pragma pack(push, 1)
 		struct PixelFormatConv_var { // 1e42f4
 			void* pix;
 			int _other1;
@@ -41,12 +45,24 @@ namespace patch::fast {
 			int w;
 			int h;
 			void* _other3;
-			int _other4;
+			int _padding;
 			double inv_intensity;
 			double intensity;
 		};
+		struct PixelYCA_fbbs {
+			float	y;
+			int8_t	cb;
+			int8_t	cr;
+			int16_t	a;
+		};
+		struct PixelYC_fbb {
+			float	y;
+			int8_t	cb;
+			int8_t	cr;
+		};
+#pragma pack(pop)
 
-		inline static const double ln65536 = 11.090354888959124950675713943331;
+		// inline static const double ln65536 = 11.090354888959124950675713943331;
 
 	public:
 
@@ -54,6 +70,7 @@ namespace patch::fast {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
+			/*
 			{ // ループ内で浮動小数掛け算を行っているのをループ外で済ませる
 				{ // yca
 					OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x704a0, 4).store_i32(0, &ln65536);
@@ -67,6 +84,13 @@ namespace patch::fast {
 					h.store_i16(0, '\xd9\xc1');
 					h.store_i16(6, '\x66\x90');
 				}
+			}
+			*/
+
+
+			if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
+				OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x7026b, 4).store_i32(0, &mt_ssss2fbbs);
+				OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x7059b, 4).store_i32(0, &mt_sss2fbb);
 			}
 		}
 

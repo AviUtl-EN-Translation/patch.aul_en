@@ -58,8 +58,6 @@ namespace patch::fast {
 		inline static BOOL(__cdecl* efFlash_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static BOOL __cdecl efNoise_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		inline static BOOL(__cdecl* efNoise_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		static BOOL __cdecl efDivideObject_func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		inline static BOOL(__cdecl* efDivideObject_func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
 		static BOOL __cdecl load_image_cache_1st(ExEdit::PixelYCA* buf, int* w, int* h, char* path, int* load_pos);
 		static BOOL __stdcall exfunc_load_image_wrap(ExEdit::FilterProcInfo* efpip,ExEdit::PixelYCA* buf, char* path, int* w, int* h, int* load_pos, int flag);
@@ -341,12 +339,6 @@ namespace patch::fast {
 					store_i8(cursor, '\xe9'); cursor++;
 					store_i32(cursor, GLOBAL::exedit_base + 0x14621 - (int)cursor - 4); cursor += 4;
 				}
-				{ // オブジェクト分割
-					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efDivideObject_ptr);
-					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
-					(efDivideObject_func_proc_org) = (efp->func_proc);
-					(efp->func_proc) = (efDivideObject_func_proc);
-				}
 
 				// 以下、別の条件付きなので0x40は付けない
 				{ // 拡散光
@@ -408,6 +400,12 @@ namespace patch::fast {
 					ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efConvexEdge_ptr);
 					efp->flag |= static_cast<decltype(efp->flag)>(0x40);
 #endif // ifdef PATCH_SWITCH_FAST_CONVEXEDGE
+				}
+				{ // オブジェクト分割
+					// fast::DivideObjectに組み込み済み
+				}
+				{ // リサイズ
+					// fast::Resizeに組み込み済み
 				}
 
 				// 以下、別の条件付きなので0x40は付けない

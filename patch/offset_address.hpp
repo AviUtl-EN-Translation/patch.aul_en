@@ -60,7 +60,7 @@ namespace OFS {
 		constexpr i32 str_GetColorPluginTable = 0x0748e8;
 
 		constexpr i32 str_percent_s_percent_s = 0x0743c8; // "%s%s"
-		constexpr i32 str_percent_s_percent_s_percent_s = 0x0743e8; // "%s%s"
+		constexpr i32 str_percent_s_percent_s_percent_s = 0x0743e8; // "%s%s%s"
 
 		constexpr i32 str_plugins_backslash = 0x074904; // "plugins\\"
 
@@ -229,6 +229,8 @@ namespace OFS {
 		constexpr i32 efZoom_ptr = 0x9e9f0;
 		constexpr i32 efAlpha_ptr = 0x9e228;
 		constexpr i32 efAngle_ptr = 0x9e3b0;
+		constexpr i32 efResize_ptr = 0x9e6d8;
+		constexpr i32 efResize_var_ptr = 0xd7520;
 		constexpr i32 efFlip_ptr = 0xae4a8;
 		constexpr i32 efVibration_ptr = 0xadf10;
 		constexpr i32 efCameraControlOption_ptr = 0xb9e80;

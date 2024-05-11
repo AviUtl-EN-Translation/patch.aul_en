@@ -23,6 +23,7 @@ public:
 #define  _mm256_mod_epi32(dividend, divisor) _mm256_sub_epi32(dividend, _mm256_mullo_epi32(_mm256_div_epi32(dividend, divisor), divisor));
 
 #define _mm_clamp_epi16(n, min, max) _mm_min_epi16(_mm_max_epi16(n, min), max)
+#define _mm256_clamp_epi16(n, min, max) _mm256_min_epi16(_mm256_max_epi16(n, min), max)
 #define _mm256_clamp_epi32(n, min, max) _mm256_min_epi32(_mm256_max_epi32(n, min), max)
 
 };

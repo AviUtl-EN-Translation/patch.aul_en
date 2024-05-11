@@ -297,6 +297,12 @@ public:
             #ifdef PATCH_SWITCH_SCENE_VRAM
                 patch::scene_vram.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_AUDIO_LAYER_END
+                patch::audio_layer_end.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_AUDIO_PREPROCESS
+                patch::audio_preprocess.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_load(cr);
             #endif
@@ -418,6 +424,9 @@ public:
                 #ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
                     patch::exfilter::Audio_auf.switch_load(cr);
                 #endif
+                #ifdef PATCH_SWITCH_EXFILTER_PLUGINS
+                    patch::exfilter::Plugins.switch_load(cr);
+                #endif
             #endif
 
             #ifdef PATCH_SWITCH_FAST
@@ -497,6 +506,12 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_WIPE
                     patch::fast::Wipe.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_RESIZE
+                    patch::fast::Resize.switch_load(cr);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_DIVIDEOBJECT
+                    patch::fast::DivideObject.switch_load(cr);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SCENECHANGE
                     patch::fast::SceneChange.switch_load(cr);
@@ -968,6 +983,12 @@ public:
             #ifdef PATCH_SWITCH_SCENE_VRAM
                 patch::scene_vram.switch_store(switch_);
             #endif
+            #ifdef PATCH_SWITCH_AUDIO_LAYER_END
+                patch::audio_layer_end.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_AUDIO_PREPROCESS
+                patch::audio_preprocess.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_PLAYBACK_SPEED
                 patch::playback_speed.switch_store(switch_);
             #endif
@@ -1089,6 +1110,9 @@ public:
                 #ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
                     patch::exfilter::Audio_auf.switch_store(switch_);
                 #endif
+                #ifdef PATCH_SWITCH_EXFILTER_PLUGINS
+                    patch::exfilter::Plugins.switch_store(switch_);
+                #endif
             #endif
 
             #ifdef PATCH_SWITCH_FAST
@@ -1168,6 +1192,12 @@ public:
                 #endif
                 #ifdef PATCH_SWITCH_FAST_WIPE
                     patch::fast::Wipe.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_RESIZE
+                    patch::fast::Resize.switch_store(switch_);
+                #endif
+                #ifdef PATCH_SWITCH_FAST_DIVIDEOBJECT
+                    patch::fast::DivideObject.switch_store(switch_);
                 #endif
                 #ifdef PATCH_SWITCH_FAST_SCENECHANGE
                     patch::fast::SceneChange.switch_store(switch_);

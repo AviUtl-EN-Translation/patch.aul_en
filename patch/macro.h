@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_57"
+#define PATCH_VERSION_STR "r43_ss_58"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -177,6 +177,8 @@
 #define PATCH_SWITCH_IMAGE_DATA_CACHE image_data_cache
 #define PATCH_SWITCH_SCENE_CACHE scenecache
 #define PATCH_SWITCH_SCENE_VRAM scenevram
+#define PATCH_SWITCH_AUDIO_LAYER_END audio_layer_end
+// #define PATCH_SWITCH_AUDIO_PREPROCESS audio_preprocess
 #define PATCH_SWITCH_PLAYBACK_SPEED pb_speed
 #define PATCH_SWITCH_PLAYBACK_POS pb_pos
 #define PATCH_SWITCH_SETTING_NEW_PROJECT setting_newproject
@@ -232,6 +234,7 @@
 
 	#define PATCH_SWITCH_EXFILTER_GLARE exfilter_glare
 	// #define PATCH_SWITCH_EXFILTER_AUDIO_AUF exfilter_audio_auf
+	#define PATCH_SWITCH_EXFILTER_PLUGINS exfilter_plugins
 #endif //define PATCH_SWITCH_EXFILTER
 
 #define PATCH_SWITCH_FAST fast
@@ -240,7 +243,7 @@
 	#define PATCH_SWITCH_FAST_SETTINGDIALOG fast_settingdialog
 	#define PATCH_SWITCH_FAST_EXEDITWINDOW fast_exeditwindow
 	// #define PATCH_SWITCH_FAST_EXFUNC_FILL exfunc_fill
-	// #define PATCH_SWITCH_FAST_PIXELFORMAT_CONV pixelformat_conv
+	// #define PATCH_SWITCH_FAST_PIXELFORMAT_CONV pixelformat_conv // 速くなったけどコスパ悪い（_mm256_pow_ps使用で40kB　他でも使うことがあれば有効にする）
 	#define PATCH_SWITCH_FAST_YC_FILTER_EFFECT yc_filter_effect
 	#define PATCH_SWITCH_FAST_DRAWFILTER draw_filter
 	#define PATCH_SWITCH_FAST_TEXT fast_text
@@ -261,6 +264,8 @@
 	#define PATCH_SWITCH_FAST_COLORKEY fast_colorkey
 	#define PATCH_SWITCH_FAST_CHROMAKEY fast_chromakey
 	#define PATCH_SWITCH_FAST_SPECIALCOLORCONV fast_specialcolorconv
+	#define PATCH_SWITCH_FAST_RESIZE fast_resize
+	#define PATCH_SWITCH_FAST_DIVIDEOBJECT fast_divideobject
 	// #define PATCH_SWITCH_FAST_WIPE fast_wipe
 	#define PATCH_SWITCH_FAST_SCENECHANGE fast_scenechange
 	// #define PATCH_SWITCH_FAST_AUDIO_SPECTRUM fast_audio_spectrum

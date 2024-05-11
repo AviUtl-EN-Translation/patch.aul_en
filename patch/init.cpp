@@ -355,6 +355,12 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_SCENE_VRAM
 	patch::scene_vram.init();
 #endif
+#ifdef PATCH_SWITCH_AUDIO_LAYER_END
+	patch::audio_layer_end.init();
+#endif
+#ifdef PATCH_SWITCH_AUDIO_PREPROCESS
+	patch::audio_preprocess.init();
+#endif
 #ifdef PATCH_SWITCH_PLAYBACK_SPEED
 	patch::playback_speed.init();
 #endif
@@ -443,6 +449,9 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_EXFILTER_AUDIO_AUF
 			patch::exfilter::Audio_auf.init();
+		#endif
+		#ifdef PATCH_SWITCH_EXFILTER_PLUGINS
+			patch::exfilter::Plugins.init();
 		#endif
 	}
 #endif
@@ -533,6 +542,12 @@ void init_t::InitAtExeditLoad() {
 		#endif
 		#ifdef PATCH_SWITCH_FAST_WIPE
 			patch::fast::Wipe.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_RESIZE
+			patch::fast::Resize.init();
+		#endif
+		#ifdef PATCH_SWITCH_FAST_DIVIDEOBJECT
+			patch::fast::DivideObject.init();
 		#endif
 		#ifdef PATCH_SWITCH_FAST_SCENECHANGE
 			patch::fast::SceneChange.init();

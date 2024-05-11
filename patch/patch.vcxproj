@@ -39,6 +39,8 @@
     <ClInclude Include="patch_adjust_vmem.hpp" />
     <ClInclude Include="patch_alpha_bg.hpp" />
     <ClInclude Include="patch_any_obj.hpp" />
+    <ClInclude Include="patch_audio_layer_end.hpp" />
+    <ClInclude Include="patch_audio_preprocess.hpp" />
     <ClInclude Include="patch_aup_layer_setting.hpp" />
     <ClInclude Include="patch_aup_load.hpp" />
     <ClInclude Include="patch_aup_scene_setting.hpp" />
@@ -63,6 +65,7 @@
     <ClInclude Include="patch_exfilter_glare.hpp" />
     <ClInclude Include="patch_exfilter_gradation.hpp" />
     <ClInclude Include="patch_exfilter_noise.hpp" />
+    <ClInclude Include="patch_exfilter_plugins.hpp" />
     <ClInclude Include="patch_exfilter_sharp.hpp" />
     <ClInclude Include="patch_exfilter_specialcolorconv.hpp" />
     <ClInclude Include="patch_exo_abnormal_pos.hpp" />
@@ -75,11 +78,13 @@
     <ClInclude Include="patch_fast_colorkey.hpp" />
     <ClInclude Include="patch_fast_convexedge.hpp" />
     <ClInclude Include="patch_fast_diffuselight.hpp" />
+    <ClInclude Include="patch_fast_divideobject.hpp" />
     <ClInclude Include="patch_fast_drawfilter.hpp" />
     <ClInclude Include="patch_fast_exfunc_fill.hpp" />
     <ClInclude Include="patch_fast_extractedge.hpp" />
     <ClInclude Include="patch_fast_lightemission.hpp" />
     <ClInclude Include="patch_fast_pixelformat_conv.hpp" />
+    <ClInclude Include="patch_fast_resize.hpp" />
     <ClInclude Include="patch_fast_scenechange.hpp" />
     <ClInclude Include="patch_fast_shadow.hpp" />
     <ClInclude Include="patch_fast_sharp.hpp" />
@@ -241,9 +246,12 @@
     <ClCompile Include="patch_fast_colorkey.cpp" />
     <ClCompile Include="patch_fast_convexedge.cpp" />
     <ClCompile Include="patch_fast_diffuselight.cpp" />
+    <ClCompile Include="patch_fast_divideobject.cpp" />
     <ClCompile Include="patch_fast_exfunc_fill.cpp" />
     <ClCompile Include="patch_fast_extractedge.cpp" />
     <ClCompile Include="patch_fast_lightemission.cpp" />
+    <ClCompile Include="patch_fast_pixelformat_conv.cpp" />
+    <ClCompile Include="patch_fast_resize.cpp" />
     <ClCompile Include="patch_fast_scenechange.cpp" />
     <ClCompile Include="patch_fast_shadow.cpp" />
     <ClCompile Include="patch_fast_sharp.cpp" />

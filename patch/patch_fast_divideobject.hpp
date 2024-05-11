@@ -15,8 +15,7 @@
 
 #pragma once
 #include "macro.h"
-#ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
-#ifdef PATCH_SWITCH_FAST_BLUR
+#ifdef PATCH_SWITCH_FAST_DIVIDEOBJECT
 
 #include <exedit.hpp>
 
@@ -26,53 +25,35 @@
 #include "global.hpp"
 #include "config_rw.hpp"
 
+#include "patch_fast_yc_filter_effect.hpp"
+
 namespace patch::fast {
 	// init at exedit load
-	// 発光の速度アップ
-
-	inline class LightEmission_t {
-
-		static void __cdecl vertical_yc_fb_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
-		static void __cdecl vertical_yc_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+	// オブジェクト分割をyc対応
+	inline class DivideObject_t {
 
 		bool enabled = true;
 		bool enabled_i;
-		inline static const char key[] = "fast.lightemission";
+		inline static const char key[] = "fast.divideobject";
 
 	public:
 
-		struct efLightEmission_var { // 1b1fdc
-			int h;
-			int w;
-			int intensity;
-			int size_h;
-			int size_w;
-			int range_h;
-			short light_cb;
-			short _padding1;
-			int range_w;
-			short light_cr;
-			short _padding2;
-			int speed;
-			short light_y;
-			short _padding3;
-			int threshold;
-			int intensity_over;
+		static BOOL __cdecl func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		inline static BOOL(__cdecl* func_proc_org)(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		struct efDivideObject_var {
+			int running;
 		};
-
 
 		void init() {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			auto cpucmdset = get_CPUCmdSet();
-			if (!has_flag(cpucmdset, CPUCmdSet::F_AVX2))return;
+			if (!yc_filter_effect.is_enabled_i()) return;
 
-			constexpr int vp_begin = 0x53a8d;
-			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x53ac4 - vp_begin);
-			h.store_i32(0x53a8d - vp_begin, &vertical_yc_fb_cs_mt_wrap);
-			h.store_i32(0x53ac0 - vp_begin, &vertical_yc_cs_mt_wrap);
-
+			ExEdit::Filter* efp = reinterpret_cast<ExEdit::Filter*>(GLOBAL::exedit_base + OFS::ExEdit::efDivideObject_ptr);
+			efp->flag |= static_cast<decltype(efp->flag)>(0x40);
+			(func_proc_org) = (efp->func_proc);
+			(efp->func_proc) = (func_proc);
 		}
 
 		void switching(bool flag) { enabled = flag; }
@@ -90,7 +71,6 @@ namespace patch::fast {
 			cw.append(key, enabled);
 		}
 
-	} LightEmission;
+	} DivideObject;
 } // namespace patch::fast
-#endif // ifdef PATCH_SWITCH_FAST_BLUR
-#endif // ifdef PATCH_SWITCH_FAST_LIGHTEMISSION
+#endif // ifdef PATCH_SWITCH_FAST_DIVIDEOBJECT

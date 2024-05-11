@@ -171,3 +171,8 @@
 #include "patch_exfilter_noise.hpp"
 #include "patch_exfilter_audio_auf.hpp"
 #include "patch_exfilter_gradation.hpp"
+#include "patch_fast_divideobject.hpp"
+#include "patch_fast_resize.hpp"
+#include "patch_exfilter_plugins.hpp"
+#include "patch_audio_layer_end.hpp"
+#include "patch_audio_preprocess.hpp"

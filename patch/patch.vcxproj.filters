@@ -539,6 +539,21 @@
     <ClInclude Include="patch_exfilter_gradation.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_fast_divideobject.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_fast_resize.hpp">
+      <Filter>feature\fast</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_exfilter_plugins.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_audio_layer_end.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_audio_preprocess.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -846,6 +861,15 @@
     </ClCompile>
     <ClCompile Include="patch_exfilter_gradation.cpp">
       <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_divideobject.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_resize.cpp">
+      <Filter>feature\fast</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_fast_pixelformat_conv.cpp">
+      <Filter>feature\fast</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
