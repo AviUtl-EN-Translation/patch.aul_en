@@ -1,0 +1,500 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_PDB|Win32">
+      <Configuration>Release_PDB</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="add_dll_ref.hpp" />
+    <ClInclude Include="config.hpp" />
+    <ClInclude Include="config_rw.hpp" />
+    <ClInclude Include="cryptostring.hpp" />
+    <ClInclude Include="debug_log.hpp" />
+    <ClInclude Include="gate.hpp" />
+    <ClInclude Include="global.hpp" />
+    <ClInclude Include="global_minimum.hpp" />
+    <ClInclude Include="hash.hpp" />
+    <ClInclude Include="init.hpp" />
+    <ClInclude Include="json.h" />
+    <ClInclude Include="macro.h" />
+    <ClInclude Include="moduledata.hpp" />
+    <ClInclude Include="multi_threading.hpp" />
+    <ClInclude Include="mylua.hpp" />
+    <ClInclude Include="mywindow.hpp" />
+    <ClInclude Include="offset_address.hpp" />
+    <ClInclude Include="overwrite_resource.hpp" />
+    <ClInclude Include="patch.hpp" />
+    <ClInclude Include="patch_access_key.hpp" />
+    <ClInclude Include="patch_add_extension.hpp" />
+    <ClInclude Include="patch_adjust_vmem.hpp" />
+    <ClInclude Include="patch_alpha_bg.hpp" />
+    <ClInclude Include="patch_any_obj.hpp" />
+    <ClInclude Include="patch_audio_layer_end.hpp" />
+    <ClInclude Include="patch_audio_preprocess.hpp" />
+    <ClInclude Include="patch_aup_layer_setting.hpp" />
+    <ClInclude Include="patch_aup_load.hpp" />
+    <ClInclude Include="patch_aup_scene_setting.hpp" />
+    <ClInclude Include="patch_aviutl_wndproc_override.hpp" />
+    <ClInclude Include="patch_avi_file_handle_close.hpp" />
+    <ClInclude Include="patch_avi_file_handle_share.hpp" />
+    <ClInclude Include="patch_base.hpp" />
+    <ClInclude Include="patch_blend.hpp" />
+    <ClInclude Include="patch_border_only_text.hpp" />
+    <ClInclude Include="patch_camera_scene.hpp" />
+    <ClInclude Include="patch_change_disp_scene.hpp" />
+    <ClInclude Include="patch_colorpalette_cache.hpp" />
+    <ClInclude Include="patch_console.hpp" />
+    <ClInclude Include="patch_dialog_new_file.hpp" />
+    <ClInclude Include="patch_exa_camera.hpp" />
+    <ClInclude Include="patch_exclusion_font.hpp" />
+    <ClInclude Include="patch_exc_avi_file.hpp" />
+    <ClInclude Include="patch_exfilter.hpp" />
+    <ClInclude Include="patch_exfilter_audio_auf.hpp" />
+    <ClInclude Include="patch_exfilter_convexedge.hpp" />
+    <ClInclude Include="patch_exfilter_flash.hpp" />
+    <ClInclude Include="patch_exfilter_glare.hpp" />
+    <ClInclude Include="patch_exfilter_gradation.hpp" />
+    <ClInclude Include="patch_exfilter_noise.hpp" />
+    <ClInclude Include="patch_exfilter_plugins.hpp" />
+    <ClInclude Include="patch_exfilter_sharp.hpp" />
+    <ClInclude Include="patch_exfilter_specialcolorconv.hpp" />
+    <ClInclude Include="patch_exo_abnormal_pos.hpp" />
+    <ClInclude Include="patch_failed_max_frame.hpp" />
+    <ClInclude Include="patch_fast_audio_spectrum.hpp" />
+    <ClInclude Include="patch_fast_blur.hpp" />
+    <ClInclude Include="patch_fast_borderblur.hpp" />
+    <ClInclude Include="patch_fast_chromakey.hpp" />
+    <ClInclude Include="patch_fast_colordrift.hpp" />
+    <ClInclude Include="patch_fast_colorkey.hpp" />
+    <ClInclude Include="patch_fast_convexedge.hpp" />
+    <ClInclude Include="patch_fast_diffuselight.hpp" />
+    <ClInclude Include="patch_fast_divideobject.hpp" />
+    <ClInclude Include="patch_fast_drawfilter.hpp" />
+    <ClInclude Include="patch_fast_exfunc_fill.hpp" />
+    <ClInclude Include="patch_fast_extractedge.hpp" />
+    <ClInclude Include="patch_fast_lightemission.hpp" />
+    <ClInclude Include="patch_fast_pixelformat_conv.hpp" />
+    <ClInclude Include="patch_fast_resize.hpp" />
+    <ClInclude Include="patch_fast_scenechange.hpp" />
+    <ClInclude Include="patch_fast_shadow.hpp" />
+    <ClInclude Include="patch_fast_sharp.hpp" />
+    <ClInclude Include="patch_fast_specialcolorconv.hpp" />
+    <ClInclude Include="patch_fast_text_border.hpp" />
+    <ClInclude Include="patch_fast_waveform.hpp" />
+    <ClInclude Include="patch_fast_wipe.hpp" />
+    <ClInclude Include="patch_fast_yc_filter_effect.hpp" />
+    <ClInclude Include="patch_group_camera_scene.hpp" />
+    <ClInclude Include="patch_group_id.hpp" />
+    <ClInclude Include="patch_image_data_cache.hpp" />
+    <ClInclude Include="patch_init_window_pos.hpp" />
+    <ClInclude Include="patch_keyconfig.hpp" />
+    <ClInclude Include="patch_load_exedit_backup.hpp" />
+    <ClInclude Include="patch_lua_setanchor.hpp" />
+    <ClInclude Include="patch_object_table.hpp" />
+    <ClInclude Include="patch_obj_blur.hpp" />
+    <ClInclude Include="patch_obj_create_figure.hpp" />
+    <ClInclude Include="patch_obj_diffuselight.hpp" />
+    <ClInclude Include="patch_obj_flash.hpp" />
+    <ClInclude Include="patch_obj_mask.hpp" />
+    <ClInclude Include="patch_obj_motionblur.hpp" />
+    <ClInclude Include="patch_obj_portionfilter.hpp" />
+    <ClInclude Include="patch_obj_radiationalblur.hpp" />
+    <ClInclude Include="patch_obj_resize.hpp" />
+    <ClInclude Include="patch_obj_rotation.hpp" />
+    <ClInclude Include="patch_obj_scene_audio.hpp" />
+    <ClInclude Include="patch_obj_sharp.hpp" />
+    <ClInclude Include="patch_obj_text.hpp" />
+    <ClInclude Include="patch_obj_waveform.hpp" />
+    <ClInclude Include="patch_paste_pos.hpp" />
+    <ClInclude Include="patch_playback_pos.hpp" />
+    <ClInclude Include="patch_read_audio.hpp" />
+    <ClInclude Include="patch_rendering.hpp" />
+    <ClInclude Include="patch_right_trackbar.hpp" />
+    <ClInclude Include="patch_sat_rgb_space.hpp" />
+    <ClInclude Include="patch_scene_vram.hpp" />
+    <ClInclude Include="patch_script_sort.hpp" />
+    <ClInclude Include="patch_setting_dialog_add_filter.hpp" />
+    <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
+    <ClInclude Include="patch_setting_dialog_scriptcontrol.hpp" />
+    <ClInclude Include="patch_set_frame.hpp" />
+    <ClInclude Include="patch_shared_cache.hpp" />
+    <ClInclude Include="patch_exception_history.hpp" />
+    <ClInclude Include="patch_exception_log.hpp" />
+    <ClInclude Include="patch_exception_log_dialog.hpp" />
+    <ClInclude Include="patch_exeditwindow_sizing.hpp" />
+    <ClInclude Include="patch_exo_aviutlfilter.hpp" />
+    <ClInclude Include="patch_exo_fold_gui.hpp" />
+    <ClInclude Include="patch_exo_midpt_and_tra.hpp" />
+    <ClInclude Include="patch_exo_sceneidx.hpp" />
+    <ClInclude Include="patch_exo_specialcolorconv.hpp" />
+    <ClInclude Include="patch_exo_trackminusval.hpp" />
+    <ClInclude Include="patch_exo_trackparam.hpp" />
+    <ClInclude Include="patch_failed_file_drop.hpp" />
+    <ClInclude Include="patch_failed_longer_path.hpp" />
+    <ClInclude Include="patch_failed_sjis_msgbox.hpp" />
+    <ClInclude Include="patch_fast.hpp" />
+    <ClInclude Include="patch_fast_border.hpp" />
+    <ClInclude Include="patch_fast_cl.hpp" />
+    <ClInclude Include="patch_fast_create_figure.hpp" />
+    <ClInclude Include="patch_fast_directionalblur.hpp" />
+    <ClInclude Include="patch_fast_displacementmap.hpp" />
+    <ClInclude Include="patch_fast_exeditwindow.hpp" />
+    <ClInclude Include="patch_fast_flash.hpp" />
+    <ClInclude Include="patch_fast_getputpixeldata.hpp" />
+    <ClInclude Include="patch_fast_glow.hpp" />
+    <ClInclude Include="patch_fast_lensblur.hpp" />
+    <ClInclude Include="patch_fast_polartransform.hpp" />
+    <ClInclude Include="patch_fast_radiationalblur.hpp" />
+    <ClInclude Include="patch_fast_setting_dialog.hpp" />
+    <ClInclude Include="patch_fast_text.hpp" />
+    <ClInclude Include="patch_fileinfo.hpp" />
+    <ClInclude Include="patch_font_dialog.hpp" />
+    <ClInclude Include="patch_helpful_msgbox.hpp" />
+    <ClInclude Include="patch_ignore_media_param_reset.hpp" />
+    <ClInclude Include="patch_lua.hpp" />
+    <ClInclude Include="patch_lua_getvalueex.hpp" />
+    <ClInclude Include="patch_lua_rand.hpp" />
+    <ClInclude Include="patch_lua_randex.hpp" />
+    <ClInclude Include="patch_obj_audiofile.hpp" />
+    <ClInclude Include="patch_obj_colorcorrection.hpp" />
+    <ClInclude Include="patch_obj_glow.hpp" />
+    <ClInclude Include="patch_obj_imageloop.hpp" />
+    <ClInclude Include="patch_obj_lensblur.hpp" />
+    <ClInclude Include="patch_obj_noise.hpp" />
+    <ClInclude Include="patch_obj_specialcolorconv.hpp" />
+    <ClInclude Include="patch_playback_speed.hpp" />
+    <ClInclude Include="patch_rclickmenu_delete.hpp" />
+    <ClInclude Include="patch_rclickmenu_split.hpp" />
+    <ClInclude Include="patch_redo.hpp" />
+    <ClInclude Include="patch_scene_cache.hpp" />
+    <ClInclude Include="patch_scroll_objdlg.hpp" />
+    <ClInclude Include="patch_setting_dialog_excolorconfig.hpp" />
+    <ClInclude Include="patch_setting_dialog_wndproc_override.hpp" />
+    <ClInclude Include="patch_setting_gui.hpp" />
+    <ClInclude Include="patch_setting_new_project.hpp" />
+    <ClInclude Include="patch_small_filter.hpp" />
+    <ClInclude Include="patch_splash.hpp" />
+    <ClInclude Include="patch_str2int.hpp" />
+    <ClInclude Include="patch_str_minusval.hpp" />
+    <ClInclude Include="patch_susie_load.hpp" />
+    <ClInclude Include="patch_sync_play_cursor.hpp" />
+    <ClInclude Include="patch_sysinfo_write.hpp" />
+    <ClInclude Include="patch_text_op_size.hpp" />
+    <ClInclude Include="patch_theme_cc.hpp" />
+    <ClInclude Include="patch_trackbar.hpp" />
+    <ClInclude Include="patch_tra_aviutlfilter.hpp" />
+    <ClInclude Include="patch_tra_change_drawfilter.hpp" />
+    <ClInclude Include="patch_tra_change_mode.hpp" />
+    <ClInclude Include="patch_tra_specified_speed.hpp" />
+    <ClInclude Include="patch_undo.hpp" />
+    <ClInclude Include="patch_warning_duplicate_plugins.hpp" />
+    <ClInclude Include="patch_wave_file_reader.hpp" />
+    <ClInclude Include="patch_yc_rgb_conv.hpp" />
+    <ClInclude Include="restorable_patch.hpp" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="simd.hpp" />
+    <ClInclude Include="stopwatch.hpp" />
+    <ClInclude Include="timer.hpp" />
+    <ClInclude Include="util.hpp" />
+    <ClInclude Include="util_int.hpp" />
+    <ClInclude Include="util_magic.hpp" />
+    <ClInclude Include="util_others.hpp" />
+    <ClInclude Include="util_pe.hpp" />
+    <ClInclude Include="util_resource.hpp" />
+    <ClInclude Include="version.hpp" />
+    <ClInclude Include="patch_setting_dialog_move.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="init.cpp" />
+    <ClCompile Include="overwrite_resource.cpp" />
+    <ClCompile Include="patch.cpp" />
+    <ClCompile Include="patch_add_extension.cpp" />
+    <ClCompile Include="patch_adjust_vmem.cpp" />
+    <ClCompile Include="patch_any_obj.cpp" />
+    <ClCompile Include="patch_aup_load.cpp" />
+    <ClCompile Include="patch_aviutl_wndproc_override.cpp" />
+    <ClCompile Include="patch_avi_file_handle_share.cpp" />
+    <ClCompile Include="patch_blend.cpp" />
+    <ClCompile Include="patch_border_only_text.cpp" />
+    <ClCompile Include="patch_camera_scene.cpp" />
+    <ClCompile Include="patch_change_disp_scene.cpp" />
+    <ClCompile Include="patch_exa_camera.cpp" />
+    <ClCompile Include="patch_exc_avi_file.cpp" />
+    <ClCompile Include="patch_exfilter_convexedge.cpp" />
+    <ClCompile Include="patch_exfilter_flash.cpp" />
+    <ClCompile Include="patch_exfilter_gradation.cpp" />
+    <ClCompile Include="patch_exfilter_noise.cpp" />
+    <ClCompile Include="patch_exfilter_sharp.cpp" />
+    <ClCompile Include="patch_exfilter_specialcolorconv.cpp" />
+    <ClCompile Include="patch_failed_file_drop.cpp" />
+    <ClCompile Include="patch_failed_max_frame.cpp" />
+    <ClCompile Include="patch_fast_audio_spectrum.cpp" />
+    <ClCompile Include="patch_fast_blur.cpp" />
+    <ClCompile Include="patch_fast_borderblur.cpp" />
+    <ClCompile Include="patch_fast_chromakey.cpp" />
+    <ClCompile Include="patch_fast_colordrift.cpp" />
+    <ClCompile Include="patch_fast_colorkey.cpp" />
+    <ClCompile Include="patch_fast_convexedge.cpp" />
+    <ClCompile Include="patch_fast_diffuselight.cpp" />
+    <ClCompile Include="patch_fast_divideobject.cpp" />
+    <ClCompile Include="patch_fast_exfunc_fill.cpp" />
+    <ClCompile Include="patch_fast_extractedge.cpp" />
+    <ClCompile Include="patch_fast_lightemission.cpp" />
+    <ClCompile Include="patch_fast_pixelformat_conv.cpp" />
+    <ClCompile Include="patch_fast_resize.cpp" />
+    <ClCompile Include="patch_fast_scenechange.cpp" />
+    <ClCompile Include="patch_fast_shadow.cpp" />
+    <ClCompile Include="patch_fast_sharp.cpp" />
+    <ClCompile Include="patch_fast_specialcolorconv.cpp" />
+    <ClCompile Include="patch_fast_text_border.cpp" />
+    <ClCompile Include="patch_fast_waveform.cpp" />
+    <ClCompile Include="patch_fast_wipe.cpp" />
+    <ClCompile Include="patch_fast_yc_filter_effect.cpp" />
+    <ClCompile Include="patch_group_id.cpp" />
+    <ClCompile Include="patch_init_window_pos.cpp" />
+    <ClCompile Include="patch_keyconfig.cpp" />
+    <ClCompile Include="patch_load_exedit_backup.cpp" />
+    <ClCompile Include="patch_object_table.cpp" />
+    <ClCompile Include="patch_obj_glow.cpp" />
+    <ClCompile Include="patch_obj_portionfilter.cpp" />
+    <ClCompile Include="patch_obj_text.cpp" />
+    <ClCompile Include="patch_obj_waveform.cpp" />
+    <ClCompile Include="patch_paste_pos.cpp" />
+    <ClCompile Include="patch_playback_pos.cpp" />
+    <ClCompile Include="patch_read_audio.cpp" />
+    <ClCompile Include="patch_rendering.cpp" />
+    <ClCompile Include="patch_scene_vram.cpp" />
+    <ClCompile Include="patch_setting_dialog_add_filter.cpp" />
+    <ClCompile Include="patch_setting_dialog_chromakey.cpp" />
+    <ClCompile Include="patch_set_frame.cpp" />
+    <ClCompile Include="patch_shared_cache.cpp" />
+    <ClCompile Include="patch_exception_log.cpp" />
+    <ClCompile Include="patch_exception_log_dialog.cpp" />
+    <ClCompile Include="patch_exo_trackminusval.cpp" />
+    <ClCompile Include="patch_failed_longer_path.cpp" />
+    <ClCompile Include="patch_failed_sjis_msgbox.cpp" />
+    <ClCompile Include="patch_fast_border.cpp" />
+    <ClCompile Include="patch_fast_create_figure.cpp" />
+    <ClCompile Include="patch_fast_directionalblur.cpp" />
+    <ClCompile Include="patch_fast_displacementmap.cpp" />
+    <ClCompile Include="patch_fast_exeditwindow.cpp" />
+    <ClCompile Include="patch_fast_flash.cpp" />
+    <ClCompile Include="patch_fast_getputpixeldata.cpp" />
+    <ClCompile Include="patch_fast_glow.cpp" />
+    <ClCompile Include="patch_fast_lensblur.cpp" />
+    <ClCompile Include="patch_fast_polartransform.cpp" />
+    <ClCompile Include="patch_fast_radiationalblur.cpp" />
+    <ClCompile Include="patch_fast_setting_dialog.cpp" />
+    <ClCompile Include="patch_fast_text.cpp" />
+    <ClCompile Include="patch_helpful_msgbox.cpp" />
+    <ClCompile Include="patch_lua.cpp" />
+    <ClCompile Include="patch_lua_getvalueex.cpp" />
+    <ClCompile Include="patch_lua_rand.cpp" />
+    <ClCompile Include="patch_lua_randex.cpp" />
+    <ClCompile Include="patch_console.cpp" />
+    <ClCompile Include="patch_obj_audiofile.cpp" />
+    <ClCompile Include="patch_obj_colorcorrection.cpp" />
+    <ClCompile Include="patch_obj_imageloop.cpp" />
+    <ClCompile Include="patch_obj_lensblur.cpp" />
+    <ClCompile Include="patch_rclickmenu_delete.cpp" />
+    <ClCompile Include="patch_rclickmenu_split.cpp" />
+    <ClCompile Include="patch_redo.cpp" />
+    <ClCompile Include="patch_scene_cache.cpp" />
+    <ClCompile Include="patch_setting_dialog_excolorconfig.cpp" />
+    <ClCompile Include="patch_setting_dialog_wndproc_override.cpp" />
+    <ClCompile Include="patch_setting_new_project.cpp" />
+    <ClCompile Include="patch_splash.cpp" />
+    <ClCompile Include="patch_str2int.cpp" />
+    <ClCompile Include="patch_susie_load.cpp" />
+    <ClCompile Include="patch_theme_cc.cpp" />
+    <ClCompile Include="patch_trackbar.cpp" />
+    <ClCompile Include="patch_tra_change_drawfilter.cpp" />
+    <ClCompile Include="patch_undo.cpp" />
+    <ClCompile Include="patch_yc_rgb_conv.cpp" />
+    <ClCompile Include="util_others.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="patch.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig" />
+    <None Include="clprogram.cl" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{20c4ed31-b17f-445a-90fe-77f8119f831b}</ProjectGuid>
+    <RootNamespace>patch</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_PDB|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_PDB|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetExt>.aul</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetExt>.aul</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_PDB|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetExt>.aul</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>aviutl_exedit_sdk;winwrap;%BOOST_1_78_0_DIR%;%CUDA_PATH%\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/source-charset:utf-8 /execution-charset:shift_jis %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <DelayLoadDLLs>OpenCL.DLL</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>%CUDA_PATH%\lib\Win32</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y "$(TargetPath)" "$(SolutionDir)test\"
+xcopy /Y "$(TargetPath)" "$(SolutionDir)pack\"
+xcopy /Y "$(SolutionDir)patch.aul.txt" "$(SolutionDir)pack\"
+xcopy /Y "$(SolutionDir)credits.md" "$(SolutionDir)pack\"
+xcopy /Y "$(SolutionDir)LICENSE" "$(SolutionDir)pack\"
+xcopy /Y "$(SolutionDir)COPYING" "$(SolutionDir)pack\"
+xcopy /Y "$(SolutionDir)COPYING.LESSER" "$(SolutionDir)pack\"</Command>
+    </PostBuildEvent>
+    <ResourceCompile>
+      <AdditionalOptions>/c 65001 %(AdditionalOptions)</AdditionalOptions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>aviutl_exedit_sdk;winwrap;%BOOST_1_78_0_DIR%;%CUDA_PATH%\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/source-charset:utf-8 /execution-charset:shift_jis %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <DelayLoadDLLs>OpenCL.DLL</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>%CUDA_PATH%\lib\Win32</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)test\$(TargetFileName)"
+copy /Y "$(TargetPath)" "$(SolutionDir)pack\$(TargetFileName)"
+copy /Y "$(SolutionDir)patch.aul.txt" "$(SolutionDir)pack\patch.aul.txt"
+copy /Y "$(SolutionDir)credits.md" "$(SolutionDir)pack\credits.md"
+copy /Y "$(SolutionDir)LICENSE" "$(SolutionDir)pack\LICENSE"
+copy /Y "$(SolutionDir)COPYING" "$(SolutionDir)pack\COPYING"
+copy /Y "$(SolutionDir)COPYING.LESSER" "$(SolutionDir)pack\COPYING.LESSER"</Command>
+    </PostBuildEvent>
+    <ResourceCompile>
+      <AdditionalOptions>/c 65001 %(AdditionalOptions)</AdditionalOptions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PDB|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>aviutl_exedit_sdk;winwrap;%BOOST_1_78_0_DIR%;%CUDA_PATH%\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <DelayLoadDLLs>OpenCL.DLL</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>%CUDA_PATH%\lib\Win32</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)test\$(TargetFileName)"
+copy /Y "$(TargetPath)" "$(SolutionDir)pack\$(TargetFileName)"
+copy /Y "$(SolutionDir)patch.aul.txt" "$(SolutionDir)pack\patch.aul.txt"
+copy /Y "$(SolutionDir)credits.md" "$(SolutionDir)pack\credits.md"
+copy /Y "$(SolutionDir)LICENSE" "$(SolutionDir)pack\LICENSE"
+copy /Y "$(SolutionDir)COPYING" "$(SolutionDir)pack\COPYING"
+copy /Y "$(SolutionDir)COPYING.LESSER" "$(SolutionDir)pack\COPYING.LESSER"</Command>
+    </PostBuildEvent>
+    <ResourceCompile>
+      <AdditionalOptions>/c 65001 %(AdditionalOptions)</AdditionalOptions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\boost.1.79.0\build\boost.targets" Condition="Exists('..\packages\boost.1.79.0\build\boost.targets')" />
+    <Import Project="..\packages\boost_system-vc143.1.79.0\build\boost_system-vc143.targets" Condition="Exists('..\packages\boost_system-vc143.1.79.0\build\boost_system-vc143.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>このプロジェクトは、このコンピューター上にない NuGet パッケージを参照しています。それらのパッケージをダウンロードするには、[NuGet パッケージの復元] を使用します。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。見つからないファイルは {0} です。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\boost.1.79.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.79.0\build\boost.targets'))" />
+    <Error Condition="!Exists('..\packages\boost_system-vc143.1.79.0\build\boost_system-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc143.1.79.0\build\boost_system-vc143.targets'))" />
+  </Target>
+</Project>
