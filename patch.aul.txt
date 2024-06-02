@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_58
+patch.aul r43_ss_59
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -97,7 +97,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・ファイルの情報を開くと落ちる/ファイル制御情報が正しくないことがあるのを修正
     ・中間点で再生速度を変更した時、そこまでの中間点の数だけ速度変化が遅れて反映されるバグの修正
     ・グローの光成分のみチェックがある時に透過情報が失われるのを修正
-    ・図形の縦横比が-100未満や100超の時にエラーが出たり描画がおかしくなるのを修正
+    ・図形・ぼかしの縦横比が-100未満や100超の時にエラーが出たり描画がおかしくなるのを修正
     ・スレッド数より小さいサイズに対して効果（ぼかし/シャープ/グロー/マスク/リサイズ/ローテーション/部分フィルタ）が正常に反映されないバグの修正
     ・新規プロジェクト作成時にサイズ・フレームレートが変わるフィルタをオフにする
     ・レイヤー情報を保存するかどうかの判定方法を変える(従来:オブジェクトが存在する→変更:レイヤー情報が初期値でない)
@@ -195,6 +195,7 @@ https://scrapbox.io/nazosauna/patch.aul
     ・モーションブラーにて間隔が0未満の時にエラーが出るのを修正
     ・32bitRGBAの画像に透明度が必要無い場合、24bitRGBに変換して使用キャッシュを25%削減する
     ・拡張編集の音声処理のメイン関数0x49ca0にて最終レイヤー指定が機能していなかったのを修正
+    ・クロマキーやカラーキーなどで、色の取得ボタンを押した状態でもう一度押すと色選択ダイアログが出るように変更
 
     追加
     ・コンソールの表示
@@ -373,6 +374,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "obj_specialcolorconv" : boolean, ; 特定色域変換で変換前色に黒色を指定すると0除算が起こることがあるのを修正 (既定値: true)
         "obj_motionblur" : boolean, ; モーションブラーの間隔が負の値になった時にエラーとなるのを修正 (既定値: true)
         "obj_portionfilter" : boolean, ; 部分フィルタがスレッド数より小さいサイズに対して正常に反映されないバグを修正 / (ファイルから選択)でファイルパスを表示する (既定値: true)
+        "settingdialog_color_picker" : boolean, ; クロマキーやカラーキーなどで、色の取得ボタンを押した状態でもう一度押すと色選択ダイアログが出るように変更 (既定値: true)
         "settingdialog_excolorconfig" : boolean, ; 拡張色変換のウィンドウが下のフィルタに被るのを修正 (既定値: true)
         "settingdialog_chromakey" : boolean, ; クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更 (既定値: true)
         "settingdialog_scriptcontrol" : boolean, ; スクリプト制御を折り畳むことで次のスクリプト制御のエディットボックスが表示されるように修正 (既定値: true)
@@ -466,7 +468,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_58" のような文字列が格納されている
+        例として "patch.aul r43_ss_59" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
