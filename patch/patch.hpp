@@ -176,3 +176,4 @@
 #include "patch_exfilter_plugins.hpp"
 #include "patch_audio_layer_end.hpp"
 #include "patch_audio_preprocess.hpp"
+#include "patch_setting_dialog_color_picker.hpp"

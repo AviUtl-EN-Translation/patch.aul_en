@@ -26,6 +26,8 @@
 
 #include "config_rw.hpp"
 
+#include "patch_setting_dialog_color_picker.hpp"
+
 namespace patch {
 	// init at exedit load
 	/* 複数選択で変更しても変わらない部分を変わるようにする
@@ -40,11 +42,11 @@ namespace patch {
 	// 操作によっては選択状態が解除されないままになるので拡張編集ウィンドウをアクティブにした時に判定するように変更
 
 	inline class any_obj_t {
+
 		inline static void(__cdecl* update_any_exdata)(ExEdit::ObjectFilterIndex, char*);
 		inline static void(__cdecl* deselect_object)();
 
 		static void post_deselect_object_tl_activate();
-		static void __cdecl update_any_exdata_use_idx(ExEdit::Filter* efp, int idx);
 		static char* __cdecl disp_extension_image_file_wrap(ExEdit::Filter* efp, char* path);
 		static void __cdecl calc_milli_second_movie_file_wrap(ExEdit::Filter* efp, void* exdata);
 		static void __cdecl calc_milli_second_audio_file_wrap(ExEdit::Filter* efp, void* exdata);
@@ -100,14 +102,16 @@ namespace patch {
 		static void deselect_object_if();
 		static void deselect_object_tl_activate();
 		static void __cdecl update_any_range(ExEdit::Filter* efp);
+		static void __cdecl update_any_exdata_use_idx(ExEdit::Filter* efp, int idx);
+
 
 		void init() {
 			enabled_i = enabled;
 
-			if (!enabled_i)return;
-
 			update_any_exdata = reinterpret_cast<decltype(update_any_exdata)>(GLOBAL::exedit_base + OFS::ExEdit::update_any_exdata);
 			deselect_object = reinterpret_cast<decltype(deselect_object)>(GLOBAL::exedit_base + OFS::ExEdit::deselect_object);
+
+			if (!enabled_i)return;
 
 			auto& cursor = GLOBAL::executable_memory_cursor;
 
@@ -595,12 +599,14 @@ namespace patch {
 				h.replaceNearJmp(0x160a7 - vp_begin, &mov_status2_1_specialcolorconv);
 				h.store_i16(0x160c2 - vp_begin, '\x57\xe8');
 				h.replaceNearJmp(0x160c4 - vp_begin, &mov_status_0_specialcolorconv);
-				h.store_i16(0x1612b - vp_begin, '\x57\xe8');
-				h.replaceNearJmp(0x1612d - vp_begin, &mov_status_0_specialcolorconv);
 				h.store_i16(0x160ce - vp_begin, '\x57\xe8');
 				h.replaceNearJmp(0x160d0 - vp_begin, &mov_status2_0_specialcolorconv);
-				h.store_i16(0x16158 - vp_begin, '\x57\xe8');
-				h.replaceNearJmp(0x1615a - vp_begin, &mov_status2_0_specialcolorconv);
+				if (!dialog_color_picker.is_enabled_i()) { // patch_setting_dialog_color_picker側で実装済み
+					h.store_i16(0x1612b - vp_begin, '\x57\xe8');
+					h.replaceNearJmp(0x1612d - vp_begin, &mov_status_0_specialcolorconv);
+					h.store_i16(0x16158 - vp_begin, '\x57\xe8');
+					h.replaceNearJmp(0x1615a - vp_begin, &mov_status2_0_specialcolorconv);
+				}
 			}
 
 			{ // 色ずれ・インターレース解除・ルミナンスキー・ミラー のコンボボックス

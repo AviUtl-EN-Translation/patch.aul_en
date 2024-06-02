@@ -251,6 +251,8 @@ namespace OFS {
 		constexpr i32 efPortionFilter_ptr = 0x0a92c0;
 		constexpr i32 efGlare_ptr = 0x0a6040;
 
+		constexpr i32 Map_var_ptr = 0x1bace8;
+
 		constexpr i32 PixelYCA_ssss2fbbs = 0x070220;
 		constexpr i32 PixelYCA_fbbs2ssss = 0x0703f0;
 		constexpr i32 PixelYCA_sss2fbb = 0x070550;

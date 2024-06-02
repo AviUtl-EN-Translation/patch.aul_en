@@ -33,6 +33,8 @@ namespace patch {
         フィルタオブジェクトで0xc0000094 オフセットアドレス[0xfe64, 0x100d3, 0x115d1, 0x1188b]
         エフェクトで0xc0000005 オフセットアドレス[0xec7b, 0xf573, 0x1034c, 0x10c8a]
     */
+    // 縦横比が-100未満や100超で表示がおかしくなるのを修正
+
     /* 小さいオブジェクトに効果が無いのを修正 (fast.blurにより不要に)
         スレッド数より小さいオブジェクトに効果が乗らない
     */
@@ -55,6 +57,41 @@ namespace patch {
                     if(range <= 0) return; // jle
                 */
                 OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x0e301, 1).store_i8(0, '\x8e');
+            }
+            
+            { // 縦横比が-100未満や100超で表示がおかしくなるのを修正
+                /*
+                    1000e31f b8d34d6210         mov     eax,10624dd3
+
+                    1000e33f b8d34d6210         mov     eax,10624dd3
+
+                    ↓
+
+                    10000000 85c9               test    ecx,ecx
+                    10000000 7d02               jnl     skip,02
+                    10000000 33c9               xor     ecx,ecx
+                    10000000 b8d34d6210         mov     eax,10624dd3
+                    10000000 c3                 ret
+                */
+                auto& cursor = GLOBAL::executable_memory_cursor;
+
+                static const char code_put[] = {
+                    "\x85\xc9"                 // test    ecx,ecx
+                    "\x7d\x02"                 // jnl     skip,02
+                    "\x33\xc9"                 // xor     ecx,ecx
+                    "\xb8\xd3\x4d\x62\x10"     // mov     eax,10624dd3
+                    "\xc3"                     // ret
+                };
+
+                constexpr int vp_begin = 0x0e31f;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x0e344 - vp_begin);
+                h.store_i8(0x0e31f - vp_begin, '\xe8');
+                h.replaceNearJmp(0x0e320 - vp_begin, cursor);
+                h.store_i8(0x0e33f - vp_begin, '\xe8');
+                h.replaceNearJmp(0x0e340 - vp_begin, cursor);
+
+                memcpy(cursor, code_put, sizeof(code_put) - 1);
+                cursor += sizeof(code_put) - 1;
             }
 
             /*

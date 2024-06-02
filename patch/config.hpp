@@ -261,6 +261,9 @@ public:
             #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
                 patch::PortionFilter.switch_load(cr);
             #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_COLOR_PICKER
+                patch::dialog_color_picker.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
                 patch::excolorconfig.switch_load(cr);
             #endif
@@ -946,6 +949,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
                 patch::PortionFilter.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_SETTINGDIALOG_COLOR_PICKER
+                patch::dialog_color_picker.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
                 patch::excolorconfig.switch_store(switch_);

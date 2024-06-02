@@ -183,6 +183,10 @@ namespace patch {
         return pos;
     }
 
+    void audio_fill_zero(ExEdit::FilterProcInfo* efpip) {
+        memset(efpip->audio_data, 0, efpip->audio_n * efpip->audio_ch * sizeof(short));
+    }
+
     BOOL __cdecl AudioFile_t::func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip0) {
 
         struct FilterProcInfo_1_2 {
@@ -392,7 +396,10 @@ namespace patch {
             speed_sign = -1;
             speed = -speed;
         }
-        if (speed < 0.015625 || 64.0 < speed) return FALSE;
+        if (speed < 0.015625 || 64.0 < speed) {
+            audio_fill_zero((ExEdit::FilterProcInfo*)efpip);
+            return TRUE;
+        }
 
         AviUtl::AviFileHandle* afh = reinterpret_cast<AviUtl::AviFileHandle * (__cdecl*)(Exdata_AudioFile*, int, AviUtl::FileInfo**)>(GLOBAL::exedit_base + OFS::ExEdit::avi_handle_open)(exdata, 0x20, &fip);
         if (afh == NULL) return FALSE;
@@ -449,7 +456,8 @@ namespace patch {
             double length = playback_e - playback_s;
             if (length <= 0.0) {
                 exdata->current_frame = -1;
-                return 0;
+                audio_fill_zero((ExEdit::FilterProcInfo*)efpip);
+                return TRUE;
             }
             if (efp->check[CHECK_SYNC]) {
                 length += v_sync_rate * audio_rate * 0.01;
@@ -462,12 +470,14 @@ namespace patch {
             }
         } else if ((double)pos < playback_s || playback_e < (double)pos) {
             exdata->current_frame = -1;
-            return 0;
+            audio_fill_zero((ExEdit::FilterProcInfo*)efpip);
+            return TRUE;
         }
         int read_size = efp->aviutl_exfunc->avi_file_read_audio_sample(afh, (int)pos, speed_sign * efpip->audio_n, efpip->audio_data);
 
         if (read_size <= 0) {
-            return 0;
+            audio_fill_zero((ExEdit::FilterProcInfo*)efpip);
+            return TRUE;
         }
 
         if (loop) {
@@ -482,7 +492,7 @@ namespace patch {
         if (read_size < efpip->audio_n) {
             memset((short*)efpip->audio_data + read_size * efpip->audio_ch, 0, (efpip->audio_n - read_size) * efpip->audio_ch * sizeof(short));
         }
-        return 1;
+        return TRUE;
     }
 
 

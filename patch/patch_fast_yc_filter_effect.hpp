@@ -411,9 +411,11 @@ namespace patch::fast {
 				// 以下、別の条件付きなので0x40は付けない
 
 				{ // ぼかし
+					// fast::Blurに組み込み済み
 					// func_check_listing()内で初期設定
 				}
 				{ // 方向ブラー
+					// fast::DirectionalBlurに組み込み済み
 					// func_check_listing()内で初期設定
 				}
 			}

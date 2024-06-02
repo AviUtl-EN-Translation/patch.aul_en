@@ -123,6 +123,7 @@
     <ClInclude Include="patch_sat_rgb_space.hpp" />
     <ClInclude Include="patch_scene_vram.hpp" />
     <ClInclude Include="patch_script_sort.hpp" />
+    <ClInclude Include="patch_setting_dialog_color_picker.hpp" />
     <ClInclude Include="patch_setting_dialog_add_filter.hpp" />
     <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
     <ClInclude Include="patch_setting_dialog_scriptcontrol.hpp" />
@@ -274,6 +275,7 @@
     <ClCompile Include="patch_read_audio.cpp" />
     <ClCompile Include="patch_rendering.cpp" />
     <ClCompile Include="patch_scene_vram.cpp" />
+    <ClCompile Include="patch_setting_dialog_color_picker.cpp" />
     <ClCompile Include="patch_setting_dialog_add_filter.cpp" />
     <ClCompile Include="patch_setting_dialog_chromakey.cpp" />
     <ClCompile Include="patch_set_frame.cpp" />
@@ -450,6 +452,14 @@ copy /Y "$(SolutionDir)COPYING.LESSER" "$(SolutionDir)pack\COPYING.LESSER"</Comm
     <ResourceCompile>
       <AdditionalOptions>/c 65001 %(AdditionalOptions)</AdditionalOptions>
     </ResourceCompile>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PDB|Win32'">
     <ClCompile>

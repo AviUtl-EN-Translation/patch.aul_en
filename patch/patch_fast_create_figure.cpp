@@ -13,8 +13,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "patch_fast_blur.hpp"
 #include "patch_fast_create_figure.hpp"
 #ifdef PATCH_SWITCH_FAST_CREATE_FIGURE
+
 
 namespace patch::fast {
 
@@ -246,6 +248,36 @@ namespace patch::fast {
                 yy += 2 * thread_num;
             }
         }
+    }
+
+    
+
+    void __cdecl CreateFigure_t::vertical_blur_mt_func_wrap(AviUtl::MultiThreadFunc mt, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)Blur_t::mt_calc_yc_ssss, nullptr, efpip);
+        efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)vertical_blur_mt, efp, efpip);
+    }
+
+    void __cdecl CreateFigure_t::horizontal_blur_mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        auto map = (Map_var*)(GLOBAL::exedit_base + OFS::ExEdit::Map_var_ptr);
+        Blur_t::blur_yca_mt(thread_id * efpip->obj_h / thread_num, (thread_id + 1) * efpip->obj_h / thread_num,
+            efpip->obj_edit, *reinterpret_cast<void**>(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr),
+            sizeof(ExEdit::PixelYCA), efpip->obj_line * sizeof(ExEdit::PixelYCA), efpip->obj_w, map->blur_size_w);
+    }
+
+
+    void __cdecl CreateFigure_t::vertical_blur_mt(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        auto map = (Map_var*)(GLOBAL::exedit_base + OFS::ExEdit::Map_var_ptr);
+        Blur_t::blur_yca_mt(thread_id * efpip->obj_w / thread_num, (thread_id + 1) * efpip->obj_w / thread_num,
+            *reinterpret_cast<void**>(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr), efpip->obj_edit,
+            efpip->obj_line * sizeof(ExEdit::PixelYCA), sizeof(ExEdit::PixelYCA), efpip->obj_h, map->blur_size_h);
+    }
+
+    void __cdecl CreateFigure_t::horizontal_blur_mt_func_wrap(AviUtl::MultiThreadFunc mt, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)horizontal_blur_mt, efp, efpip);
+        auto map = (Map_var*)(GLOBAL::exedit_base + OFS::ExEdit::Map_var_ptr);
+        efpip->obj_w += map->blur_size_w * 2;
+        efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)Blur_t::mt_calc_yca_ssss, nullptr, efpip);
+        efpip->obj_w -= map->blur_size_w * 2;
     }
 
 

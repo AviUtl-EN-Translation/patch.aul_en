@@ -32,7 +32,8 @@ namespace patch::fast {
 
 	inline class LightEmission_t {
 
-		static void __cdecl vertical_yc_fb_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		static void __cdecl vertical_yc_fb_cs_mt_wrap(int thread_id, int thread_num, void* mem_ptr, ExEdit::FilterProcInfo* efpip);
+		static void __cdecl vertical_yc_fb_cs_mt_func_wrap(AviUtl::MultiThreadFunc mt, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl vertical_yc_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 
 		bool enabled = true;
@@ -68,9 +69,11 @@ namespace patch::fast {
 			auto cpucmdset = get_CPUCmdSet();
 			if (!has_flag(cpucmdset, CPUCmdSet::F_AVX2))return;
 
-			constexpr int vp_begin = 0x53a8d;
+			constexpr int vp_begin = 0x53a91;
 			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x53ac4 - vp_begin);
-			h.store_i32(0x53a8d - vp_begin, &vertical_yc_fb_cs_mt_wrap);
+			h.store_i16(0x53a91 - vp_begin, '\x90\xe8');
+			h.replaceNearJmp(0x53a93 - vp_begin, &vertical_yc_fb_cs_mt_func_wrap);
+
 			h.store_i32(0x53ac0 - vp_begin, &vertical_yc_cs_mt_wrap);
 
 		}

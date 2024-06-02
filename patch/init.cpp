@@ -321,6 +321,9 @@ void init_t::InitAtExeditLoad() {
 	patch::PortionFilter.init();
 #endif
 
+#ifdef PATCH_SWITCH_SETTINGDIALOG_COLOR_PICKER
+	patch::dialog_color_picker.init();
+#endif
 #ifdef PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG
 	patch::excolorconfig.init();
 #endif

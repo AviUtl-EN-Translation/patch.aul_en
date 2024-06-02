@@ -39,6 +39,9 @@ namespace patch::fast {
     BOOL __cdecl check0(int oid, int fid, ExEdit::FilterProcInfo* efpip) {
         return get_check_value(oid, fid, 0) != 0;
     }
+    BOOL __cdecl check1(int oid, int fid, ExEdit::FilterProcInfo* efpip) {
+        return get_check_value(oid, fid, 1) != 0;
+    }
     BOOL __cdecl check4_not(int oid, int fid, ExEdit::FilterProcInfo* efpip) {
         return get_check_value(oid, fid, 4) == 0;
     }
@@ -98,9 +101,11 @@ namespace patch::fast {
                 }
                 break;
             case OFS::ExEdit::efDiffuseLight_ptr:
-            case OFS::ExEdit::efLightEmission_ptr:
             case OFS::ExEdit::efLensBlur_ptr:
                 (func_check[i]) = (check0);
+                break;
+            case OFS::ExEdit::efLightEmission_ptr:
+                (func_check[i]) = (check1);
                 break;
             case OFS::ExEdit::efFlip_ptr:
                 (func_check[i]) = (check4_not);
@@ -167,6 +172,8 @@ namespace patch::fast {
             efpip->scene_h = efpip->obj_h;
             efpip->frame_edit = reinterpret_cast<decltype(efpip->frame_edit)>(efpip->obj_edit);
             efpip->frame_temp = reinterpret_cast<decltype(efpip->frame_temp)>(efpip->obj_temp);
+            efpip->obj_edit = reinterpret_cast<decltype(efpip->obj_edit)>(frame_edit);
+            efpip->obj_temp = reinterpret_cast<decltype(efpip->obj_temp)>(frame_temp);
             
             efp->flag ^= static_cast<decltype(efp->flag)>(0x20);
             BOOL ret = filter_func_proc(efp, efpip);

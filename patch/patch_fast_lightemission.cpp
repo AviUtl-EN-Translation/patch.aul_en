@@ -30,11 +30,24 @@
 
 namespace patch::fast {
     
-    void __cdecl LightEmission_t::vertical_yc_fb_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
-        auto le = (efLightEmission_var*)(GLOBAL::exedit_base + OFS::ExEdit::efLightEmission_var_ptr);
+    void __cdecl LightEmission_t::vertical_yc_fb_cs_mt_wrap(int thread_id, int thread_num, void* mem_ptr, ExEdit::FilterProcInfo* efpip) {
         void* buf_ptr = *reinterpret_cast<void**>(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
-        Blur_t::blur_yc_fb_cs_mt(thread_id * le->w / thread_num, (thread_id + 1) * le->w / thread_num, buf_ptr, efpip->frame_temp,
-            efpip->scene_line * sizeof(ExEdit::PixelYC), sizeof(ExEdit::PixelYC), le->h, le->size_h);
+        auto le = (efLightEmission_var*)(GLOBAL::exedit_base + OFS::ExEdit::efLightEmission_var_ptr);
+        Blur_t::vertical_yc_fb_cs_mt(thread_id, thread_num, le->w, le->h, efpip->scene_line, le->size_h, buf_ptr, efpip->frame_temp, mem_ptr, 1);
+    }
+
+    static AviUtl::SharedMemoryInfo* smi;
+    void __cdecl LightEmission_t::vertical_yc_fb_cs_mt_func_wrap(AviUtl::MultiThreadFunc mt, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        void* mem_ptr = efp->aviutl_exfunc->get_shared_mem((int)&smi, (int)&smi, smi);
+        if (mem_ptr == nullptr) {
+            int size = max(efpip->obj_line * 24, 0x20000);
+            mem_ptr = efp->aviutl_exfunc->create_shared_mem((int)&smi, (int)&smi, size, &smi);
+            if (mem_ptr == nullptr) {
+                efp->aviutl_exfunc->exec_multi_thread_func(mt, efp, efpip);
+                return;
+            }
+        }
+        efp->aviutl_exfunc->exec_multi_thread_func((AviUtl::MultiThreadFunc)&vertical_yc_fb_cs_mt_wrap, mem_ptr, efpip);
     }
     
     void __cdecl LightEmission_t::vertical_yc_cs_mt_wrap(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
