@@ -97,6 +97,11 @@ namespace patch {
 
         static int __cdecl NormalizeExeditTimelineY_wrap_4253e(int timeline_y);
 
+        static void __cdecl set_null_terminated_string_wrap(char* str, int layer_id);
+
+        static ExEdit::UndoData* __stdcall set_undodata_layer_plus(ExEdit::UndoData* undodata, int layer_id);
+        static void __stdcall set_layer_undodata_plus(ExEdit::UndoData* undodata, int layer_id);
+
         static ExEdit::Object* __stdcall f42617();
 
         static void __stdcall f4355c(ExEdit::Object* obj);
@@ -149,10 +154,10 @@ namespace patch {
 
 			// レイヤー削除→元に戻すで他シーンのオブジェクトが消える
 			{
-				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x042875, 2);
-				h.store_i8(0, '\x56'); // push esi=layer_id
-				h.store_i8(1, '\x90'); // nop
-				ReplaceNearJmp(GLOBAL::exedit_base + 0x042879, &set_undo_wrap_42878);
+                constexpr int vp_begin = 0x042875;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x04287e - vp_begin);
+				h.store_i16(0x042875 - vp_begin, '\x56\x90'); // push esi=layer_id  nop
+                h.replaceNearJmp(0x042879 - vp_begin, &set_undo_wrap_42878);
 			}
 
 			// Ctrlで複数オブジェクトを選択しながらトラックバーを動かすと一部オブジェクトが正常に戻らない
@@ -471,6 +476,61 @@ namespace patch {
 
             // 右クリックメニューより他のレイヤーを全表示/非表示を押してもUndoデータが生成されない
             ReplaceNearJmp(GLOBAL::exedit_base + 0x04253f, &NormalizeExeditTimelineY_wrap_4253e);
+
+            { // 右クリックメニューよりレイヤー名を変更してもUndoデータが生成されない
+                /*
+                    100426e3 6a40               push    +40
+                    100426e5 68c8f01110         push    1011f0c8
+                    100426ea e83180feff         call    1002a720
+                    ↓
+                    100426e3 56                 push    esi
+                    100426e4 90                 nop
+                    100426e5 68c8f01110         push    1011f0c8
+                    100426ea e8XxXxXxXx         call    newfunc
+                */
+                constexpr int vp_begin = 0x426e3;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x426ef - vp_begin);
+                h.store_i16(0x426e3 - vp_begin, '\x56\x90');
+                h.replaceNearJmp(0x426eb - vp_begin, &set_null_terminated_string_wrap);
+            }
+            { // 元に戻すによってレイヤー名が勝手に変わってしまうのを修正
+                // ついでにUndoData.object_layer_dispにシーン番号を保存しておく
+                
+                { // set_undo内を変える
+                    /* layer_nameを入れるために0x40バイト分多くする
+                        1008d339 bb24000000         mov     ebx,00000024
+                        ↓
+                        1008d339 bb64000000         mov     ebx,00000064
+                    */
+                    OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x8d33a, 1).store_i8(0, '\x64');
+                    /* undodataにlayer_nameを直接保存する
+                        1008d3f0 8b54ea04           mov     edx,dword ptr [edx+ebp*8+04]
+                        1008d3f4 895020             mov     dword ptr [eax+20],edx
+                        ↓
+                        1008d3f0 55                 push    ebp ; layer_id
+                        1008d3f1 50                 push    eax ; undobuffer_ptr
+                        1008d3f2 e8XxXxXxXx         call    func_stdcall_ret_arg0
+                    */
+                    constexpr int vp_begin = 0x8d3f0;
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8d3f7 - vp_begin);
+                    h.store_i32(0x8d3f0 - vp_begin, '\x55\x50\xe8\x00');
+                    h.replaceNearJmp(0x8d3f3 - vp_begin, &set_undodata_layer_plus);
+                }
+                { // run_undo内を変える
+                    /*
+                        1008d552 8b4d20             mov     ecx,dword ptr [ebp+20]
+                        1008d555 894cda04           mov     dword ptr [edx+ebx*8+04],ecx
+                        ↓
+                        1008d552 53                 push    ebx ; layer_id
+                        1008d553 55                 push    ebp ; undobuffer_ptr
+                        1008d554 e8XxXxXxXx         call    func_stdcall
+                    */
+                    constexpr int vp_begin = 0x8d552;
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8d559 - vp_begin);
+                    h.store_i32(0x8d552 - vp_begin, '\x53\x55\xe8\x00');
+                    h.replaceNearJmp(0x8d555 - vp_begin, &set_layer_undodata_plus);
+                }
+            }
 
             // ショートカットよりレイヤーの表示状態を変更してもUndoデータが生成されない
             {

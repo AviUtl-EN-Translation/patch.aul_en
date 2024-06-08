@@ -27,7 +27,6 @@ namespace patch {
         optimized = true;
         running_undo = false;
 
-        pre_scene_idx = *SceneDisplaying_ptr;
     }
     /*
     void redo_t::debug_print_undodata() {
@@ -151,7 +150,6 @@ namespace patch {
 
     void __cdecl redo_t::undo_change_disp_scene() {
         optimize_newer_undo_data();
-        pre_scene_idx = *SceneDisplaying_ptr;
     }
 
 } // namespace patch

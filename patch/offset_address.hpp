@@ -104,6 +104,8 @@ namespace OFS {
 		constexpr i32 read_object_file_data = 0x029810;
 		constexpr i32 exo_readtrack = 0x029090;
 		constexpr i32 str2int2 = 0x0918ab;
+		constexpr i32 set_null_terminated_string = 0x02a720;
+
 
 		constexpr i32 exo_trackparam_overwrite = 0x0299d1;
 
@@ -310,6 +312,10 @@ namespace OFS {
 		constexpr i32 get_scene_image = 0x04ce20;
 		constexpr i32 get_scene_size = 0x02b980;
 		constexpr i32 scene_has_alpha = 0x02ba00;
+
+		constexpr i32 LayerSetting = 0x188498;
+		constexpr i32 CurrentLayerSetting_ptr = 0x0a4058;
+		constexpr i32 scene_layer_name_put_buffer = 0x02b880;
 
 		constexpr i32 memcpy_rect = 0x0730e0;
 

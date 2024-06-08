@@ -246,6 +246,47 @@ namespace patch {
         return timeline_y;
     }
 
+    void __cdecl undo_t::set_null_terminated_string_wrap(char* str, int layer_id) {
+        reinterpret_cast<void(__cdecl*)(char*, int)>(GLOBAL::exedit_base + OFS::ExEdit::set_null_terminated_string)(str, 64);
+        AddUndoCount();
+        set_undo(layer_id, 0x10);
+    }
+
+    ExEdit::UndoData* __stdcall undo_t::set_undodata_layer_plus(ExEdit::UndoData* undodata, int layer_id) {
+        struct {
+            ExEdit::LayerSetting layersetting;
+            char name_buf[64];
+        }*undo_layer = (decltype(undo_layer))undodata->data;
+        auto ls = *reinterpret_cast<ExEdit::LayerSetting**>(GLOBAL::exedit_base + OFS::ExEdit::CurrentLayerSetting_ptr) + layer_id;
+        undo_layer->layersetting.name = ls->name;
+        if (ls->name != NULL) {
+            lstrcpyA(undo_layer->name_buf, ls->name);
+        } else {
+            undo_layer->name_buf[0] = '\0';
+        }
+        undodata->object_layer_disp_opt = *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SceneDisplaying);
+        return undodata;
+    }
+    void __stdcall undo_t::set_layer_undodata_plus(ExEdit::UndoData* undodata, int layer_id) {
+        struct {
+            ExEdit::LayerSetting layersetting;
+            char name_buf[64];
+        }*undo_layer = (decltype(undo_layer))undodata->data;
+        auto ls = *reinterpret_cast<ExEdit::LayerSetting**>(GLOBAL::exedit_base + OFS::ExEdit::CurrentLayerSetting_ptr) + layer_id;
+        if (undo_layer->layersetting.name == NULL && ls->name == NULL) return;
+        if (undo_layer->layersetting.name == NULL) {
+            ls->name = NULL;
+            return;
+        }
+        if (ls->name != NULL) {
+            if (lstrcmpA(undo_layer->name_buf, ls->name) == 0) { // 文字はそのままポインタが更新されたのでUndoDataの方を更新する
+                undo_layer->layersetting.name = ls->name;
+                return;
+            }
+        }
+        undo_layer->layersetting.name = ls->name = reinterpret_cast<char* (__cdecl*)(char*, void*)>(GLOBAL::exedit_base + OFS::ExEdit::scene_layer_name_put_buffer)(undo_layer->name_buf, *(void**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr));
+    }
+
     ExEdit::Object* __stdcall undo_t::f42617() {
         AddUndoCount();
         set_undo((*ObjectArrayPointer_ptr)[*ObjDlg_ObjectIndex_ptr].layer_disp, 0x10);

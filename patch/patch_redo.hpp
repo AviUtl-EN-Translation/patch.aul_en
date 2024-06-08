@@ -25,17 +25,6 @@ namespace patch {
         inline static ExEdit::LayerSetting** layer_setting_ofsptr_ptr;
         inline static void** exdata_buffer_ptr;
 
-        struct UndoData {
-            int data_id;
-            int object_id; // layer | 0x1000000;
-            int data_size;
-            DWORD object_flag;
-            int object_layer_disp;
-            int object_frame_begin;
-            int object_frame_end;
-            DWORD* data;
-        };
-
         inline static int* UndoInfo_object_num_ptr;
         inline static int* UndoInfo_write_offset_ptr;
         inline static int* UndoInfo_current_id_ptr;
@@ -47,13 +36,12 @@ namespace patch {
         inline static AviUtl::EditHandle** editp_ptr;
         inline static AviUtl::FilterPlugin** fp_g_ptr;
 
-        inline static UndoData** UndoDataPtrArray;
+        inline static ExEdit::UndoData** UndoDataPtrArray;
 
         inline static void* (__cdecl* exedit_memmove)(void*, void*, size_t);
         inline static void(__cdecl* run_undo)();
         inline static void(__cdecl* change_disp_scene)(int, AviUtl::FilterPlugin*, AviUtl::EditHandle*);
 
-        inline static int pre_scene_idx = 0;
         inline static int UndoInfo_max_id = 0;
         inline static int UndoInfo_object_new = 0;
         inline static bool optimized = true;
@@ -63,20 +51,11 @@ namespace patch {
         static void __cdecl init_undo_patch();
 
 
-        // レイヤーUndo情報そのままではシーンが分からないため、UndoData.object_layer_dispにscene_idxを入れておくようにする
-        static void add_scene_idx() {
-            for (int i = UndoInfo_object_new; i < *UndoInfo_object_num_ptr; i++) {
-                UndoData* undodata = UndoDataPtrArray[i];
-                if (undodata->object_id & 0x1000000) { // レイヤー
-                    undodata->object_layer_disp = pre_scene_idx;
-                }
-            }
-        }
 
         static int get_scene_idx_UndoData(int undo_id) {
-            UndoData* undodata = UndoDataPtrArray[undo_id];
+            ExEdit::UndoData* undodata = UndoDataPtrArray[undo_id];
             if (undodata->object_id & 0x1000000) {
-                return undodata->object_layer_disp;
+                return undodata->object_layer_disp_opt;
             } else {
                 return (*ObjectArrayPointer_ptr)[undodata->object_id].scene_set;
             }
@@ -99,7 +78,7 @@ namespace patch {
 
             for (int i = 0; i < UndoInfo_object_num; i++) {
                 if (delptr < (DWORD)UndoDataPtrArray[i]) {
-                    UndoDataPtrArray[i] = (UndoData*)((DWORD)UndoDataPtrArray[i] - size);
+                    UndoDataPtrArray[i] = (ExEdit::UndoData*)((DWORD)UndoDataPtrArray[i] - size);
                 }
             }
             UndoInfo_object_num--;
@@ -132,15 +111,15 @@ namespace patch {
         static void integrate_undodata(int id1, int id2) {
             int& UndoInfo_write_offset = *UndoInfo_write_offset_ptr;
 
-            UndoData* undodata1 = UndoDataPtrArray[id1];
-            UndoData* undodata2 = UndoDataPtrArray[id2];
+            ExEdit::UndoData* undodata1 = UndoDataPtrArray[id1];
+            ExEdit::UndoData* undodata2 = UndoDataPtrArray[id2];
 
 
-            if (undodata1->data_size == 0x1c && undodata1->object_flag == 0) {
+            if (undodata1->data_size == 0x1c && undodata1->object_flag_opt == 0) {
                 remove_UndoData(id2);
                 return;
             }
-            if (undodata2->data_size == 0x1c && undodata2->object_flag == 0) {
+            if (undodata2->data_size == 0x1c && undodata2->object_flag_opt == 0) {
                 remove_UndoData(id1);
                 return;
             }
@@ -151,11 +130,11 @@ namespace patch {
 
                 if (undodata1->data_size == 0x1c) {
                     auto undoobj = reinterpret_cast<ExEdit::Object*>(&undodata2->data);
-                    undoobj->flag = static_cast<ExEdit::Object::Flag>(undodata1->object_flag);
-                    if (undodata1->object_flag) {
-                        undoobj->layer_set = undoobj->layer_disp = undodata1->object_layer_disp;
-                        undoobj->frame_begin = undodata1->object_frame_begin;
-                        undoobj->frame_end = undodata1->object_frame_end;
+                    undoobj->flag = static_cast<ExEdit::Object::Flag>(undodata1->object_flag_opt);
+                    if (undodata1->object_flag_opt) {
+                        undoobj->layer_set = undoobj->layer_disp = undodata1->object_layer_disp_opt;
+                        undoobj->frame_begin = undodata1->object_frame_begin_opt;
+                        undoobj->frame_end = undodata1->object_frame_end_opt;
                     }
                 }
                 remove_UndoData(id1);
@@ -168,8 +147,8 @@ namespace patch {
         static void optimize_new_undo_buffer() {
             int& UndoInfo_object_num = *UndoInfo_object_num_ptr;
             if (UndoInfo_object_new < UndoInfo_object_num) {
-                UndoData* newdata = UndoDataPtrArray[UndoInfo_object_num - 1];
-                UndoData* undodata;
+                ExEdit::UndoData* newdata = UndoDataPtrArray[UndoInfo_object_num - 1];
+                ExEdit::UndoData* undodata;
                 for (int i = UndoInfo_object_new; i < UndoInfo_object_num - 1; i++) {
                     undodata = UndoDataPtrArray[i];
                     if (undodata->object_id == newdata->object_id && undodata->data_id == newdata->data_id) {
@@ -185,21 +164,28 @@ namespace patch {
             // 指定idのデータと現在のオブジェクト状態を比較 (TRUE:相違点あり FALSE:同じ)
             auto cmp_obj_undo = [](int id) {
                 auto& ObjectArrayPointer = *ObjectArrayPointer_ptr;
-                auto& layer_setting_ofsptr = *layer_setting_ofsptr_ptr;
                 auto& exdata_buffer = *exdata_buffer_ptr;
                 auto& UndoInfo_object_num = *UndoInfo_object_num_ptr;
                 auto& UndoInfo_write_offset = *UndoInfo_write_offset_ptr;
 
-                UndoData* undodata = UndoDataPtrArray[id];
+                ExEdit::UndoData* undodata = UndoDataPtrArray[id];
 
                 void* ptr1;
                 void* ptr2;
                 int cmpsize;
 
                 if (undodata->object_id & 0x1000000) { // レイヤー
-                    ptr1 = (void*)&layer_setting_ofsptr[undodata->object_id & 0xffffff];
-                    ptr2 = &undodata->data;
-                    cmpsize = 8;
+                    auto ls = reinterpret_cast<ExEdit::LayerSetting*>(GLOBAL::exedit_base + OFS::ExEdit::LayerSetting) + undodata->object_layer_disp_opt * 100 + (undodata->object_id & 0xffffff);
+                    struct {
+                        ExEdit::LayerSetting layersetting;
+                        char name_buf[64];
+                    }*undo_layer = (decltype(undo_layer))undodata->data;
+
+                    if (ls->flag != undo_layer->layersetting.flag) return true;
+                    if (ls->name != NULL || undo_layer->layersetting.name != NULL) {
+                        if (ls->name == NULL || undo_layer->layersetting.name == NULL) return true;
+                        if (lstrcmpA(ls->name, undo_layer->name_buf) != 0) return true;
+                    }
                 } else {
                     ptr1 = (void*)&ObjectArrayPointer[undodata->object_id];
                     if (undodata->data_size > 0x1c) {
@@ -225,16 +211,16 @@ namespace patch {
                         int excmpsize = undodata->data_size - 0x1c - cmpsize;
                         if (memcmp(ptr3, ptr4, excmpsize))return true;
                     } else {
-                        ptr2 = &undodata->object_flag;
-                        if (undodata->object_flag == 0) {
+                        ptr2 = &undodata->object_flag_opt;
+                        if (undodata->object_flag_opt == 0) {
                             cmpsize = 4;
                         } else {
                             cmpsize = 0x10;
                         }
                     }
+                    if (memcmp(ptr1, ptr2, cmpsize))return true;
                 }
 
-                if (memcmp(ptr1, ptr2, cmpsize))return true;
 
                 return false;
             };
@@ -259,7 +245,6 @@ namespace patch {
                 BOOL movef = FALSE;
                 for (int i = 0; i < UndoInfo_object_new; i++) {
                     if (UndoDataPtrArray[i]->object_id == objid && UndoDataPtrArray[i]->data_id == dataid) {
-                        add_scene_idx();
                         move_UndoData(i, UndoInfo_object_new);
                         movef = TRUE;
                         break;
@@ -290,7 +275,6 @@ namespace patch {
                 optimize_new_undo_buffer();
                 remove_emptiness_UndoData();
                 if (UndoInfo_object_new < UndoInfo_object_num) {
-                    add_scene_idx();
                     remove_old_UndoData(UndoInfo_current_id - 1);
                     UndoInfo_max_id = UndoInfo_current_id - 1;
                     UndoInfo_object_new = UndoInfo_object_num;
@@ -311,7 +295,6 @@ namespace patch {
                 optimize_new_undo_buffer();
                 remove_emptiness_UndoData();
                 if (UndoInfo_object_new < UndoInfo_object_num) {
-                    add_scene_idx();
                     remove_old_UndoData(UndoInfo_current_id);
                     UndoInfo_max_id = UndoInfo_current_id;
                     UndoInfo_object_new = UndoInfo_object_num;
@@ -358,7 +341,7 @@ namespace patch {
                 }
             }
 
-            UndoData* tmp;
+            ExEdit::UndoData* tmp;
             while (begin < end) {
                 tmp = UndoDataPtrArray[begin];
                 UndoDataPtrArray[begin] = UndoDataPtrArray[end];
