@@ -43,7 +43,7 @@ namespace patch {
             if (20000 <= menuid && menuid < 30000) {
                 switch (menuid) {
                     case PATCH_MENU_INFO: {
-                        MessageBoxA(hwnd, patchaul_info.get(), "patch.aul info", 0);
+                        MessageBoxA(hwnd, patchaul_info.get(), "patch.aul info", MB_OK);
                         return 0;
                     }
                     #ifdef PATCH_SWITCH_CONSOLE
@@ -52,6 +52,10 @@ namespace patch {
                         return 0;
                     }
                     #endif
+                    case PATCH_MENU_EXFILTER_INFO: {
+                        MessageBoxA(hwnd, exfilter::Plugins.get_info(), "eef info", MB_OK | MB_ICONASTERISK);
+                        return 0;
+                    }
                 }
             }
             break;

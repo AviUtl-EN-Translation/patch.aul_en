@@ -28,6 +28,7 @@
 #include "util.hpp"
 
 #include "patch_console.hpp"
+#include "patch_exfilter_plugins.hpp"
 
 namespace patch {
 	// init before filter plugin load

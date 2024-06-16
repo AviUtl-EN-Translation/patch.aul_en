@@ -17,6 +17,7 @@
 #include "macro.h"
 
 #ifdef PATCH_SWITCH_EXFILTER
+#include <exedit.hpp>
 
 #include "util.hpp"
 #include "global.hpp"

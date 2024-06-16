@@ -34,6 +34,7 @@ namespace patch::fast {
 	最大画像サイズ+8まで広げられてしまい、不具合を起こすのを修正
 	XYと拡散が0以外の時に無駄な領域拡張が行われるのを修正
 	透明度反転を掛けた時の見た目を改善
+	個別オブジェクトと上のオブジェクトでクリッピングの組み合わせでおかしくなるのを修正
 	*/
 	inline class Shadow_t {
 		static BOOL func_proc(ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);

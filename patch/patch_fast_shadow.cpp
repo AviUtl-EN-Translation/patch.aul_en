@@ -684,21 +684,86 @@ namespace patch::fast {
             }
         }
         if (efp->check[0]) {
-            shadow->ox = efp->track[0];
-            shadow->oy = efp->track[1];
-            efpip->obj_data.ox += shadow->ox << 12;
-            efpip->obj_data.oy += shadow->oy << 12;
+            std::swap(efpip->obj_edit, efpip->obj_temp);
+
+            /*
+                上のオブジェクトでクリッピングの処理中にefpip->obj_tempが使われるため
+                そのデータを別に保存しておかないとバグる
+            */
+            auto layer_clipping_flag = (int*)efpip->unknown4[0];
+            bool flag = (layer_clipping_flag != nullptr && layer_clipping_flag[efp->layer_set] & 3);
+            if (flag) {
+                int size;
+                if (efpip->xf4) {
+                    size = (efpip->obj_h * efpip->scene_line - (efpip->scene_line - efpip->obj_w)) * sizeof(ExEdit::PixelYC);
+                } else {
+                    size = (efpip->obj_h * efpip->obj_line - (efpip->obj_line - efpip->obj_w)) * sizeof(ExEdit::PixelYCA);
+                }
+                memcpy(memory_ptr, efpip->obj_temp, size);
+                /* 出力フィルタでOFS::ExEdit::memory_ptrを使うようなものがあると競合するため以下のような別領域にする必要あり
+                AviUtl::SharedMemoryInfo* smip = nullptr;
+                void* ptr = efp->aviutl_exfunc->create_shared_mem((int)&smip, (int)&smip, efpip->obj_w * efpip->obj_h * pixsize, &smip);
+                if (ptr == nullptr) {
+                    flag = false;
+                } else {
+                    auto obj_temp = (void*)efpip->obj_temp;
+                    for (int y = efpip->obj_h; 0 < y; y--) {
+                        memcpy(ptr, obj_temp, pixsize * efpip->obj_w);
+                        ptr = (void*)((int)ptr + pixsize * efpip->obj_w);
+                        obj_temp = (void*)((int)obj_temp + line * pixsize);
+                    }
+                }
+                */
+            }
+            /*
+                efpip->obj_wなどを戻す方法があまり良くなかったため
+                上のオブジェクトでクリッピングの後に正しく戻らなかったのを修正している
+            */
+            obj_w = efpip->obj_w;
+            obj_h = efpip->obj_h;
+            auto ox = efpip->obj_data.ox;
+            auto oy = efpip->obj_data.oy;
             efpip->obj_w += diffuse * 2;
             efpip->obj_h += diffuse * 2;
-            std::swap(efpip->obj_edit, efpip->obj_temp);
+            efpip->obj_data.ox += efp->track[0] << 12;
+            efpip->obj_data.oy += efp->track[1] << 12;
             auto no_alpha = efpip->xf4;
             efpip->xf4 = 0;
             reinterpret_cast<void(__cdecl*)(ExEdit::ObjectFilterIndex, ExEdit::FilterProcInfo*, int)>(GLOBAL::exedit_base + OFS::ExEdit::do_after_filter_effect)(efp->processing, efpip, 0x10fffff);
             efpip->xf4 = no_alpha;
-            efpip->obj_w -= diffuse * 2;
-            efpip->obj_h -= diffuse * 2;
-            efpip->obj_data.ox -= shadow->ox << 12;
-            efpip->obj_data.oy -= shadow->oy << 12;
+            efpip->obj_w = obj_w;
+            efpip->obj_h = obj_h;
+            efpip->obj_data.ox = ox;
+            efpip->obj_data.oy = oy;
+            if (flag) {
+                int size;
+                if (efpip->xf4) {
+                    size = (efpip->obj_h * efpip->scene_line - (efpip->scene_line - efpip->obj_w)) * sizeof(ExEdit::PixelYC);
+                } else {
+                    size = (efpip->obj_h * efpip->obj_line - (efpip->obj_line - efpip->obj_w)) * sizeof(ExEdit::PixelYCA);
+                }
+                memcpy(efpip->obj_temp, memory_ptr, size);
+            }
+            /*
+            if (smip != nullptr) {
+                int pixsize = sizeof(ExEdit::PixelYCA);
+                int line = efpip->obj_line;
+                if (efpip->xf4) {
+                    pixsize = sizeof(ExEdit::PixelYC);
+                    line = efpip->scene_line;
+                }
+                void* ptr = efp->aviutl_exfunc->get_shared_mem((int)&smip, (int)&smip, smip);
+                if (ptr != nullptr) {
+                    auto obj_temp = (void*)efpip->obj_temp;
+                    for (int y = efpip->obj_h; 0 < y; y--) {
+                        memcpy(obj_temp, ptr, pixsize * efpip->obj_w);
+                        ptr = (void*)((int)ptr + pixsize * efpip->obj_w);
+                        obj_temp = (void*)((int)obj_temp + line * pixsize);
+                    }
+                }
+                efp->aviutl_exfunc->delete_shared_mem((int)&smip, smip);
+            }
+            */
         } else {
             efp->exfunc->bufcpy(efpip->obj_temp, ou, ov, efpip->obj_edit, 0, 0, efpip->obj_w, efpip->obj_h, 0, 3);
             efpip->obj_w = obj_w;

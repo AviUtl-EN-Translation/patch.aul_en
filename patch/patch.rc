@@ -450,6 +450,7 @@ AVIUTL MENU
 		MENUITEM "出力プラグイン情報", 105
 		MENUITEM "色変換プラグイン情報", 110
 		MENUITEM "言語拡張リソース情報", 107
+		MENUITEM "拡張編集フィルタプラグイン情報", PATCH_MENU_EXFILTER_INFO
 		MENUITEM SEPARATOR
 		MENUITEM "バージョン情報", 100
 		MENUITEM "patch.aul", PATCH_MENU_INFO

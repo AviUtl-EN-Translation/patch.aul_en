@@ -28,10 +28,7 @@ namespace patch::exfilter {
     // init at exedit load
     // 拡張編集用フィルタプラグインを読み込む
 
-    // 作らないといけないやつ：拡張編集フィルタプラグイン情報
-
     inline class Plugins_t {
-
         bool enabled = true;
         bool enabled_i;
         inline static const char key[] = "exfilter.plugins";
@@ -75,6 +72,8 @@ namespace patch::exfilter {
                                 efp->dll_hinst = hmodule;
                                 if (0 < filter_count) {
                                     efp->flag |= (ExEdit::Filter::Flag)(AviUtl::FilterPlugin::Flag::MultiFilter);
+                                } else {
+                                    efp->flag &= (ExEdit::Filter::Flag)~(AviUtl::FilterPlugin::Flag::MultiFilter);
                                 }
                                 if (!exfilter.apend_filter(efp)) {
                                     break;
@@ -104,6 +103,37 @@ namespace patch::exfilter {
 
         void switch_store(ConfigWriter& cw) {
             cw.append(key, enabled);
+        }
+
+        char* get_info() {
+            if (!enabled_i) return (char*)key;
+
+            auto path = *(char**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
+            auto buf = path + _MAX_PATH + 16;
+            auto ptr = buf;
+            char* pre_str = nullptr;
+            auto LoadedFilterTable = (ExEdit::Filter**)(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterTable);
+            auto LoadedFilterCount = *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::LoadedFilterCount);
+            for (int i = 0; i < LoadedFilterCount; i++) {
+                auto efp = LoadedFilterTable[i];
+                if (has_flag(efp->flag, ExEdit::Filter::Flag::ExEditFilter) && efp->dll_hinst != nullptr) {
+                    char* disp_str;
+                    if (efp->information == nullptr) {
+                        disp_str = (char*)efp->name;
+                    } else {
+                        disp_str = efp->information;
+                    }
+                    // フィルタ効果とフィルタプラグインの2つが追加されている場合に完全に同じ情報になりがちなので除外（連続している場合のみ）
+                    if (pre_str != disp_str) { // ポインタ比較で良い
+                        pre_str = disp_str;
+                        GetModuleFileNameA((HMODULE)efp->dll_hinst, path, _MAX_PATH);
+                        ptr += wsprintfA(ptr, "%s ( %s )\n", disp_str, reinterpret_cast<char* (__fastcall*)(char*)>(GLOBAL::aviutl_base + OFS::AviUtl::get_filename_cursor)(path));
+                    }
+                }
+            }
+
+            *ptr = '\0';
+            return buf;
         }
 
     } Plugins;

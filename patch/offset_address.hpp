@@ -45,6 +45,8 @@ namespace OFS {
 		constexpr i32 ini_trackbarclick = 0x086270;
 		constexpr i32 trackbar_WndProc = 0x2daaf4;
 
+		constexpr i32 get_filename_cursor = 0x02c3d0;
+
 		constexpr i32 str_AviUtl = 0x0742a0; // "AviUtl"
 
 		constexpr i32 str_dot_avi = 0x0745fc; // ".avi"
@@ -59,8 +61,11 @@ namespace OFS {
 		constexpr i32 str_GetInputPluginTable = 0x074994;
 		constexpr i32 str_GetColorPluginTable = 0x0748e8;
 
+		constexpr i32 str_percent_s = 0x0744fc; // "%s"
 		constexpr i32 str_percent_s_percent_s = 0x0743c8; // "%s%s"
+		constexpr i32 str_percent_s_space_percent_s = 0x075304; // "%s %s"
 		constexpr i32 str_percent_s_percent_s_percent_s = 0x0743e8; // "%s%s%s"
+		constexpr i32 str_space_parentheses_percent_s_nl = 0x07530c; // " ( %s )\n"
 
 		constexpr i32 str_plugins_backslash = 0x074904; // "plugins\\"
 
