@@ -1,16 +1,16 @@
 # patch.aul
-## これはなに
-AviUtlや拡張編集のバグを直したり機能を追加するプラグイン
-黒魔術を一手に引き受けるのが目的
+## What is this
+Plug-ins for fixing bugs or adding features in AviUtl or extension editing
+The purpose is to undertake black magic
 
-詳細はpatch.aul.txtを読むこと
+Read patch.aul.txt for more information
 
-## ビルドについて
+## About Build
 
-- [CUDA TOOLKIT](https://developer.nvidia.com/cuda-toolkit)を用意してください
- これのOpenCLライブラリを使います 環境変数`CUDA_PATH`を使います
+- Prepare CUDA TOOLKIT (https://developer.nvidia.com/cuda-toolkit) )
+We're going to use this OpenCL library Use the environment variable 'CUDA_PATH'
 
--  `test`フォルダを用意してください
- これは`aviutl.exe`などを置くフォルダで、デバッグ実行するとこのディレクトリの`aviutl.exe`が実行されます
+- Please prepare the `test` folder
+This is a folder where you put `aviutl.exe` and so on. Debugging will run `aviutl.exe` in this directory
 
-- ビルドすると、`pack`フォルダにリリース用のファイルが集まります
+- Once built, release files will be gathered in the `pack` folder
