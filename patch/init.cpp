@@ -35,7 +35,7 @@ void init_t::InitAtPatchLoaded() {
 			'1','.','1','0','\0','\0','\0','\0'
 		};
 		if (memcmp(reinterpret_cast<void*>(GLOBAL::aviutl_base + OFS::AviUtl::VersionString), aviutl_version_str, sizeof(aviutl_version_str)) != 0) {
-			MessageBoxW(NULL, L"patch.aul requires AviUtl *1.10*.\nAviUtl version 1.10以外では動作しません．", L"patch.aul", MB_ICONEXCLAMATION);
+			MessageBoxW(NULL, L"patch.aul requires AviUtl *1.10*.\nIt does not work with anything other than AviUtl version 1.10.", L"patch.aul", MB_ICONEXCLAMATION);
 			return;
 		}
 	}
@@ -629,8 +629,8 @@ HMODULE WINAPI init_t::LoadLibraryAWrap(LPCSTR lpLibFileName) {
 	if (lstrcmpiA(filename, "exedit.auf") == 0) {
 		GLOBAL::exedit_hmod = ret;
 		auto filters = reinterpret_cast<AviUtl::GetFilterTableList_t>(GetProcAddress(ret, reinterpret_cast<LPCSTR>(GLOBAL::aviutl_base + OFS::AviUtl::str_GetFilterTableList)))();
-		if (strcmp(filters[0]->information, "拡張編集(exedit) version 0.92 by ＫＥＮくん") != 0) {
-			MessageBoxW(NULL, L"patch.aul requires Exedit version *0.92*.\n拡張編集 version 0.92以外では動作しません．", L"patch.aul", MB_ICONEXCLAMATION);
+		if (strcmp(filters[0]->information, "Adv. Editing(exedit) version 0.92 by Mr. Ken") != 0) {
+			MessageBoxW(NULL, L"patch.aul requires Exedit version *0.92*.\nIt does not work except for the Adv. Editing version 0.92.", L"patch.aul", MB_ICONEXCLAMATION);
 			return ret;
 		}
 		original_func_init = std::exchange(filters[0]->func_init, func_initWrap);
@@ -792,7 +792,7 @@ BOOL __cdecl init_t::func_initWrap(AviUtl::FilterPlugin* fp) {
 	if (original_func_init(fp) == FALSE) return FALSE;
 	
 	#ifdef PATCH_SWITCH_UNDO_REDO
-		fp->exfunc->add_menu_item(fp, "やり直す", fp->hwnd, PATCH_EXEDITMENU_REDO, 'Y', AviUtl::ExFunc::AddMenuItemFlag::Ctrl);
+		fp->exfunc->add_menu_item(fp, "Redo", fp->hwnd, PATCH_EXEDITMENU_REDO, 'Y', AviUtl::ExFunc::AddMenuItemFlag::Ctrl);
 	#endif
 
 #ifdef PATCH_SWITCH_LUA

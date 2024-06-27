@@ -33,7 +33,7 @@ namespace patch {
 #define AVIUTL110_FILTER_MAX_N 96
 
 //#define MAX_PLUGIN_NUM 512
-        inline static const char str_msg[] = "同じプラグインが存在します。予期せぬ動作を起こす危険があるため片方は削除してください\n\n%s\n%s";
+        inline static const char str_msg[] = "The same plug-in exists. Delete one\nfor possible unexpected behavior\n\n%s\n%s";
         bool enabled = true;
         bool enabled_i;
         inline static const char key[] = "warning_duplicate";

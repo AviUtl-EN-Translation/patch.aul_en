@@ -18,6 +18,7 @@
 #ifdef PATCH_SWITCH_UNDO
 
 #include <exedit.hpp>
+
 #include "util_magic.hpp"
 #include "global.hpp"
 #include "offset_address.hpp"

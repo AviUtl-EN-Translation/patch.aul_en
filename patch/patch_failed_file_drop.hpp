@@ -30,8 +30,8 @@ namespace patch {
 
     inline class failed_file_drop_t {
 
-        inline static const char str_failed_drop_msg[] = "拡張編集へドロップされたファイルの種類が判別できませんでした\nexedit.iniを確認してください";
-        inline static const char str_failed_pfdrop_msg[] = "現在、別のプロジェクトが開かれています\n読み込みを行う場合、ファイル＞閉じる などで閉じてください";
+        inline static const char str_failed_drop_msg[] = "The type of file dropped into Extended Edit could not be identified.\nPlease check exedit.ini";
+        inline static const char str_failed_pfdrop_msg[] = "Another project is currently open.\nIf you want to load, please close it using File > Close, etc.";
 
         static char __stdcall init_flag();
         inline static int flag;

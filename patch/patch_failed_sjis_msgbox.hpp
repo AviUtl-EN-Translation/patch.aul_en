@@ -32,8 +32,8 @@ namespace patch {
 
     inline class failed_sjis_msgbox_t {
 
-        inline static const char str_new_failed_msg_question[] = "ファイルパスに環境依存文字が含まれています\nファイル名やフォルダ名を確認してください";
-        inline static const char str_new_failed_msg_not_found[] = "ファイルが見つかりませんでした\n削除されたファイルを読み込ませようとしたか、ファイル名やフォルダ名に環境依存文字が含まれる可能性があります";
+        inline static const char str_new_failed_msg_question[] = "The file path contains environment-dependent characters\nPlease check the file name and folder name.";
+        inline static const char str_new_failed_msg_not_found[] = "File not found\nYou may have tried to load a deleted file, or the file name or folder name may contain environment-dependent characters.";
         static int __stdcall MessageBoxA_1(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_2(LPCSTR path, HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
         static int __stdcall MessageBoxA_import_exo(HWND hWnd, LPCSTR lpText, LPCSTR path);

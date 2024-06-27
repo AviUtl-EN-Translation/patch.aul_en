@@ -31,7 +31,7 @@ namespace patch {
 
     inline class failed_max_frame_t {
 
-        inline static const char str_new_failed_msg[] = "%dフレームのプロジェクトを開けません\nシステムの設定にて最大フレーム数を上げてください";
+        inline static const char str_new_failed_msg[] = "Unable to open %d frame project\nIncrease the maximum number of frames in the system configuration.";
         static void __stdcall AppendMessageBoxA(AviUtl::EditHandle* editp);
 
         bool enabled = true;

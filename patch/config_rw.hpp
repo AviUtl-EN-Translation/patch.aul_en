@@ -100,7 +100,13 @@ namespace config_type {
 	};
 
 	// ColorBGR2つの配列、またはColorBGR1つ、またはnulloptを表す
-	// [ "ffffff", "ffffff" ] や ["ffffff"]、"ffffff" など
+	// [ "ffffff", "ffffff
+	// 
+	// 
+	// 
+	// 
+	// 
+	// ffffff"]、"ffffff" など
 	struct ColorBGR2_Opt {
 		std::array<ColorBGR, 2> ary{};
 		ColorBGR2_Opt() : ary{} {}

@@ -34,7 +34,7 @@ namespace patch {
 		bool enabled_i;
 		inline static const char key[] = "settingdialog_color_picker";
 
-		inline static const char newstr[] = "クリックで色を取得。再度ボタンを押してダイアログ表示";
+		inline static const char newstr[] = "Click to get the color. Press the button again to display the dialog.";
 
 	public:
 		static void __stdcall color_dialog_specialcolorconv1(ExEdit::Filter* efp);

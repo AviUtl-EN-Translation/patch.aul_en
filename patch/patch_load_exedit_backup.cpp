@@ -20,7 +20,7 @@
 namespace patch {
     int __stdcall load_exedit_backup_t::MessageBoxA_wrap(LPCSTR lpCaption, int version) {
         char buf[260];
-        wsprintfA(buf, "%s\nVer%d.%d-%d\n正常に読みこめない可能性がありますが続行しますか", (char*)(GLOBAL::exedit_base + 0x9d91c), version / 10000, version / 100 % 100, version % 100);
+        wsprintfA(buf, "%s\nVer%d.%d-%d\nThere may be a possibility of reading failure, but do you want to continue?", (char*)(GLOBAL::exedit_base + 0x9d91c), version / 10000, version / 100 % 100, version % 100);
         return MessageBoxA(NULL, buf, lpCaption, MB_TOPMOST | MB_TASKMODAL | MB_ICONWARNING | MB_YESNO);
     }
 } // namespace patch

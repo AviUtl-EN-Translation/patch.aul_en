@@ -38,8 +38,8 @@ namespace patch {
 
 		inline static const char key[] = "borderonly_text";
 
-		inline static const char border_only_str[] = "縁のみ";
-		inline static const char border_thin_only_str[] = "縁のみ(細)";
+		inline static const char border_only_str[] = "Border Only";
+		inline static const char border_thin_only_str[] = "Border Only (Thin)";
 
 	public:
 
