@@ -22,7 +22,7 @@ Read patch.aul.txt for more information
 <img src="https://github.com/AviUtl-EN-Translation/auls_addshortcut_en/assets/173457541/0f369f71-31c5-4f21-9fef-c347d46e2831" width="600px" height=auto title="aul Path" alt="patch.aul Path Image"></img>
 
 4. Open the downloaded zip file and move the patch.aul,EnMod1_5.aul and EnMod_1_5XP.aul file to the folder containing aviutl.exe.
-5. 
+
 ![image](https://github.com/AviUtl-EN-Translation/auls_addshortcut_en/assets/173457541/7824f4c5-dd38-40f3-bb44-f2827488da4d)
 
 ![image](https://github.com/AviUtl-EN-Translation/patch.aul_en/assets/173457541/c0a7ea17-3835-4e4b-9e49-604a8a79faf3)
