@@ -17,7 +17,7 @@ Read patch.aul.txt for more information
 
 
 3. Continue if a download warning appears in your browser (the warning will disappear as more people download it).
-3-1. It may be detected by antivirus software (reported by McAfee). [Plug-in detected by antivirus software]
+   - It may be detected by antivirus software (reported by McAfee).
 
 <img src="https://github.com/AviUtl-EN-Translation/auls_addshortcut_en/assets/173457541/0f369f71-31c5-4f21-9fef-c347d46e2831" width="600px" height=auto title="aul Path" alt="patch.aul Path Image"></img>
 
