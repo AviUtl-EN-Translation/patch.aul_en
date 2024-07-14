@@ -18,6 +18,8 @@
 
 namespace OFS {
 	namespace AviUtl {
+		constexpr i32 __report_securityfailure = 0x062cf8;
+
 		constexpr i32 InitAuf = 0x02c930;
 		constexpr i32 VersionString = 0x07425c;
 		constexpr i32 default_resource_hmod = 0x2c525c;

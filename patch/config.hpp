@@ -56,6 +56,9 @@ public:
         cr.regist("switch", [](json_value_s* value) {
             ConfigReader cr(value);
             
+            #ifdef PATCH_SWITCH_CHECK_INIT_COMPLETION
+                patch::check_init_completion.switch_load(cr);
+            #endif
             #ifdef PATCH_SWITCH_KEYCONFIG
                 patch::KeyConfig.switch_load(cr);
                 patch::ApendKey.switch_load(cr);
@@ -344,6 +347,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_ANY_OBJ
                 patch::any_obj.switch_load(cr);
+            #endif
+            #ifdef PATCH_SWITCH_OBJECT_COPY
+                patch::object_copy.switch_load(cr);
             #endif
             #ifdef PATCH_SWITCH_PASTE_POS
                 patch::paste_pos.switch_load(cr);
@@ -745,6 +751,9 @@ public:
         {
             ConfigWriter switch_(++level);
             
+            #ifdef PATCH_SWITCH_CHECK_INIT_COMPLETION
+                patch::check_init_completion.switch_store(switch_);
+            #endif
             #ifdef PATCH_SWITCH_KEYCONFIG
                 patch::KeyConfig.switch_store(switch_);
                 patch::ApendKey.switch_store(switch_);
@@ -1033,6 +1042,9 @@ public:
             #endif
             #ifdef PATCH_SWITCH_ANY_OBJ
                 patch::any_obj.switch_store(switch_);
+            #endif
+            #ifdef PATCH_SWITCH_OBJECT_COPY
+                patch::object_copy.switch_store(switch_);
             #endif
             #ifdef PATCH_SWITCH_PASTE_POS
                 patch::paste_pos.switch_store(switch_);

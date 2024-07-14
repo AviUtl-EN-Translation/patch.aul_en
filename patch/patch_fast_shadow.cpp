@@ -721,8 +721,7 @@ namespace patch::fast {
             */
             obj_w = efpip->obj_w;
             obj_h = efpip->obj_h;
-            auto ox = efpip->obj_data.ox;
-            auto oy = efpip->obj_data.oy;
+            auto obj_data = efpip->obj_data;
             efpip->obj_w += diffuse * 2;
             efpip->obj_h += diffuse * 2;
             efpip->obj_data.ox += efp->track[0] << 12;
@@ -733,8 +732,7 @@ namespace patch::fast {
             efpip->xf4 = no_alpha;
             efpip->obj_w = obj_w;
             efpip->obj_h = obj_h;
-            efpip->obj_data.ox = ox;
-            efpip->obj_data.oy = oy;
+            efpip->obj_data = obj_data;
             if (flag) {
                 int size;
                 if (efpip->xf4) {

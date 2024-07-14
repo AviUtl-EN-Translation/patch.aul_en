@@ -94,11 +94,12 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_60"
+#define PATCH_VERSION_STR "r43_ss_61"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
 
+#define PATCH_SWITCH_CHECK_INIT_COMPLETION check_init_completion
 #define PATCH_SWITCH_ACCESS_KEY access_key
 #define PATCH_SWITCH_KEYCONFIG key_config
 #define PATCH_SWITCH_FAILED_MAX_FRAME failed_max_frame
@@ -192,6 +193,7 @@
 #define PATCH_SWITCH_RIGHT_TRACKBAR right_trackbar
 // #define PATCH_SWITCH_SYNC_PLAY_CURSOR sync_play_cursor // 副作用が見つかった&字間行間修正でほぼ起こらないので
 #define PATCH_SWITCH_ANY_OBJ any_obj
+#define PATCH_SWITCH_OBJECT_COPY object_copy
 #define PATCH_SWITCH_PASTE_POS paste_pos
 #define PATCH_SWITCH_EXCLUSION_FONT exclusion_font
 #define PATCH_SWITCH_INIT_WINDOW_POS init_window_pos

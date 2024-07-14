@@ -177,3 +177,5 @@
 #include "patch_audio_layer_end.hpp"
 #include "patch_audio_preprocess.hpp"
 #include "patch_setting_dialog_color_picker.hpp"
+#include "patch_check_init_completion.hpp"
+#include "patch_object_copy.hpp"

@@ -30,6 +30,10 @@ inline i32 CalcNearJmp(i32 address, i32 jmp_address) {
 	return jmp_address - (address + 4);
 }
 
+inline i32 GetNearJmpFunctionAddress(i32 address) {
+	return *reinterpret_cast<int*>(address) + (address + 4);
+}
+
 class OverWriteOnProtectHelper {
 	uintptr_t m_address, m_size;
 	DWORD m_oldProtect;
