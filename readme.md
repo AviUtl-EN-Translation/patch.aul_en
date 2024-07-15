@@ -5,6 +5,10 @@ The purpose is to undertake black magic
 
 Read patch.aul.txt for more information
 
+## Caution
+
+※ Except for the English version of [this link](https://hapsung.tistory.com/24) (WebCam's version), it may not work with any other version.
+
 ## Installation Method
 1. Access https://github.com/AviUtl-EN-Translation/patch.aul_en/releases/latest.
 
