@@ -36,6 +36,8 @@ namespace patch {
 
 		static void __cdecl FUN_1002bf10_Wrap(HDC hDC);
 
+		static BOOL __stdcall CheckMenuRadioItem_wrap(HMENU hmenu, UINT first, UINT last, UINT check, UINT flags);
+
 		bool enabled = true;
 		bool enabled_i;
 		inline static const char key[] = "fast_settingdialog";
@@ -75,6 +77,22 @@ namespace patch {
 			ReplaceNearJmp(GLOBAL::exedit_base + 0x02ceb7, &FUN_1002bf10_Wrap);
 			// テキスト の行間等のコントロールの描画がおかしくなる
 			//OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x02e881, 4).store_i32(0, WS_EX_TOOLWINDOW | WS_EX_COMPOSITED);
+		
+			{ // トラックバーの変化方法の項目数が多いと重くなるのを修正
+				constexpr int vp_begin = 0x87801;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x8786c - vp_begin);
+				/*
+					10087801 8b2de0a10910       mov     ebp,dword ptr [CheckMenuRadioItem]
+					↓
+					10087801 90                 nop
+					10087802 bdXxXxXxXx         mov     ebp, &CheckMenuRadioItem_wrap
+				*/
+				h.store_i16(0x87801 - vp_begin, '\x90\xbd');
+				h.store_i32(0x87803 - vp_begin, &CheckMenuRadioItem_wrap);
+
+				h.store_i16(0x87866 - vp_begin, '\x90\xe8');
+				h.replaceNearJmp(0x87868 - vp_begin, &CheckMenuRadioItem_wrap);
+			}
 		}
 
 		void switching(bool flag) { enabled = flag; }
