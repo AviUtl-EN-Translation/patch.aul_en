@@ -52,6 +52,7 @@
     <ClInclude Include="patch_border_only_text.hpp" />
     <ClInclude Include="patch_camera_scene.hpp" />
     <ClInclude Include="patch_change_disp_scene.hpp" />
+    <ClInclude Include="patch_check_init_completion.hpp" />
     <ClInclude Include="patch_colorpalette_cache.hpp" />
     <ClInclude Include="patch_console.hpp" />
     <ClInclude Include="patch_dialog_new_file.hpp" />
@@ -100,6 +101,7 @@
     <ClInclude Include="patch_keyconfig.hpp" />
     <ClInclude Include="patch_load_exedit_backup.hpp" />
     <ClInclude Include="patch_lua_setanchor.hpp" />
+    <ClInclude Include="patch_object_copy.hpp" />
     <ClInclude Include="patch_object_table.hpp" />
     <ClInclude Include="patch_obj_blur.hpp" />
     <ClInclude Include="patch_obj_create_figure.hpp" />
@@ -265,6 +267,7 @@
     <ClCompile Include="patch_init_window_pos.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
     <ClCompile Include="patch_load_exedit_backup.cpp" />
+    <ClCompile Include="patch_object_copy.cpp" />
     <ClCompile Include="patch_object_table.cpp" />
     <ClCompile Include="patch_obj_glow.cpp" />
     <ClCompile Include="patch_obj_portionfilter.cpp" />

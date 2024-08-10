@@ -68,6 +68,9 @@ void init_t::InitAtPatchLoaded() {
 
 	overwrite_resource();
 
+#ifdef PATCH_SWITCH_CHECK_INIT_COMPLETION
+	patch::check_init_completion.init();
+#endif
 
 #ifdef PATCH_SWITCH_SPLASH
 	if (PATCH_SWITCHER_MEMBER(PATCH_SWITCH_SPLASH)) {
@@ -399,6 +402,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_ANY_OBJ
 	patch::any_obj.init();
+#endif
+#ifdef PATCH_SWITCH_OBJECT_COPY
+	patch::object_copy.init();
 #endif
 #ifdef PATCH_SWITCH_PASTE_POS
 	patch::paste_pos.init();

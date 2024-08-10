@@ -72,5 +72,19 @@ namespace patch {
 		if (load_i32<int>(GLOBAL::exedit_base + 0x177a10) == -1)return;
 		reinterpret_cast<void(__cdecl*)(HDC)>(GLOBAL::exedit_base + 0x02bf10)(hDC);
 	}
+
+	BOOL __stdcall fast_setting_dialog_t::CheckMenuRadioItem_wrap(HMENU hmenu, UINT first, UINT last, UINT check, UINT flags) {
+		int cnt = GetMenuItemCount(hmenu);
+		int pos_first = -1, pos_last = -1, pos_check = -1;
+		for (int i = 0; i < cnt; i++) {
+			auto id = GetMenuItemID(hmenu, i);
+			if (first <= id && id <= last) {
+				if (check == id) pos_check = i;
+				if (pos_first < 0) pos_first = i;
+				pos_last = i;
+			}
+		}
+		return CheckMenuRadioItem(hmenu, pos_first, pos_last, pos_check, MF_BYPOSITION);
+	}
 } // namespace patch
 #endif // ifdef PATCH_SWITCH_FAST_SETTINGDIALOG

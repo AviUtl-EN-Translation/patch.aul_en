@@ -56,8 +56,6 @@ namespace patch::fast {
 			enabled_i = enabled;
 			if (!enabled_i)return;
 
-			auto cpucmdset = get_CPUCmdSet();
-			if (!has_flag(cpucmdset, CPUCmdSet::F_AVX2))return;
 			constexpr int vp_begin = 0x12e52;
 			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x12efd - vp_begin);
 			h.store_i32(0x12e52 - vp_begin, &border_color_mt1);
@@ -66,8 +64,11 @@ namespace patch::fast {
 			h.store_i32(0x12e93 - vp_begin, &border_mt1);
 			h.store_i32(0x12ea3 - vp_begin, &border_mt2);
 			h.store_i32(0x12eb3 - vp_begin, &border_mt3);
-			h.store_i32(0x12eda - vp_begin, &color_mt);
-			h.store_i32(0x12ef9 - vp_begin, &else_mt);
+
+			if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
+				h.store_i32(0x12eda - vp_begin, &color_mt);
+				h.store_i32(0x12ef9 - vp_begin, &else_mt);
+			}
 
 
 		}

@@ -18,6 +18,8 @@
 
 namespace OFS {
 	namespace AviUtl {
+		constexpr i32 __report_securityfailure = 0x062cf8;
+
 		constexpr i32 InitAuf = 0x02c930;
 		constexpr i32 VersionString = 0x07425c;
 		constexpr i32 default_resource_hmod = 0x2c525c;
@@ -222,6 +224,7 @@ namespace OFS {
 		constexpr i32 efDivideObject_ptr = 0x0a28d8;
 		constexpr i32 efDivideObject_var_ptr = 0x11f010;
 		constexpr i32 efChromakey_var_ptr = 0x11ec7c;
+		constexpr i32 efColorkey_var_ptr = 0x11ed34;
 		constexpr i32 efSpecialColorConv_ptr = 0x0a1530;
 		constexpr i32 efSpecialColorConv_var_ptr = 0x11ecfc;
 		constexpr i32 efSharp_ptr = 0xb86f8;
