@@ -131,6 +131,14 @@ namespace patch {
         return -1;
     }
 
+    void __cdecl undo_t::f3e002() {
+        auto SelectingObjectIdxArray = reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
+        auto SelectingObjectNum = *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
+        for (int i = 0; i < SelectingObjectNum; i++) {
+            set_undo(SelectingObjectIdxArray[i], 9);
+        }
+    }
+
     int __cdecl undo_t::efDraw_func_WndProc_wrap_06e2b4(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, ExEdit::Filter* efp) {
         auto ret = efDraw_func_WndProc(hwnd, message, wparam, lparam, editp, efp);
         if (ret) return ret;

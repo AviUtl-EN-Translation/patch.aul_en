@@ -21,7 +21,7 @@
 
 namespace patch::fast {
 
-    void __cdecl Chromakey_t::border_color_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    void __cdecl Chromakey_t::border_color_mt1_avx2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
         int* memory_ptr = *(int**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
         int keycb = *(short*)((int)efp->exdata_ptr + 2);
         int keycr = *(short*)((int)efp->exdata_ptr + 4);
@@ -30,24 +30,14 @@ namespace patch::fast {
         int hue_range = efp->track[0] << 7;
         int sat_range = efp->track[1] * satkey >> 8;
 
-        __m256 keyangle256, divPI256;
-        __m256i satkey256, hue_range256, sat_range256, offset256, zero256, max256;
-        int loop[2];
-        if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
-            keyangle256 = _mm256_set1_ps(keyangle);
-            divPI256 = _mm256_set1_ps(10430.37835047045f);
-            satkey256 = _mm256_set1_epi32(satkey);
-            hue_range256 = _mm256_set1_epi32(hue_range);
-            sat_range256 = _mm256_set1_epi32(sat_range);
-            offset256 = _mm256_set_epi32(56, 48, 40, 32, 24, 16, 8, 0);
-            zero256 = _mm256_setzero_si256();
-            max256 = _mm256_set1_epi32(0x1000);
-            loop[0] = efpip->obj_w >> 3;
-            loop[1] = efpip->obj_w & 7;
-        } else {
-            loop[0] = 0;
-            loop[1] = efpip->obj_w;
-        }
+        __m256 keyangle256 = _mm256_set1_ps(keyangle);
+        __m256 divPI256 = _mm256_set1_ps(10430.37835047045f);
+        __m256i satkey256 = _mm256_set1_epi32(satkey);
+        __m256i hue_range256 = _mm256_set1_epi32(hue_range);
+        __m256i sat_range256 = _mm256_set1_epi32(sat_range);
+        __m256i offset256 = _mm256_set_epi32(56, 48, 40, 32, 24, 16, 8, 0);
+        __m256i zero256 = _mm256_setzero_si256();
+        __m256i max256 = _mm256_set1_epi32(0x1000);
 
         int y = efpip->obj_h * thread_id / thread_num;
         auto buf_alpha = (int*)efpip->obj_temp + efpip->obj_w * (efpip->obj_h + y);
@@ -56,7 +46,7 @@ namespace patch::fast {
             auto buf_hue_angle = (int*)memory_ptr + offset;
             short* cbcr = &efpip->obj_edit[offset].cb;
             offset += efpip->obj_line;
-            for (int x = loop[0]; 0 < x; x--) {
+            for (int x = efpip->obj_w >> 3; 0 < x; x--) {
                 __m256i cbcr256 = _mm256_i32gather_epi32((int*)cbcr, offset256, 1);
                 cbcr += 32;
                 __m256i cb256 = _mm256_srai_epi32(_mm256_slli_epi32(cbcr256, 16), 16);
@@ -76,7 +66,7 @@ namespace patch::fast {
                 _mm256_storeu_epi32(buf_alpha, alpha256);
                 buf_alpha += 8;
             }
-            for (int x = loop[1]; 0 < x; x--) {
+            for (int x = efpip->obj_w & 7; 0 < x; x--) {
                 int pixcb = cbcr[0];
                 int pixcr = cbcr[1];
                 cbcr += 4;
@@ -90,9 +80,8 @@ namespace patch::fast {
             }
         }
     }
-
-
-    void __cdecl Chromakey_t::border_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+    void __cdecl Chromakey_t::border_color_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        int* memory_ptr = *(int**)(GLOBAL::exedit_base + OFS::ExEdit::memory_ptr);
         int keycb = *(short*)((int)efp->exdata_ptr + 2);
         int keycr = *(short*)((int)efp->exdata_ptr + 4);
         float keyangle = atan2((float)keycr, (float)keycb) * -10430.37835047045f;
@@ -100,24 +89,45 @@ namespace patch::fast {
         int hue_range = efp->track[0] << 7;
         int sat_range = efp->track[1] * satkey >> 8;
 
-        __m256 keyangle256, divPI256;
-        __m256i satkey256, hue_range256, sat_range256, offset256, zero256, max256;
-        int loop[2];
-        if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
-            keyangle256 = _mm256_set1_ps(keyangle);
-            divPI256 = _mm256_set1_ps(10430.37835047045f);
-            satkey256 = _mm256_set1_epi32(satkey);
-            hue_range256 = _mm256_set1_epi32(hue_range);
-            sat_range256 = _mm256_set1_epi32(sat_range);
-            offset256 = _mm256_set_epi32(56, 48, 40, 32, 24, 16, 8, 0);
-            zero256 = _mm256_setzero_si256();
-            max256 = _mm256_set1_epi32(0x1000);
-            loop[0] = efpip->obj_w >> 3;
-            loop[1] = efpip->obj_w & 7;
-        } else {
-            loop[0] = 0;
-            loop[1] = efpip->obj_w;
+        int y = efpip->obj_h * thread_id / thread_num;
+        auto buf_alpha = (int*)efpip->obj_temp + efpip->obj_w * (efpip->obj_h + y);
+        int offset = efpip->obj_line * y;
+        for (y = efpip->obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
+            auto buf_hue_angle = (int*)memory_ptr + offset;
+            short* cbcr = &efpip->obj_edit[offset].cb;
+            offset += efpip->obj_line;
+            for (int x = efpip->obj_w; 0 < x; x--) {
+                int pixcb = cbcr[0];
+                int pixcr = cbcr[1];
+                cbcr += 4;
+                float pixangle = atan2((float)pixcr, (float)pixcb);
+                int sub_hue = max(0, std::abs((short)round(pixangle * 10430.37835047045f + keyangle)) - hue_range);
+                *buf_hue_angle = sub_hue;
+                buf_hue_angle++;
+                sub_hue += max(0, std::abs(max(std::abs(pixcb), std::abs(pixcr)) - satkey) - sat_range) << 3;
+                *buf_alpha = (short)min(sub_hue, 0x1000);
+                buf_alpha++;
+            }
         }
+    }
+
+
+    void __cdecl Chromakey_t::border_mt1_avx2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        int keycb = *(short*)((int)efp->exdata_ptr + 2);
+        int keycr = *(short*)((int)efp->exdata_ptr + 4);
+        float keyangle = atan2((float)keycr, (float)keycb) * -10430.37835047045f;
+        int satkey = max(std::abs(keycb), std::abs(keycr));
+        int hue_range = efp->track[0] << 7;
+        int sat_range = efp->track[1] * satkey >> 8;
+
+        __m256 keyangle256 = _mm256_set1_ps(keyangle);
+        __m256 divPI256 = _mm256_set1_ps(10430.37835047045f);
+        __m256i satkey256 = _mm256_set1_epi32(satkey);
+        __m256i hue_range256 = _mm256_set1_epi32(hue_range);
+        __m256i sat_range256 = _mm256_set1_epi32(sat_range);
+        __m256i offset256 = _mm256_set_epi32(56, 48, 40, 32, 24, 16, 8, 0);
+        __m256i zero256 = _mm256_setzero_si256();
+        __m256i max256 = _mm256_set1_epi32(0x1000);
 
         int y = efpip->obj_h * thread_id / thread_num;
         auto buf_alpha = (int*)efpip->obj_temp + efpip->obj_w * (efpip->obj_h + y);
@@ -125,7 +135,7 @@ namespace patch::fast {
         for (y = efpip->obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
             short* cbcr = &efpip->obj_edit[offset].cb;
             offset += efpip->obj_line;
-            for (int x = loop[0]; 0 < x; x--) {
+            for (int x = efpip->obj_w >> 3; 0 < x; x--) {
                 __m256i cbcr256 = _mm256_i32gather_epi32((int*)cbcr, offset256, 1);
                 cbcr += 32;
                 __m256i cb256 = _mm256_srai_epi32(_mm256_slli_epi32(cbcr256, 16), 16);
@@ -143,12 +153,38 @@ namespace patch::fast {
                 _mm256_storeu_epi32(buf_alpha, alpha256);
                 buf_alpha += 8;
             }
-            for (int x = loop[1]; 0 < x; x--) {
+            for (int x = efpip->obj_w & 7; 0 < x; x--) {
                 int pixcb = cbcr[0];
                 int pixcr = cbcr[1];
                 cbcr += 4;
                 float pixangle = atan2((float)pixcr, (float)pixcb);
                 int sub_hue = max(0, std::abs((short)round(fmaf(pixangle, 10430.37835047045f, keyangle))) - hue_range);
+                sub_hue += max(0, std::abs(max(std::abs(pixcb), std::abs(pixcr)) - satkey) - sat_range) << 3;
+                *buf_alpha = min(sub_hue, 0x1000);
+                buf_alpha++;
+            }
+        }
+    }
+    void __cdecl Chromakey_t::border_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip) {
+        int keycb = *(short*)((int)efp->exdata_ptr + 2);
+        int keycr = *(short*)((int)efp->exdata_ptr + 4);
+        float keyangle = atan2((float)keycr, (float)keycb) * -10430.37835047045f;
+        int satkey = max(std::abs(keycb), std::abs(keycr));
+        int hue_range = efp->track[0] << 7;
+        int sat_range = efp->track[1] * satkey >> 8;
+
+        int y = efpip->obj_h * thread_id / thread_num;
+        auto buf_alpha = (int*)efpip->obj_temp + efpip->obj_w * (efpip->obj_h + y);
+        int offset = efpip->obj_line * y;
+        for (y = efpip->obj_h * (thread_id + 1) / thread_num - y; 0 < y; y--) {
+            short* cbcr = &efpip->obj_edit[offset].cb;
+            offset += efpip->obj_line;
+            for (int x = efpip->obj_w; 0 < x; x--) {
+                int pixcb = cbcr[0];
+                int pixcr = cbcr[1];
+                cbcr += 4;
+                float pixangle = atan2((float)pixcr, (float)pixcb);
+                int sub_hue = max(0, std::abs((short)round(pixangle * 10430.37835047045f + keyangle)) - hue_range);
                 sub_hue += max(0, std::abs(max(std::abs(pixcb), std::abs(pixcr)) - satkey) - sat_range) << 3;
                 *buf_alpha = min(sub_hue, 0x1000);
                 buf_alpha++;

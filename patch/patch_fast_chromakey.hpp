@@ -30,7 +30,9 @@ namespace patch::fast {
 	// クロマキーを少しだけ速度アップ
 	inline class Chromakey_t {
 
+		static void __cdecl border_color_mt1_avx2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl border_color_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
+		static void __cdecl border_mt1_avx2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl border_mt1(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl border_mt2(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
 		static void __cdecl border_color_mt3(int thread_id, int thread_num, ExEdit::Filter* efp, ExEdit::FilterProcInfo* efpip);
@@ -58,16 +60,19 @@ namespace patch::fast {
 
 			constexpr int vp_begin = 0x12e52;
 			OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x12efd - vp_begin);
-			h.store_i32(0x12e52 - vp_begin, &border_color_mt1);
 			h.store_i32(0x12e6a - vp_begin, &border_mt2);
 			h.store_i32(0x12e7a - vp_begin, &border_color_mt3);
-			h.store_i32(0x12e93 - vp_begin, &border_mt1);
 			h.store_i32(0x12ea3 - vp_begin, &border_mt2);
 			h.store_i32(0x12eb3 - vp_begin, &border_mt3);
 
 			if (has_flag(get_CPUCmdSet(), CPUCmdSet::F_AVX2)) {
+				h.store_i32(0x12e52 - vp_begin, &border_color_mt1_avx2);
+				h.store_i32(0x12e93 - vp_begin, &border_mt1_avx2);
 				h.store_i32(0x12eda - vp_begin, &color_mt);
 				h.store_i32(0x12ef9 - vp_begin, &else_mt);
+			} else {
+				h.store_i32(0x12e52 - vp_begin, &border_color_mt1);
+				h.store_i32(0x12e93 - vp_begin, &border_mt1);
 			}
 
 

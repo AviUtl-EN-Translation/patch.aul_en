@@ -79,6 +79,8 @@ namespace patch {
 
         static int __cdecl f8d506(int object_idx);
 
+        static void __cdecl f3e002();
+
         static int __cdecl efDraw_func_WndProc_wrap_06e2b4(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, ExEdit::Filter* efp);
 
         static int __stdcall f8b97f(HWND hwnd, ExEdit::Filter* efp, WPARAM wparam, LPARAM lparam);
@@ -246,6 +248,32 @@ namespace patch {
                 h.store_i8(0x8d519 - vp_begin, '\x44');
             }
 			// OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x08d50e, 4).store_i32(0, '\x0f\x1f\x40\x00'); // nop
+
+            // グループ化されたオブジェクトの端や中間点でSHIFTを押しながら動かすと正常に戻らないのを修正
+            {
+                /*
+                    1003e002 8b1530921710       mov     edx,dword ptr [10179230]
+                    1003e008 6a09               push    +09
+                    1003e00a 52                 push    edx
+                    1003e00b e880f20400         call    1008d290
+                    1003e010 a134921710         mov     eax,[10179234]
+                    1003e015 6a09               push    +09
+                    1003e017 50                 push    eax
+                    1003e018 e873f20400         call    1008d290
+                    1003e01d 83c410             add     esp,+10
+                    1003e020 eb27               jmp     1003e049
+                    ↓
+                    1003e002 e8XxXxXxXx         call    f3e002
+                    1003e007 eb40               jmp     1003e049
+
+                */
+
+                constexpr int vp_begin = 0x3e002;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x3e009 - vp_begin);
+                h.store_i8(0x3e002 - vp_begin, '\xe8');
+                h.replaceNearJmp(0x3e003 - vp_begin, &f3e002);
+                h.store_i16(0x3e007 - vp_begin, '\xeb\x40');
+            }
 
             // グループ化されたオブジェクトの中間点を分割した場合にグループ化IDを正しく戻せなくなるのを修正
             {
