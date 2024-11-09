@@ -94,7 +94,7 @@
 #endif //define PATCH_SWITCH_FAST
 
 #else // ifdef PATCH_INTERNAL
-#define PATCH_VERSION_STR "r43_ss_64"
+#define PATCH_VERSION_STR "r43_ss_65"
 
 #define PATCH_SWITCH_EXCEPTION_LOG
 #define PATCH_SWITCH_SYSINFO_MODIFY
@@ -137,6 +137,7 @@
 #define PATCH_SWITCH_THEME_CC theme_cc
 #define PATCH_SWITCH_EXEDITWINDOW_SIZING exeditwindow_sizing
 #define PATCH_SWITCH_SETTINGDIALOG_MOVE settingdialog_move
+#define PATCH_SWITCH_SETTINGDIALOG_NEXT settingdialog_next
 #define PATCH_SWITCH_SETTINGDIALOG_ADD_FILTER settingdialog_add_filter
 #define PATCH_SWITCH_SETTINGDIALOG_COLOR_PICKER settingdialog_color_picker
 #define PATCH_SWITCH_SETTINGDIALOG_EXCOLORCONFIG settingdialog_excolorconfig
@@ -170,6 +171,7 @@
 #define PATCH_SWITCH_OBJ_SPECIALCOLORCONV obj_specialcolorconv
 #define PATCH_SWITCH_OBJ_MOTIONBLUR obj_motionblur
 #define PATCH_SWITCH_OBJ_PORTIONFILTER obj_portionfilter
+#define PATCH_SWITCH_OBJ_GROUPCONTROL obj_groupcontrol
 #define PATCH_SWITCH_BORDER_ONLY_TEXT border_only_text
 #define PATCH_SWITCH_RCLICKMENU_SPLIT rclickmenu_split
 // #define PATCH_SWITCH_RCLICKMENU_DELETE rclickmenu_delete // undo追加更新により不要に

@@ -323,7 +323,13 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
 	patch::PortionFilter.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_GROUPCONTROL
+	patch::GroupControl.init();
+#endif
 
+#ifdef PATCH_SWITCH_SETTINGDIALOG_NEXT
+	patch::dialog_next.init();
+#endif
 #ifdef PATCH_SWITCH_SETTINGDIALOG_COLOR_PICKER
 	patch::dialog_color_picker.init();
 #endif

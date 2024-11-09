@@ -435,6 +435,7 @@ namespace OFS {
 
 		constexpr i32 SelectingObjectNum = 0x167d88;
 		constexpr i32 SelectingObjectIdxArray = 0x179230;
+		constexpr i32 select_object = 0x34cb0;
 		constexpr i32 deselect_object = 0x34eb0;
 
 		constexpr i32 object2idx = 0x02b0d0;

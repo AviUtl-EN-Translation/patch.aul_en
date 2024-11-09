@@ -656,9 +656,23 @@ namespace patch {
 
             // ショートカットよりレイヤーの表示状態を変更してもUndoデータが生成されない
             {
+                /*
+                    10042617 a1a40f1e10         mov     eax,[101e0fa4]
+                    ↓
+                    10042617 e8XxXxXxXx         call    cursor
+
+                    10000000 52                 push    edx
+                    10000000 e8XxXxXxXx         call    newfunc
+                    10000000 5a                 pop     edx
+                    10000000 c3                 ret
+                */
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x042617, 5);
                 h.store_i8(0, '\xe8');
-                h.replaceNearJmp(1, &f42617);
+                h.replaceNearJmp(1, cursor);
+
+                store_i16(cursor, '\x52\xe8'); cursor += 2;
+                store_i32(cursor, (uint32_t)&f42617 - (uint32_t)(cursor + 4)); cursor += 4;
+                store_i16(cursor, '\x5a\xc3'); cursor += 2;
             }
 
             // カメラ制御の対象 を切り替えてもUndoデータが生成されない

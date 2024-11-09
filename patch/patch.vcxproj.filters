@@ -563,6 +563,12 @@
     <ClInclude Include="patch_object_copy.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_obj_groupcontrol.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_setting_dialog_next.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -884,6 +890,9 @@
       <Filter>feature</Filter>
     </ClCompile>
     <ClCompile Include="patch_object_copy.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_setting_dialog_next.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>
