@@ -10,11 +10,11 @@ Read patch.aul.txt for more information
 ※ Except for the English version of [this link](https://hapsung.tistory.com/24) (WebCam's version), it may not work with any other version.
 
 ## Notice
-* This plugin is an English-localized version of the original plugin developed by [蛇色 (へびいろ)](https://github.com/hebiiro).
+* This plugin is an English-localized version of the original plugin developed by [nazoSAUNA](https://github.com/nazonoSAUNA)
 * All core functionality and source code are based on the original project.
 
 Original Plugin
-* https://github.com/hebiiro/anti.aviutl.ultimate.plugin
+* https://github.com/nazonoSAUNA/patch.aul
 
 Localization
 * This version includes translations and adjustments for English-speaking users.
