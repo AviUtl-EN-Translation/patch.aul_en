@@ -9,6 +9,21 @@ Read patch.aul.txt for more information
 
 ※ Except for the English version of [this link](https://hapsung.tistory.com/24) (WebCam's version), it may not work with any other version.
 
+## Notice
+* This plugin is an English-localized version of the original plugin developed by [蛇色 (へびいろ)](https://github.com/hebiiro).
+* All core functionality and source code are based on the original project.
+
+Original Plugin
+* https://github.com/hebiiro/anti.aviutl.ultimate.plugin
+
+Localization
+* This version includes translations and adjustments for English-speaking users.
+* All rights and credits for the original work belong to the original author.
+
+* If you are the original author and wish this localized version to be modified or removed, please feel free to contact me.
+* Redistributor - JangJe
+* Twitter - https://twitter.com/JJ_otomad
+
 ## Installation Method
 1. Access https://github.com/AviUtl-EN-Translation/patch.aul_en/releases/latest.
 
