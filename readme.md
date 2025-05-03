@@ -1,4 +1,12 @@
 # patch.aul
+
+# THIS IS NOT WORKIING
+
+* I found something critical. 
+* It's a forked repository, so it's impossible to make it invisible.
+* Please download again when this notice disappears
+
+
 ## What is this
 Plug-ins for fixing bugs or adding features in AviUtl or extension editing
 The purpose is to undertake black magic
