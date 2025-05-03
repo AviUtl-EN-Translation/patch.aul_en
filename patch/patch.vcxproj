@@ -52,6 +52,7 @@
     <ClInclude Include="patch_border_only_text.hpp" />
     <ClInclude Include="patch_camera_scene.hpp" />
     <ClInclude Include="patch_change_disp_scene.hpp" />
+    <ClInclude Include="patch_check_init_completion.hpp" />
     <ClInclude Include="patch_colorpalette_cache.hpp" />
     <ClInclude Include="patch_console.hpp" />
     <ClInclude Include="patch_dialog_new_file.hpp" />
@@ -100,11 +101,13 @@
     <ClInclude Include="patch_keyconfig.hpp" />
     <ClInclude Include="patch_load_exedit_backup.hpp" />
     <ClInclude Include="patch_lua_setanchor.hpp" />
+    <ClInclude Include="patch_object_copy.hpp" />
     <ClInclude Include="patch_object_table.hpp" />
     <ClInclude Include="patch_obj_blur.hpp" />
     <ClInclude Include="patch_obj_create_figure.hpp" />
     <ClInclude Include="patch_obj_diffuselight.hpp" />
     <ClInclude Include="patch_obj_flash.hpp" />
+    <ClInclude Include="patch_obj_groupcontrol.hpp" />
     <ClInclude Include="patch_obj_mask.hpp" />
     <ClInclude Include="patch_obj_motionblur.hpp" />
     <ClInclude Include="patch_obj_portionfilter.hpp" />
@@ -126,6 +129,7 @@
     <ClInclude Include="patch_setting_dialog_color_picker.hpp" />
     <ClInclude Include="patch_setting_dialog_add_filter.hpp" />
     <ClInclude Include="patch_setting_dialog_chromakey.hpp" />
+    <ClInclude Include="patch_setting_dialog_next.hpp" />
     <ClInclude Include="patch_setting_dialog_scriptcontrol.hpp" />
     <ClInclude Include="patch_set_frame.hpp" />
     <ClInclude Include="patch_shared_cache.hpp" />
@@ -265,6 +269,7 @@
     <ClCompile Include="patch_init_window_pos.cpp" />
     <ClCompile Include="patch_keyconfig.cpp" />
     <ClCompile Include="patch_load_exedit_backup.cpp" />
+    <ClCompile Include="patch_object_copy.cpp" />
     <ClCompile Include="patch_object_table.cpp" />
     <ClCompile Include="patch_obj_glow.cpp" />
     <ClCompile Include="patch_obj_portionfilter.cpp" />
@@ -278,6 +283,7 @@
     <ClCompile Include="patch_setting_dialog_color_picker.cpp" />
     <ClCompile Include="patch_setting_dialog_add_filter.cpp" />
     <ClCompile Include="patch_setting_dialog_chromakey.cpp" />
+    <ClCompile Include="patch_setting_dialog_next.cpp" />
     <ClCompile Include="patch_set_frame.cpp" />
     <ClCompile Include="patch_shared_cache.cpp" />
     <ClCompile Include="patch_exception_log.cpp" />

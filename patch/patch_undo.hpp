@@ -69,16 +69,12 @@ namespace patch {
             return 0;
         }
 
-        inline constexpr static int FILTER_ID_MOVIE = 0; // track 0 check 0 exdata 268 = maxframe
-        inline constexpr static int FILTER_ID_AUDIO = 2; // track 0 check 0,1 exdata 268 = maxframe
-        inline constexpr static int FILTER_ID_WAVEFORM = 6; // track 0 check 3 exdata 268 = maxframe
-        inline constexpr static int FILTER_ID_SCENE = 7; // track 0 check 0 exdata 0 = sceneid
-        inline constexpr static int FILTER_ID_SCENE_AUDIO = 8; // track 0 check 0,1 exdata 0 = sceneid
-        inline constexpr static int FILTER_ID_MOVIE_MIX = 82; // track 0 check 0 exdata 268 = maxframe
 
-        static void __cdecl set_undo_wrap_3e037(unsigned int object_idx, unsigned int flag);
+        static void __stdcall set_undo_pp(ExEdit::Filter* efp, int new_value, int* current_value_ptr);
 
         static int __cdecl f8d506(int object_idx);
+
+        static void __cdecl f3e002();
 
         static int __cdecl efDraw_func_WndProc_wrap_06e2b4(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, ExEdit::Filter* efp);
 
@@ -213,7 +209,107 @@ namespace patch {
 
 
 			// オブジェクトの左端をつまんで動かすと再生位置パラメータが変わるが、それが元に戻らない
-			ReplaceNearJmp(GLOBAL::exedit_base + 0x03e038, &set_undo_wrap_3e037);
+            {
+                { // movie, scene
+                    /*
+                        10006378 8901               mov     dword ptr [ecx],eax
+                        1000637a 8b8ee4000000       mov     ecx,dword ptr [esi+000000e4]
+                        ↓
+                        10006378 0f1f00             nop
+                        1000637b e8XxXxXxXx         jmp     cursor
+
+                        10000000 51                 push    ecx
+                        10000000 50                 push    eax
+                        10000000 56                 push    esi
+                        10000000 e8XxXxXxXx         call    set_undo_pp
+                        10000000 8b8ee4000000       mov     ecx,dword ptr [esi+000000e4]
+                        10000000 c3                 ret
+                    */
+                    { // movie
+                        OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x006378, 8);
+                        h.store_i32(0, '\x0f\x1f\x00\xe8');
+                        h.replaceNearJmp(4, cursor); 
+                    }
+                    { // scene
+                        OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0838fd, 8);
+                        h.store_i32(0, '\x0f\x1f\x00\xe8');
+                        h.replaceNearJmp(4, cursor);
+                    }
+
+                    store_i32(cursor, '\x51\x50\x56\xe8'); cursor += 4;
+                    store_i32(cursor, (uint32_t)&set_undo_pp - (uint32_t)(cursor + 4)); cursor += 4;
+                    store_i32(cursor, '\x8b\x8e\xe4\x00'); cursor += 3;
+                    store_i32(cursor, '\x00\x00\x00\xc3'); cursor += 4;
+                }
+                { // audio
+                    /*
+                        1008fde9 8902               mov     dword ptr [edx],eax
+                        1008fdeb 8b96e4000000       mov     edx,dword ptr [esi+000000e4]
+
+                        10000000 52                 push    edx
+                        10000000 50                 push    eax
+                        10000000 56                 push    esi
+                        10000000 e8XxXxXxXx         call    set_undo_pp
+                        10000000 8b96e4000000       mov     edx,dword ptr [esi+000000e4]
+                        10000000 c3                 ret
+                    */
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08fde9, 8);
+                    h.store_i32(0, '\x0f\x1f\x00\xe8');
+                    h.replaceNearJmp(4, cursor);
+
+                    store_i32(cursor, '\x52\x50\x56\xe8'); cursor += 4;
+                    store_i32(cursor, (uint32_t)&set_undo_pp - (uint32_t)(cursor + 4)); cursor += 4;
+                    store_i32(cursor, '\x8b\x96\xe4\x00'); cursor += 3;
+                    store_i32(cursor, '\x00\x00\x00\xc3'); cursor += 4;
+                }
+                { // waveform
+                    /*
+                        1008ee2e 89420c             mov     dword ptr [edx+0c],eax
+                        1008ee31 8b8ee4000000       mov     ecx,dword ptr [esi+000000e4]
+                        ↓
+                        1008ee2e 83c20c             add     edx,+0c
+                        1008ee31 90                 nop
+                        1008ee32 e8XxXxXxXx         jmp     cursor
+
+                        10000000 52                 push    edx
+                        10000000 50                 push    eax
+                        10000000 56                 push    esi
+                        10000000 e8XxXxXxXx         call    set_undo_pp
+                        10000000 8b8ee4000000       mov     ecx,dword ptr [esi+000000e4]
+                        10000000 c3                 ret
+                    */
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x08ee2e, 9);
+                    h.store_i32(0, '\x83\xc2\x0c\x90');
+                    h.store_i8(4, '\xe8');
+                    h.replaceNearJmp(5, cursor);
+
+                    store_i32(cursor, '\x52\x50\x56\xe8'); cursor += 4;
+                    store_i32(cursor, (uint32_t)&set_undo_pp - (uint32_t)(cursor + 4)); cursor += 4;
+                    store_i32(cursor, '\x8b\x8e\xe4\x00'); cursor += 3;
+                    store_i32(cursor, '\x00\x00\x00\xc3'); cursor += 4;
+                }
+                { // sceneaudio
+                    /*
+                        100844c8 8901               mov     dword ptr [ecx],eax
+                        100844ca 8b86e4000000       mov     eax,dword ptr [esi+000000e4]
+
+                        10000000 51                 push    ecx
+                        10000000 50                 push    eax
+                        10000000 56                 push    esi
+                        10000000 e8XxXxXxXx         call    set_undo_pp
+                        10000000 8b86e4000000       mov     eax,dword ptr [esi+000000e4]
+                        10000000 c3                 ret
+                    */
+                    OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x0844c8, 8);
+                    h.store_i32(0, '\x0f\x1f\x00\xe8');
+                    h.replaceNearJmp(4, cursor);
+
+                    store_i32(cursor, '\x51\x50\x56\xe8'); cursor += 4;
+                    store_i32(cursor, (uint32_t)&set_undo_pp - (uint32_t)(cursor + 4)); cursor += 4;
+                    store_i32(cursor, '\x8b\x86\xe4\x00'); cursor += 3;
+                    store_i32(cursor, '\x00\x00\x00\xc3'); cursor += 4;
+                }
+            }
 			
             // 中間点ありオブジェクトで色などを変更→元に戻すで設定ダイアログが更新されない
 			// 一部フィルタのファイル参照を変更→元に戻すで設定ダイアログが更新されない(音声波形など)
@@ -247,6 +343,32 @@ namespace patch {
                 h.store_i8(0x8d519 - vp_begin, '\x44');
             }
 			// OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x08d50e, 4).store_i32(0, '\x0f\x1f\x40\x00'); // nop
+
+            // グループ化されたオブジェクトの端や中間点でSHIFTを押しながら動かすと正常に戻らないのを修正
+            {
+                /*
+                    1003e002 8b1530921710       mov     edx,dword ptr [10179230]
+                    1003e008 6a09               push    +09
+                    1003e00a 52                 push    edx
+                    1003e00b e880f20400         call    1008d290
+                    1003e010 a134921710         mov     eax,[10179234]
+                    1003e015 6a09               push    +09
+                    1003e017 50                 push    eax
+                    1003e018 e873f20400         call    1008d290
+                    1003e01d 83c410             add     esp,+10
+                    1003e020 eb27               jmp     1003e049
+                    ↓
+                    1003e002 e8XxXxXxXx         call    f3e002
+                    1003e007 eb40               jmp     1003e049
+
+                */
+
+                constexpr int vp_begin = 0x3e002;
+                OverWriteOnProtectHelper h(GLOBAL::exedit_base + vp_begin, 0x3e009 - vp_begin);
+                h.store_i8(0x3e002 - vp_begin, '\xe8');
+                h.replaceNearJmp(0x3e003 - vp_begin, &f3e002);
+                h.store_i16(0x3e007 - vp_begin, '\xeb\x40');
+            }
 
             // グループ化されたオブジェクトの中間点を分割した場合にグループ化IDを正しく戻せなくなるのを修正
             {
@@ -535,9 +657,23 @@ namespace patch {
 
             // ショートカットよりレイヤーの表示状態を変更してもUndoデータが生成されない
             {
+                /*
+                    10042617 a1a40f1e10         mov     eax,[101e0fa4]
+                    ↓
+                    10042617 e8XxXxXxXx         call    cursor
+
+                    10000000 52                 push    edx
+                    10000000 e8XxXxXxXx         call    newfunc
+                    10000000 5a                 pop     edx
+                    10000000 c3                 ret
+                */
                 OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x042617, 5);
                 h.store_i8(0, '\xe8');
-                h.replaceNearJmp(1, &f42617);
+                h.replaceNearJmp(1, cursor);
+
+                store_i16(cursor, '\x52\xe8'); cursor += 2;
+                store_i32(cursor, (uint32_t)&f42617 - (uint32_t)(cursor + 4)); cursor += 4;
+                store_i16(cursor, '\x5a\xc3'); cursor += 2;
             }
 
             // カメラ制御の対象 を切り替えてもUndoデータが生成されない

@@ -557,6 +557,18 @@
     <ClInclude Include="patch_setting_dialog_color_picker.hpp">
       <Filter>feature</Filter>
     </ClInclude>
+    <ClInclude Include="patch_check_init_completion.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_object_copy.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_obj_groupcontrol.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_setting_dialog_next.hpp">
+      <Filter>feature</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -875,6 +887,12 @@
       <Filter>feature\fast</Filter>
     </ClCompile>
     <ClCompile Include="patch_setting_dialog_color_picker.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_object_copy.cpp">
+      <Filter>feature</Filter>
+    </ClCompile>
+    <ClCompile Include="patch_setting_dialog_next.cpp">
       <Filter>feature</Filter>
     </ClCompile>
   </ItemGroup>

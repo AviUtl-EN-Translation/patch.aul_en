@@ -28,6 +28,7 @@ namespace patch {
 		static void __cdecl FUN_10036a70_Wrap_gradation(HDC hDC, LPRECT prect, int r1, int g1, int b1, int r2, int g2, int b2, int real_left, int real_right);
 		static void __cdecl FUN_10036a70_Wrap_step(HDC hDC, LPRECT prect, int r1, int g1, int b1, int r2, int g2, int b2, int real_left, int real_right);
 
+		static void __cdecl timeline_select_draw(HDC hDC, int bottom);
 
 		static HDC WINAPI GetDC_Wrap(HWND hwnd);
 		static int WINAPI ReleaseDC_Wrap(HWND hwnd, HDC hdc);
@@ -64,6 +65,45 @@ namespace patch {
 				ReplaceNearJmp(GLOBAL::exedit_base + 0x0374fb, f_036a70_ptr);
 				ReplaceNearJmp(GLOBAL::exedit_base + 0x037563, f_036a70_ptr);
 				ReplaceNearJmp(GLOBAL::exedit_base + 0x0375bb, f_036a70_ptr);
+			}
+			{ // 選択範囲の部分をfillrectに変更
+
+				/*
+					10037ff9 ff74241c           push    dword ptr [esp+1c]
+					10037ffd 56                 push    esi
+					10037ffe e8XxXxXxXx         call    newfunc
+					10038003 83c408             add     esp,+08
+					10038006 e998000000         jmp     100380a3
+					1003800b
+
+					100380a3 8b6c2428           mov     ebp,dword ptr [esp+28]
+					100380a7 57                 push    edi
+					100380a8 e8c3aaffff         call    10032b70
+					100380ad 83c404             add     esp,+04
+					100380b0 8bd8               mov     ebx,eax
+					100380b2 895c2424           mov     dword ptr [esp+24],ebx
+
+					100381eb 0f8cb2feffff       jl      100380a3
+				*/
+				/*
+				constexpr int vp_begin = 0x037ff9;
+				OverWriteOnProtectHelper h(GLOBAL::exedit_base + 0x037ff9, 0x0381ee - 0x037ff9);
+
+				h.store_i32(0x037ff9 - vp_begin, '\xff\x74\x24\x1c');
+				h.store_i16(0x037ffd - vp_begin, '\x56\xe8');
+				h.replaceNearJmp(0x037fff - vp_begin, &timeline_select_draw);
+				h.store_i32(0x038003 - vp_begin, '\x83\xc4\x08\xe9');
+				h.store_i32(0x038007 - vp_begin, '\x98\x00\x00\x00');
+
+				h.store_i8(0x0380a3 - vp_begin, '\x8b');
+				h.store_i32(0x0380a4 - vp_begin, '\x6c\x24\x28\x57');
+				h.store_i32(0x0380a8 - vp_begin, '\xe8\xc3\xaa\xff');
+				h.store_i32(0x0380ac - vp_begin, '\xff\x83\xc4\x04');
+				h.store_i32(0x0380b0 - vp_begin, '\x8b\xd8\x89\x5c');
+				h.store_i16(0x0380b4 - vp_begin, '\x24\x24');
+
+				h.store_i8(0x0381ed - vp_begin, '\xb2');
+				*/
 			}
 
 			OverWriteOnProtectHelper(GLOBAL::exedit_base + 0x0387fd, 4).store_i32(0, &GetDC_Wrap_ptr);

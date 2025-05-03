@@ -68,6 +68,9 @@ void init_t::InitAtPatchLoaded() {
 
 	overwrite_resource();
 
+#ifdef PATCH_SWITCH_CHECK_INIT_COMPLETION
+	patch::check_init_completion.init();
+#endif
 
 #ifdef PATCH_SWITCH_SPLASH
 	if (PATCH_SWITCHER_MEMBER(PATCH_SWITCH_SPLASH)) {
@@ -320,7 +323,13 @@ void init_t::InitAtExeditLoad() {
 #ifdef PATCH_SWITCH_OBJ_PORTIONFILTER
 	patch::PortionFilter.init();
 #endif
+#ifdef PATCH_SWITCH_OBJ_GROUPCONTROL
+	patch::GroupControl.init();
+#endif
 
+#ifdef PATCH_SWITCH_SETTINGDIALOG_NEXT
+	patch::dialog_next.init();
+#endif
 #ifdef PATCH_SWITCH_SETTINGDIALOG_COLOR_PICKER
 	patch::dialog_color_picker.init();
 #endif
@@ -399,6 +408,9 @@ void init_t::InitAtExeditLoad() {
 #endif
 #ifdef PATCH_SWITCH_ANY_OBJ
 	patch::any_obj.init();
+#endif
+#ifdef PATCH_SWITCH_OBJECT_COPY
+	patch::object_copy.init();
 #endif
 #ifdef PATCH_SWITCH_PASTE_POS
 	patch::paste_pos.init();

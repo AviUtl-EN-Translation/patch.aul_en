@@ -23,96 +23,11 @@
 namespace patch {
 #ifdef PATCH_SWITCH_UNDO
 
-    void __cdecl undo_t::set_undo_wrap_3e037(unsigned int object_idx, unsigned int flag) {
-        auto exists_movable_playback_pos = [](unsigned int object_idx) {
-            auto& exdata_buffer = *exdata_buffer_ptr;
-            auto eop = &(*ObjectArrayPointer_ptr)[object_idx];
-            for (int i = 0; i < 12; i++) {
-                auto fparam = &eop->filter_param[i];
-                switch (fparam->id) {
-                case FILTER_ID_MOVIE:
-                    if (eop->track_mode[fparam->track_begin].num == 0) {
-                        if (eop->check_value[fparam->check_begin] == 0) {
-                            auto exdata = reinterpret_cast<ExEdit::Exdata::efMovieFile*>(reinterpret_cast<uintptr_t>(exdata_buffer) + 4 + eop->exdata_offset + fparam->exdata_offset);
-                            if (exdata->frame_n > 0) {
-                                return true;
-                            }
-                        }
-                    }
-                    break;
-                case FILTER_ID_MOVIE_MIX:
-                    if (eop->track_mode[fparam->track_begin].num == 0) {
-                        if (eop->check_value[fparam->check_begin] == 0) {
-                            auto exdata = reinterpret_cast<ExEdit::Exdata::efMovieSynthesis*>(reinterpret_cast<uintptr_t>(exdata_buffer) + 4 + eop->exdata_offset + fparam->exdata_offset);
-                            if (exdata->frame_n > 0) {
-                                return true;
-                            }
-                        }
-                    }
-                    break;
-                case FILTER_ID_AUDIO:
-                    if (eop->track_mode[fparam->track_begin].num == 0) {
-                        if (eop->check_value[fparam->check_begin] == 0 && eop->check_value[fparam->check_begin + 1] == 0) {
-                            auto exdata = reinterpret_cast<ExEdit::Exdata::efAudioFile*>(reinterpret_cast<uintptr_t>(exdata_buffer) + 4 + eop->exdata_offset + fparam->exdata_offset);
-                            if (exdata->frame_n > 0) {
-                                return true;
-                            }
-                        }
-                    }
-                    break;
-                case FILTER_ID_WAVEFORM:
-                    if (eop->track_mode[fparam->track_begin].num == 0) {
-                        if (eop->check_value[fparam->check_begin + 3] == 0) {
-                            auto exdata = reinterpret_cast<ExEdit::Exdata::efWaveForm*>(reinterpret_cast<uintptr_t>(exdata_buffer) + 4 + eop->exdata_offset + fparam->exdata_offset);
-                            if (exdata->frame_n > 0) {
-                                return true;
-                            }
-                        }
-                    }
-                    break;
-                case FILTER_ID_SCENE:
-                    if (eop->track_mode[fparam->track_begin].num == 0) {
-                        if (eop->check_value[fparam->check_begin] == 0) {
-                            auto exdata = reinterpret_cast<ExEdit::Exdata::efScene*>(reinterpret_cast<uintptr_t>(exdata_buffer) + 4 + eop->exdata_offset + fparam->exdata_offset);
-                            if (scene_setting[exdata->scene].max_frame > 0) {
-                                return true;
-                            }
-                        }
-                    }
-                    break;
-                case FILTER_ID_SCENE_AUDIO:
-                    if (eop->track_mode[fparam->track_begin].num == 0) {
-                        if (eop->check_value[fparam->check_begin] == 0 && eop->check_value[fparam->check_begin + 1] == 0) {
-                            auto exdata = reinterpret_cast<ExEdit::Exdata::efSceneAudio*>(reinterpret_cast<uintptr_t>(exdata_buffer) + 4 + eop->exdata_offset + fparam->exdata_offset);
-                            if (scene_setting[exdata->scene].max_frame > 0) {
-                                return true;
-                            }
-                        }
-                    }
-                    break;
-                case -1:
-                    return false;
-                }
-            }
-            return false;
-        };
-
-        if (*timeline_obj_click_mode_ptr == 2 || (*timeline_obj_click_mode_ptr == 3 && (*timeline_edit_both_adjacent_ptr & 1))) { // 左端 || (右端 && 環境設定の隣接するオブジェクトも選択がON )
-            auto eop = &(*ObjectArrayPointer_ptr)[object_idx];
-            int obj_idx = eop->index_midpt_leader;
-            if (obj_idx == -1) {
-                if (exists_movable_playback_pos(object_idx)) {
-                    set_undo(object_idx, 0);
-                    return;
-                }
-            } else if (obj_idx == object_idx) {
-                if (exists_movable_playback_pos(obj_idx)) {
-                    set_undo(obj_idx, 1);
-                    return;
-                }
-            }
+    void __stdcall undo_t::set_undo_pp(ExEdit::Filter* efp, int new_value, int* current_value_ptr) {
+        if (*current_value_ptr != new_value) {
+            set_undo(LOWORD(efp->processing) - 1, 1);
+            *current_value_ptr = new_value;
         }
-        set_undo(object_idx, flag);
     }
     int __cdecl undo_t::f8d506(int object_idx) {
         int dialog_idx = *ObjDlg_ObjectIndex_ptr;
@@ -131,6 +46,14 @@ namespace patch {
         return -1;
     }
 
+    void __cdecl undo_t::f3e002() {
+        auto SelectingObjectIdxArray = reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectIdxArray);
+        auto SelectingObjectNum = *reinterpret_cast<int*>(GLOBAL::exedit_base + OFS::ExEdit::SelectingObjectNum);
+        for (int i = 0; i < SelectingObjectNum; i++) {
+            set_undo(SelectingObjectIdxArray[i], 9);
+        }
+    }
+
     int __cdecl undo_t::efDraw_func_WndProc_wrap_06e2b4(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, AviUtl::EditHandle* editp, ExEdit::Filter* efp) {
         auto ret = efDraw_func_WndProc(hwnd, message, wparam, lparam, editp, efp);
         if (ret) return ret;
@@ -141,7 +64,7 @@ namespace patch {
     }
 
     int __stdcall undo_t::f8b97f(HWND hwnd, ExEdit::Filter* efp, WPARAM wparam, LPARAM lparam) {
-        interval_set_undo(object(efp->processing) - 1, 1);
+        interval_set_undo(LOWORD(efp->processing) - 1, 1);
         return SendMessageA(hwnd, CB_GETLBTEXT, wparam, lparam);
     }
 
@@ -191,7 +114,7 @@ namespace patch {
     }
 
     int __stdcall undo_t::f8b9f0(ExEdit::Filter* efp, HWND hWnd, LPWSTR lpString, int nMaxCount) {
-        interval_set_undo(object(efp->processing) - 1, 1);
+        interval_set_undo(LOWORD(efp->processing) - 1, 1);
         return GetWindowTextW(hWnd, lpString, nMaxCount);
     }
 
@@ -306,7 +229,7 @@ namespace patch {
     }
 
     void __cdecl undo_t::add_track_value_wrap(ExEdit::Filter* efp, int track_id, int add_value) {
-        interval_set_undo(object(efp->processing) - 1, 1);
+        interval_set_undo(LOWORD(efp->processing) - 1, 1);
         add_track_value(efp, track_id, add_value);
     }
 

@@ -2,7 +2,7 @@ patch.aul r43beta1
 © 2021-2023 ePi
 https://scrapbox.io/ePi5131/patch.aul
 
-patch.aul r43_ss_60
+patch.aul r43_ss_65
 https://scrapbox.io/nazosauna/patch.aul
 
 概要
@@ -57,6 +57,7 @@ https://scrapbox.io/nazosauna/patch.aul
         ・レイヤー削除→元に戻すで他シーンのオブジェクトが消える
         ・Ctrlで複数オブジェクトを選択しながら設定ダイアログのトラックバーを動かすと一部オブジェクトが正常に戻らない
         ・Ctrlで複数オブジェクトを選択しながら一部フィルタの色などを変更すると正常に戻らない
+        ・Shiftを押しながらグループ化された複数オブジェクトの長さを変更すると正常に戻らない
         ・オブジェクトの左端をつまんで動かすと再生位置パラメータが変わるが、それが元に戻らない
         ・一部フィルタのファイル参照を変更→元に戻すで設定ダイアログが更新されない(音声波形など)
         ・部分フィルタのマスクの種類を変更してもUndoデータが生成されない
@@ -199,6 +200,14 @@ https://scrapbox.io/nazosauna/patch.aul
     ・拡張編集の音声処理のメイン関数0x49ca0にて最終レイヤー指定が機能していなかったのを修正
     ・クロマキーやカラーキーなどで、色の取得ボタンを押した状態でもう一度押すと色選択ダイアログが出るように変更
     ・シャドーにて影を別オブジェクトで描画にしていると、上のオブジェクトでクリッピングとの組み合わせで描画が異常になるのを修正
+    ・初期化処理中に終了処理は行われないように変更
+    ・タイムラインオブジェクトのコピー情報を共有メモリ化
+    ・トラックバーの変化方法の項目数が多いと重くなるのを修正
+    ・クロマキー、カラーキーの境界補正で画像の周囲が削れるのを修正
+    ・カラーキーの境界補正が元から透明な部分にも掛かるのを修正
+    ・グループ制御がチェックで無効になっている際にフィルタ効果が実行されるのを修正
+    ・中間点オブジェクトを消した際に次の選択がされないことがあるのを修正
+    ・オブジェクトを消した際、次に選択されるオブジェクトを変更（左右のオブジェクトより上下を優先）
 
     追加
     ・コンソールの表示
@@ -317,6 +326,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "patch_level" : number ; 修正レベル。現在は30未満、30以上40未満、40以上の3段階で設定します。詳細はpatch_scene_vram.hppにて (既定値: 64)
     },
     "switch" : { ; どのパッチを有効にするかを選択するものです trueなら有効、falseなら無効
+        "check_init_completion" : boolean, ; 初期化処理中に終了処理を行わないように変更 (既定値: true)
         "keyconfig" : boolean, ; メニューの[編集]の文字列が変わるとaviutl.keyの設定を反映できないのを修正 (既定値: true)
         "apendkey" : boolean, ; ショートカットキーの設定に登録可能なキーを追加する (既定値: true)
         "access_key" : boolean, ; アクセスキーを付加するか (既定値: false)
@@ -377,6 +387,8 @@ https://scrapbox.io/nazosauna/patch.aul
         "obj_specialcolorconv" : boolean, ; 特定色域変換で変換前色に黒色を指定すると0除算が起こることがあるのを修正 (既定値: true)
         "obj_motionblur" : boolean, ; モーションブラーの間隔が負の値になった時にエラーとなるのを修正 (既定値: true)
         "obj_portionfilter" : boolean, ; 部分フィルタがスレッド数より小さいサイズに対して正常に反映されないバグを修正 / (ファイルから選択)でファイルパスを表示する (既定値: true)
+        "obj_groupcontrol" : boolean, ; グループ制御がチェックで無効になっている際にフィルタ効果が実行されるのを修正 (既定値: true)
+        "settingdialog_next : boolean, ; 中間点オブジェクトを消した際に次の選択がされないことがあるのを修正/オブジェクトを消した際、次に選択されるオブジェクトを変更 (既定値: true)
         "settingdialog_color_picker" : boolean, ; クロマキーやカラーキーなどで、色の取得ボタンを押した状態でもう一度押すと色選択ダイアログが出るように変更 (既定値: true)
         "settingdialog_excolorconfig" : boolean, ; 拡張色変換のウィンドウが下のフィルタに被るのを修正 (既定値: true)
         "settingdialog_chromakey" : boolean, ; クロマキーの透過補正チェックは色彩補正チェック有りの時のみ表示するように変更 (既定値: true)
@@ -401,6 +413,7 @@ https://scrapbox.io/nazosauna/patch.aul
         "change_disp_scene" : boolean, ; シーン切り替え時のバグを修正 (既定値: true)
         "right_trackbar" : boolean, ; 複数選択状態で右トラックバーの値を変えた時に正常ではないのを修正 (既定値: true)
 	"any_obj" : boolean, ; Ctrlを押しながら複数選択状態での変更が正しく行われないのを修正 (既定値: true)
+	"object_copy" : boolean, ; タイムラインオブジェクトのコピー情報を共有メモリ化 (既定値: true)
         "paste_pos" : boolean, ; コピーしたタイムラインオブジェクトの貼り付け位置がおかしくなるのを修正 (既定値: true)
         "exclusion_font" : boolean, ; フォント名が32バイト以上の場合、正常に扱うことはできないため表示しないように変更 (既定値: true)
         "init_window_pos" : boolean, ; ウィンドウ位置の初期化で設定ダイアログも動くように変更 (既定値: true)
@@ -471,7 +484,7 @@ https://scrapbox.io/nazosauna/patch.aul
 Lua追加要素詳細
     _PATCH
         patch.aulのバージョン情報
-        例として "patch.aul r43_ss_60" のような文字列が格納されている
+        例として "patch.aul r43_ss_65" のような文字列が格納されている
 
     obj.randex(seed,frame)
         seed : integer
